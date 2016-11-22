@@ -17,21 +17,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /* 
- * TODO: 
- *  - https://bukkit.org/threads/github-and-eclipse.40351/
- *  - Add lore to head-block
- *  - Add Time
+ * TODO:
  *  - Remember when freezeall is active after crash/restart
- *  - Fix bug where u cannot unfreeze a player if u provide a invalid location
  *  - Add option to spawn block below player if they are in the ground or make it so they cannot be kicked for fly/stop anticheat spam
  *  - Titles
  *  - Actionbar
  *  
  *  TODO: Hopefully
  *  - Hologram above players head on freeze option
- * 
- * BUGS:
- *  - Fix ice on head when inventory is full (helmet needs to be stored)
+ *
  * */
 
 /* CHANGES:
@@ -39,8 +33,10 @@ import java.net.URL;
  *   - PLAYERS MAY NOW EDIT THEIR INVENTORY WHILE FROZEN
  *   - SQL FREEZING
  *   - TEMPORARY FREEZING
- *   - HELMET HAS MORE OPTIONS, CAN BE ANY ITEM/BLOCK, PLACEHOLDERS, ITEMFLAGS, ENCHANTS, LORE, NAME
+ *   - HEAD-BLOCK HAS MORE OPTIONS, CAN BE ANY ITEM/BLOCK, PLACEHOLDERS, ITEMFLAGS, ENCHANTS, LORE, NAME
+ *   - HEAD-BLOCK ALSO WILL BE PUT ON A PLAYERS HEAD EVEN IF THEY ALREADY HAVE A HELMET AND THEIR INVENTORY IS FULL
  *   - /SF RELOAD NOW UPDATES HELMETS AND PARTICLES IF THEY ARE CHANGED
+ *   - CUSTOMIZABLE /FROZEN FORMAT
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFICATION THROUGH THE TELEPORT-UP OPTION
@@ -56,6 +52,22 @@ import java.net.URL;
  * net.minecraft.server.v1_9_R2
  * net.minecraft.server.v1_10_R1
  * */
+
+
+/* COMMIT CHANGES:
+* CLASSES:
+*   SimpleFreezeMain:
+*     - Cleaned up comments
+*   FreezeManager:
+*     - Added getLocation method
+*   FrozenCommand:
+*     - Setup command
+* RESOURCES:
+*   config.yml
+*     - Added {ONLINE} placeholder
+*   plugin.yml
+*     - Added aliases to /frozen
+* */
 
 public class SimpleFreezeMain extends JavaPlugin {
 
@@ -101,7 +113,7 @@ public class SimpleFreezeMain extends JavaPlugin {
 		this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager));
 		this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager));
 		this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
-		this.getCommand("frozen").setExecutor(new FrozenCommand());
+		this.getCommand("frozen").setExecutor(new FrozenCommand(this, this.freezeManager, this.playerManager));
 	}
 
 	private void registerListeners() {

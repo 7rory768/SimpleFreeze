@@ -107,7 +107,6 @@ logout-commands:
   - '/broadcast &c&l{PLAYER} &cleft while frozen'
 
 # Defines locations that can be called when freezing a player (ex. /freeze <playername> example-location)
-# Values should have decimals, just add .0 if you are providing a whole number (ex. 10 to 10.0)
 # yaw and pitch are optional
 locations:
   example-location:
@@ -286,14 +285,22 @@ already-frozen:
 not-frozen:
   - '{PREFIX}&b{PLAYER} &7is not frozen'
 
+nobody-frozen: '&7Nobody is frozen'
+
 frozen-list-format:
   # Comment out header and/or footer if you don''t need them
   header: '&8&m--------------------------------------------------'
   formats:
-    frozen: '&b{PLAYER}'
-    frozen-location: '&b{PLAYER} &7at &b{LOCATION}'
-    temp-frozen: '&b{PLAYER} &7 for &b{TIME}'
-    temp-frozen-location: '&c{PLAYER} &7at &b{LOCATION} &7for &b{TIME}'
+    frozen: '{ONLINE}{PLAYER} &7(Frozen by &b{FREEZER}&7)'
+    frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7(Frozen by &b{FREEZER}&7)'
+    temp-frozen: '{ONLINE}{PLAYER} &7 for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
+    temp-frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
+  # If the player thats frozen is online the {ONLINE}
+  # placeholder will become the string you set below
+  online-placeholder: '&a'
+  # If the player thats frozen is offline the {ONLINE}
+  # placeholder will become the string you set below
+  offline-placeholder: '&c'
   footer: '&8&m--------------------------------------------------'
 
 # Messages sent to players upon using a command they don't have permission for

@@ -70,6 +70,42 @@ public class FreezeManager {
         }
     }
 
+    public String getLocationName(org.bukkit.Location location) {
+        String locPlaceholder = "Unknown";
+        if (location == null) {
+            return locPlaceholder;
+        }
+
+        World world = location.getWorld();
+        double x = location.getX();
+        double y = location.getY();
+        double z = location.getZ();
+        double yaw = location.getYaw();
+        double pitch = location.getPitch();
+
+        for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
+            if (this.plugin.getConfig().getString("locations." + locationName + ".worldname").equals(world.getName()) && this.plugin.getConfig().getDouble("locations." +
+                    locationName + ".x") == x && this.plugin.getConfig().getDouble("locations." + locationName + ".y") == y && this.plugin.getConfig().getDouble("locations." + locationName + ".z") == z) {
+                locPlaceholder = this.plugin.getConfig().getString("locations." + locationName + ".placeholder", locationName);
+                if (this.plugin.getConfig().isSet("locations." + locationName + ".yaw") && this.plugin.getConfig().isSet("locations." + locationName + ".pitch")) {
+                    if (Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) == yaw && Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) == pitch) {
+                        return locPlaceholder;
+                    }
+                } else if (this.plugin.getConfig().isSet("locations." + locationName + ".yaw") && !this.plugin.getConfig().isSet("locations." + locationName + ".pitch")) {
+                    if (Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) == yaw) {
+                        return locPlaceholder;
+                    }
+                } else if (!this.plugin.getConfig().isSet("locations." + locationName + ".yaw") && this.plugin.getConfig().isSet("locations." + locationName + ".pitch")) {
+                    if (Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) == pitch) {
+                        return locPlaceholder;
+                    }
+                }
+            }
+        }
+
+        return locPlaceholder;
+    }
+
     private SFLocation getHighestAirLocation(SFLocation pLoc) {
         World world = pLoc.getWorld();
         int x = pLoc.getBlockX();
@@ -373,7 +409,7 @@ public class FreezeManager {
         }
         Player senderP = sender instanceof Player ? (Player) sender : null;
         for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("sf.notify.freeze") && p != senderP) {
+            if (p.hasPermission("sf.notify.unfreeze") && p != senderP) {
                 for (String msg : this.plugin.getConfig().getStringList("unfrozen-notify-message")) {
                     if (!msg.equals("")) {
                         sender.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerPlaceholder).replace("{PLAYER}", playerPlaceholder)));

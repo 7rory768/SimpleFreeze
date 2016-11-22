@@ -18,6 +18,7 @@ commands:
     description: Unfreezes a player
   frozen:
     description: Lists frozen players
+    aliases: [frozenlist, freezelist, flist]
 
 permissions:
   sf.*:
