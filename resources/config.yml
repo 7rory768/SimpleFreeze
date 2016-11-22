@@ -286,6 +286,16 @@ already-frozen:
 not-frozen:
   - '{PREFIX}&b{PLAYER} &7is not frozen'
 
+frozen-list-format:
+  # Comment out header and/or footer if you don''t need them
+  header: '&8&m--------------------------------------------------'
+  formats:
+    frozen: '&b{PLAYER}'
+    frozen-location: '&b{PLAYER} &7at &b{LOCATION}'
+    temp-frozen: '&b{PLAYER} &7 for &b{TIME}'
+    temp-frozen-location: '&c{PLAYER} &7at &b{LOCATION} &7for &b{TIME}'
+  footer: '&8&m--------------------------------------------------'
+
 # Messages sent to players upon using a command they don't have permission for
 no-permission-message:
   - '&cYou don''t have permission for that'
