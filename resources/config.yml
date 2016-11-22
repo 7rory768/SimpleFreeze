@@ -1,0 +1,291 @@
+# ||=======================================||
+# ||              Simple Freeze            ||
+# ||              Version 3.0.0            ||
+# ||=======================================||
+
+# ||=======================================||
+# ||              Placeholders             ||
+# ||=======================================||
+
+# {PREFIX} - Prefix of plugin (defined by prefix)
+# {FREEZER} - Name of player that freezes/unfreezes another player
+# {PLAYER} - Name of player that's frozen
+# {LOCATION} - SFLocation player is teleported to
+
+# ||======================================||
+# ||                 Info                 ||
+# ||======================================||
+
+# This config fully supports using '&' colour codes which are found here: http://ess.khhq.net/mc/
+# If you don't want any messages to be sent change the message to ''
+# If you want to add any 's to your messages make sure to put two or the config will break ('' instead of ')
+# ex. can't (Bad), can''t (Good)
+
+# ||======================================||
+# ||          Placeholders Setup          ||
+# ||======================================||
+
+# This sets the message held by the {PREFIX} placeholder
+prefix: '&b&lSimpleFreeze &8\u00BB &7'
+
+# This sets the message held by the {LOCATION} placeholder when there is no actual freeze location; ('' = nothing)
+location: 'unknown'
+
+# ||=======================================||
+# ||                 MySQL                 ||
+# ||=======================================||
+
+# MAKE SURE THAT THIS IS UNIQUE ACROSS ALL SERVERS CONNECTED TO THE SAME MYSQL DATABASE
+server-id: lobby
+
+mysql:
+  username: user
+  password: pass
+  hostname: localhost
+  port: 3306
+  database: database
+
+# ||=======================================||
+# ||              Preferences              ||
+# ||=======================================||
+
+# Defines if a player should be teleported to the highest block at their location when frozen (prevents glitches when a player is floating while frozen (Kicked: Flying is not enabled on this server))
+teleport-up: true
+# teleport-up will not run if a location is specified (ex. /freeze <playername> example-location)
+
+# If teleport-up is false, should the player have  fly enabled so that they aren't kicked for flying/don't glitch while in the air
+enable-fly: true
+
+# Defines if a player should be teleported back to their old location after being unfrozen (only affects when freezing a player and providing a location or when teleport-up is enabled);
+tp-back: true
+
+# Defines the radius of blocks in which players must be of the freezer for them to freeze that player (Keep 0 if disabled)
+freeze-radius: 0
+
+# Defines what item will be put in the players helmet slot This item will be removed once they are unfrozen (Their current helmet will not be lost)
+# Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-block' and the keys under it)
+head-item:
+  material: ICE
+  data: 0
+  name: '&bYou''re Frozen'
+  lore:
+    - '&7You were frozen by &b{FREEZER}'
+
+# Defines what sound will be played upon a freeze/unfreeze (Define them as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html)
+# NOTE: Volume can be any number from 0.0 - 1.0 (1.0 = normal))
+# NOTE: Pitch can be any number from 0.5 to 2.0 and controls how fast the sound is played (1.0 = normal)
+# Both volume and pitch values must have decimals just add .0 if you are providing a whole number (ex. 1 to 1.0)
+freeze-sound:
+  sound: BLOCK_NOTE_PLING
+  volume: 1.0
+  pitch: 1.0
+unfreeze-sound:
+  sound: BLOCK_NOTE_PLING
+  volume: 1.0
+  pitch: 1.0
+# Add a # if you don't want a sound to be played (ex. #freeze-sound:)
+
+# Defines what particles will surround a player while frozen (Define them as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Effect.html)
+frozen-particles:
+  particle: SNOWBALL_BREAK
+  radius: 10
+  # Radius is the number of blocks from the player where the particles are still visible
+# Add a # if you don't want a sound to be played (ex. #frozen-particles: SNOW_SHOVEL)
+
+# Notify staff if a player leaves during freezeall?
+leave-message-during-freezeall: false
+
+# Message sent when a player leave while frozen
+notify-on-leave-message:
+  - ''
+
+# Should logout commands be ran if somebody leaves during freezeall?
+freezeall-logout-commands: false
+
+# Commands ran when a player that is frozen leaves (If you don't want any logout-command change the below to logout-commands: [])
+logout-commands:
+  - '/broadcast &c&l{PLAYER} &cleft while frozen'
+
+# Defines locations that can be called when freezing a player (ex. /freeze <playername> example-location)
+# Values should have decimals, just add .0 if you are providing a whole number (ex. 10 to 10.0)
+# yaw and pitch are optional
+locations:
+  example-location:
+    placeholder: 'Example SFLocation'
+    worldname: world
+    x: 0.5
+    y: 100.0
+    z: 0.5
+    yaw: 0.0
+    pitch: 0.0
+  another-location:
+    placeholder: 'Another SFLocation'
+    worldname: 'world'
+    x: 10.5
+    y: 100.0
+    z: 10.5
+
+# ||======================================||
+# ||               Blocking               ||
+# ||======================================||
+
+# true = Blocked
+player-damage: true
+fire-damage: true
+head-movement: false
+
+# true = Blocked
+block-chat: false
+block-chat-message:
+  - '{PREFIX}You cannot chat while frozen'
+
+# Whitelist = true, Blacklist = false (Whitelist: Only commands not listed are blocked, Blacklist: Only commands listed are blocked)
+whitelist-or-blacklist: false
+# Make sure blocked commands are all lower case here (additional arguments are automatically taken care of (ex. /tpa 7rory768))
+blocked-commands:
+  - '/tpa'
+  - '/tpask'
+  - '/tpaccept'
+  - '/tpyes'
+  - '/tphere'
+  - '/tpahere'
+  - '/tph'
+  - '/call'
+  - '/etpa'
+  - '/etpask'
+  - '/etpaccept'
+  - '/etpyes'
+  - '/etphere'
+  - '/etpahere'
+  - '/etph'
+  - '/ecall'
+  - '/essentials:tpa'
+  - '/essentials:tpask'
+  - '/essentials:tpaccept'
+  - '/essentials:tpyes'
+  - '/essentials:tphere'
+  - '/essentials:tpahere'
+  - '/essentials:tph'
+  - '/essentials:call'
+
+# ||======================================||
+# ||               Messages               ||
+# ||======================================||
+
+# NOTE: If you don't want any messages to be sent change it to - '';
+
+# Messages sent to a player when they are frozen
+freeze-message:
+  - '&4&m--------------------------------------------------'
+  - '&cYou were frozen by &l{FREEZER}'
+  - '&4&m--------------------------------------------------'
+
+# Message sent to a player when they are frozen at a specific location
+freeze-location-message:
+  - '&4&m--------------------------------------------------'
+  - '&cYou were frozen by &l{FREEZER} &cat &l{LOCATION}'
+  - '&4&m--------------------------------------------------'
+
+# Message sent to a player when they are frozen temporarily
+temp-freeze-message:
+  - '&4&m--------------------------------------------------'
+  - '&cYou were frozen by &l{FREEZER} &cfor &l{TIME}'
+  - '&4&m--------------------------------------------------'
+
+# Messages sent to a player when they are frozen temporarily at a specific location
+temp-freeze-location-message:
+  - '&4&m--------------------------------------------------'
+  - '&cYou were frozen by &l{FREEZER} &cat &l{LOCATION}'
+  - '&cfor &l{TIME}'
+  - '&4&m--------------------------------------------------'
+
+# Messages sent to a player when they are unfrozen
+unfreeze-message:
+  - '&4&m--------------------------------------------------'
+  - '&cYou are now unfrozen'
+  - '&4&m--------------------------------------------------'
+
+# Messages sent to the server when every player is frozen (/freezeall)
+freezeall-message:
+  - '&4&m--------------------------------------------------'
+  - '&cEveryone was frozen by &l{FREEZER}'
+  - '&4&m--------------------------------------------------'
+  
+# Messages sent to the server when every player is frozen (/freezeall)
+unfreezeall-message:
+  - '&4&m--------------------------------------------------'
+  - '&cEveryone was unfrozen by &l{FREEZER}'
+  - '&4&m--------------------------------------------------'
+
+# Messages sent to a player when they are frozen because they joined during a freezeall
+join-on-freezeall-message:
+  - '&4&m--------------------------------------------------'
+  - '&cYou have joined while freezeall is active by {FREEZER}'
+  - '&4&m--------------------------------------------------'
+
+# Messages sent to a player when they attempt to freeze a player but they are not within freeze-radius
+freeze-distance-fail:
+  - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are too far away'
+
+# Messages sent to a player that tries to attack a frozen player
+frozen-attacked-message:
+  - '{PREFIX}You can''t attack &b{PLAYER} &7because they''re frozen'
+  
+# Messages sent to a frozen player that tries to attack another entity
+frozen-attack-message:
+    - '{PREFIX}You can''t attack while frozen'
+
+# Messages sent to a player when they try to use an enderpearl
+enderpearl-message:
+    - '{PREFIX}You can''t use enderpearls while frozen'
+
+# Messages sent to a frozen player that tries to interact with, place, or break blocks
+interact-message:
+  - '{PREFIX}You can''t interact while frozen'
+
+# Messages sent to a frozen player that tries to edit their inventory while frozen
+inventory-message:
+  - '{PREFIX}You may not move this item while frozen'
+
+# Messages sent to a frozen player that tries to drop an item
+item-drop-message:
+  - '{PREFIX}You can''t drop items while frozen'
+
+# Messages sent to players with the sf.notify.frozen permission upon freezing a player
+frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER}'
+
+# Messages sent to players with the sf.notify.frozen permission upon temporarily freezing a player
+temp-frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME}'
+
+# Messages sent to players with the sf.notify.frozen permission upon temporarily freezing a player
+sql-frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7on &b{SERVERS}'
+
+# Messages sent to players with the sf.notify.frozen permission upon temporarily freezing a player
+sql-temp-frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME} &7on &b{SERVERS}'
+
+# Messages sent to players with the sf.notify.unfrozen permission upon freezing a player
+unfrozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{FREEZER}'
+
+# Messages sent to players upon using a blocked command
+blocked-commands-message:
+  - '{PREFIX}You cannot use this command while frozen'
+  
+# Messages sent to players upon attempting to freeze a player that has sf.exempt
+sf-exempt-message:
+  - '{PREFIX}You cannot freeze &b{PLAYER} &7because they are exempt'
+
+# Messages sent to a player upon attempting to freeze a player that is already frozen
+already-frozen:
+  - '{PREFIX}&b{PLAYER} &7is already frozen by &b{FREEZER}'
+
+not-frozen:
+  - '{PREFIX}&b{PLAYER} &7is not frozen'
+
+# Messages sent to players upon using a command they don't have permission for
+no-permission-message:
+  - '&cYou don''t have permission for that'

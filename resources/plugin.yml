@@ -1,0 +1,72 @@
+main: org.plugins.simplefreeze.SimpleFreezeMain
+name: SimpleFreeze
+version: 3.0.0
+author: 7rory768
+description: This plugin allows you to freeze players or everyone at once
+
+commands:
+  simplefreeze:
+    description: Lists commands of Simple Freeze
+    aliases: [sf, sfreeze, simplef]
+  freezeall:
+    description: Freezes all players on the server and freezes player on join while active
+  freeze:
+    description: Freezes a player
+  tempfreeze:
+    description: Temporarily freezes a player
+  unfreeze:
+    description: Unfreezes a player
+  frozen:
+    description: Lists frozen players
+
+permissions:
+  sf.*:
+    description: Gives all SimpleFreeze permissions
+    children:
+      sf.help: true
+      sf.exempt: true
+      sf.reload: true
+      sf.tempfreeze: true
+      sf.freeze: true
+      sf.unfreeze: true
+      sf.notify.leave: true
+      sf.notify.frozen: true
+      sf.notify.unfrozen: true
+      sf.frozen: true
+      sf.freezeall: true
+      sf.exempt.distance: true
+  sf.help:
+    description: Lists all Simple Freeze commands and usage
+    default: true
+  sf.freezeall:
+    description: Freezes all players on the server (except players with the sf.exempt permission)
+    default: op
+  sf.exempt:
+    description: Exempt from being frozen
+    default: op
+  sf.reload:
+    description: Reloads the configuration file
+    default: op
+  sf.notify.frozen:
+    description: Notifies player when someone is frozen
+    default: op
+  sf.notify.leave:
+    description: Notifies player when a frozen player leaves
+  sf.notify.unfrozen:
+    description: Notifies player when someone is unfrozen
+    default: op
+  sf.freeze:
+    description: Freezes a player
+    default: op
+  sf.tempfreeze:
+    description: Freezes a player temporarily
+    default: op
+  sf.unfreeze:
+    description: Unfreezes a player
+    default: op
+  sf.frozen:
+    description: List frozen players
+    default: op
+  sf.exempt.distance:
+    description: Can freeze players from anywhere
+    default: op
