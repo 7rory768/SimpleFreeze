@@ -56,17 +56,9 @@ import java.net.URL;
 
 /* COMMIT CHANGES:
 * CLASSES:
-*   SimpleFreezeMain:
-*     - Cleaned up comments
-*   FreezeManager:
-*     - Added getLocation method
-*   FrozenCommand:
-*     - Setup command
+*  test
 * RESOURCES:
-*   config.yml
-*     - Added {ONLINE} placeholder
-*   plugin.yml
-*     - Added aliases to /frozen
+*
 * */
 
 public class SimpleFreezeMain extends JavaPlugin {
