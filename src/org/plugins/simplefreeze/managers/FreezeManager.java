@@ -26,7 +26,8 @@ public class FreezeManager {
     private final PlayerManager playerManager;
     private final SQLManager sqlManager;
 
-    private ItemStack helmetItem;
+    private ItemStack helmetItem = null;
+    private boolean helmetUsedToBeNull = false;
 
     public FreezeManager(SimpleFreezeMain plugin, PlayerManager playerManager, SQLManager sqlManager) {
         this.plugin = plugin;
@@ -36,42 +37,61 @@ public class FreezeManager {
     }
 
     private void setupHelmetItem() {
-        ItemStack helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.material")), 1, (short) this.plugin.getConfig().getInt("head-item.data"));
-        ItemMeta helmetMeta = helmetItem.getItemMeta();
-        if (this.plugin.getConfig().isSet("head-item.name")) {
-            // More placeholders should be added here (location, freezer, time)
-            // Also allow enchants and itemflags
-            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.name")));
-        }
-        if (this.plugin.getConfig().isSet("head-item.lore")) {
-            List<String> lore = new ArrayList<String>();
-            for (String loreLine : this.plugin.getConfig().getStringList("head-item.lore")) {
-                lore.add(this.plugin.placeholders(loreLine));
+        ItemStack helmetItem = null;
+        if (this.plugin.getConfig().isSet("head-item.material")) {
+            short data = this.plugin.getConfig().isSet("head-item.data") ? (short) this.plugin.getConfig().getInt("head-item.data") : 0;
+            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.material")), 1, data);
+            ItemMeta helmetMeta = helmetItem.getItemMeta();
+            if (this.plugin.getConfig().isSet("head-item.name")) {
+                // Also allow enchants and itemflags
+                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.name")));
             }
-            helmetMeta.setLore(lore);
+            if (this.plugin.getConfig().isSet("head-item.lore")) {
+                List<String> lore = new ArrayList<String>();
+                for (String loreLine : this.plugin.getConfig().getStringList("head-item.lore")) {
+                    lore.add(this.plugin.placeholders(loreLine));
+                }
+                helmetMeta.setLore(lore);
+            }
+            helmetItem.setItemMeta(helmetMeta);
         }
-        helmetItem.setItemMeta(helmetMeta);
         this.helmetItem = helmetItem;
     }
 
     public void updateHelmetItem(ItemStack newHelmetItem) {
+        if (this.helmetItem == null) {
+            this.helmetUsedToBeNull = true;
+        }
         this.helmetItem = newHelmetItem;
     }
 
     public boolean similarToHelmetItem(ItemStack newHelmetItem) {
+        if (newHelmetItem == null && this.helmetItem == null) {
+            return true;
+        } else if ((newHelmetItem == null && this.helmetItem  != null) || (newHelmetItem != null && this.helmetItem == null)) {
+            return false;
+        }
         return this.helmetItem.isSimilar(newHelmetItem);
     }
 
     public void replaceOldHelmets() {
         for (Player p : Bukkit.getServer().getOnlinePlayers()) {
             if (this.playerManager.isFrozen(p)) {
-                p.getInventory().setHelmet(this.helmetItem);
+                if (this.helmetUsedToBeNull && p.getInventory().getHelmet() != null) {
+                    this.playerManager.getFrozenPlayer(p).setHelmet(p.getInventory().getHelmet());
+                }
+                if (this.helmetItem == null && !this.helmetUsedToBeNull) {
+                    p.getInventory().setHelmet(this.playerManager.getFrozenPlayer(p).getHelmet());
+                } else {
+                    p.getInventory().setHelmet(this.helmetItem);
+                }
             }
         }
+        this.helmetUsedToBeNull = false;
     }
 
     public String getLocationName(org.bukkit.Location location) {
-        String locPlaceholder = "Unknown";
+        String locPlaceholder = this.plugin.getConfig().getString("location");
         if (location == null) {
             return locPlaceholder;
         }
@@ -145,7 +165,7 @@ public class FreezeManager {
         Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
         String playerPlaceholder = freezeeName;
         String freezerPlaceholder = freezerName;
-        String locationPlaceholder = location == null ? "" : this.plugin.getConfig().getString("locations." + location + ".placeholder", location);
+        String locationPlaceholder = location == null ? this.plugin.getConfig().getString("location") : this.plugin.getConfig().getString("locations." + location + ".placeholder", location);
         String timePlaceholder = "";
         String serversPlaceholder = "";
 
@@ -226,7 +246,7 @@ public class FreezeManager {
         final Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
         String playerPlaceholder = freezeeName;
         String freezerPlaceholder = freezerName;
-        String locationPlaceholder = location == null ? "" : this.plugin.getConfig().getString("locations." + location + ".placeholder", location);
+        String locationPlaceholder = location == null ? this.plugin.getConfig().getString("location") : this.plugin.getConfig().getString("locations." + location + ".placeholder", location);
         String timePlaceholder = TimeUtil.formatTime(time);
         String serversPlaceholder = "";
 
@@ -337,7 +357,7 @@ public class FreezeManager {
         String freezerPlaceholder = frozenPlayer.getFreezerName();
         String timePlaceholder = "";
         String serversPlaceholder = "";
-        String locationPlaceholder = location == null ? "" : this.plugin.getConfig().getString("locations." + location + ".placeholder", location);
+        String locationPlaceholder = location == null ? this.plugin.getConfig().getString("location") : this.plugin.getConfig().getString("locations." + location + ".placeholder", location);
         String playerMessage;
         String notifyMessage;
         if (frozenPlayer instanceof TempFrozenPlayer) {
