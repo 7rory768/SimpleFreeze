@@ -1,9 +1,9 @@
 package org.plugins.simplefreeze.objects;
 
-import java.util.UUID;
-
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
 
 public class FrozenPlayer {
 
@@ -57,6 +57,8 @@ public class FrozenPlayer {
 	public ItemStack getHelmet() {
 		return this.helmet;
 	}
+
+	public void setHelmet(ItemStack helmet) { this.helmet = helmet; }
 
 	public Location getOriginalLoc() {
 		return this.originalLoc;
