@@ -40,21 +40,25 @@ public class SimpleFreezeCommand implements CommandExecutor {
 
                     this.plugin.reloadConfig();
                     this.plugin.updateFinalPrefixFormatting();
-                    ItemStack newHelmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.material")), 1, (short) this.plugin.getConfig().getInt("head-item.data"));
-                    ItemMeta helmetMeta = newHelmetItem.getItemMeta();
-                    if (this.plugin.getConfig().isSet("head-item.name")) {
-                        // More placeholders should be added here (location, freezer, time)
-                        // Also allow enchants and itemflags
-                        helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.name")));
-                    }
-                    if (this.plugin.getConfig().isSet("head-item.lore")) {
-                        List<String> lore = new ArrayList<String>();
-                        for (String loreLine : this.plugin.getConfig().getStringList("head-item.lore")) {
-                            lore.add(this.plugin.placeholders(loreLine));
+                    ItemStack newHelmetItem = null;
+                    if (this.plugin.getConfig().isSet("head-item.material")) {
+                        short data = this.plugin.getConfig().isSet("head-item.data") ? (short) this.plugin.getConfig().getInt("head-item.data") : 0;
+                        newHelmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmetItem.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.name")) {
+                            // More placeholders should be added here (location, freezer, time)
+                            // Also allow enchants and itemflags
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.name")));
                         }
-                        helmetMeta.setLore(lore);
+                        if (this.plugin.getConfig().isSet("head-item.lore")) {
+                            List<String> lore = new ArrayList<String>();
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.lore")) {
+                                lore.add(this.plugin.placeholders(loreLine));
+                            }
+                            helmetMeta.setLore(lore);
+                        }
+                        newHelmetItem.setItemMeta(helmetMeta);
                     }
-                    newHelmetItem.setItemMeta(helmetMeta);
                     if (!this.freezeManager.similarToHelmetItem(newHelmetItem)) {
                         this.freezeManager.updateHelmetItem(newHelmetItem);
                         this.freezeManager.replaceOldHelmets();
