@@ -22,6 +22,8 @@ import java.net.URL;
  *  - Add option to spawn block below player if they are in the ground or make it so they cannot be kicked for fly/stop anticheat spam
  *  - Titles
  *  - Actionbar
+ *  - On leave give helmet back and on join get rid of it
+ *  - Block projectile shooting (ex. bow shooting, eggs, fishing rod, splash potions)
  *  
  *  TODO: Hopefully
  *  - Hologram above players head on freeze option
@@ -56,9 +58,26 @@ import java.net.URL;
 
 /* COMMIT CHANGES:
 * CLASSES:
-*  test
+*  SimpleFreezeMain
+*    - Added PlayerCommandListener to registerListeners()
+*  PlayerEnderpearlListener
+*    - Initial setup
+*  PlayerInteractListener
+*    - Initial setup
+*  PlayerCommandListener
+*    - Initial setup
+*  PlayerManager
+*    - Added additional methods that use Player parameters instead of UUIDs
+*  FrozenPlayer
+*    - Added setHelmet method
+*  FrozenManager
+*    - Fixed the head-item bug upon /sf reload
+*    - Fixed bug where {LOCATION} did not equal the config placeholder when unknown
+*  SimpleFreezeCommand
+*    - Fixed the head-item bug upon /sf reload
 * RESOURCES:
-*
+*  config.yml:
+*    - Edited default inventory-message
 * */
 
 public class SimpleFreezeMain extends JavaPlugin {
@@ -115,6 +134,7 @@ public class SimpleFreezeMain extends JavaPlugin {
 		plManager.registerEvents(new EntityDamageListener(this, this.playerManager), this);
 		plManager.registerEvents(new InventoryClickListener(this, this.playerManager), this);
 		plManager.registerEvents(new PlayerChatListener(this, this.playerManager), this);
+		plManager.registerEvents(new PlayerCommandListener(this, this.playerManager), this);
 		plManager.registerEvents(new PlayerDropListener(this, this.playerManager), this);
 		plManager.registerEvents(new PlayerEnderpearlListener(this, this.playerManager), this);
 		plManager.registerEvents(new PlayerInteractListener(this, this.playerManager), this);
