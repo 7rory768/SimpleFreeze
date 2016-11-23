@@ -29,7 +29,7 @@
 prefix: '&b&lSimpleFreeze &8\u00BB &7'
 
 # This sets the message held by the {LOCATION} placeholder when there is no actual freeze location; ('' = nothing)
-location: 'unknown'
+location: 'Unknown'
 
 # ||=======================================||
 # ||                 MySQL                 ||
@@ -63,7 +63,7 @@ tp-back: true
 freeze-radius: 0
 
 # Defines what item will be put in the players helmet slot This item will be removed once they are unfrozen (Their current helmet will not be lost)
-# Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-block' and the keys under it)
+# Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-item' and the keys under it)
 head-item:
   material: ICE
   data: 0
@@ -242,9 +242,9 @@ enderpearl-message:
 interact-message:
   - '{PREFIX}You can''t interact while frozen'
 
-# Messages sent to a frozen player that tries to edit their inventory while frozen
+# Messages sent to a frozen player that tries to move their helmet while frozen
 inventory-message:
-  - '{PREFIX}You may not move this item while frozen'
+  - '{PREFIX}You may not move your helmet while frozen'
 
 # Messages sent to a frozen player that tries to drop an item
 item-drop-message:
@@ -271,8 +271,8 @@ unfrozen-notify-message:
   - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{FREEZER}'
 
 # Messages sent to players upon using a blocked command
-blocked-commands-message:
-  - '{PREFIX}You cannot use this command while frozen'
+blocked-command-message:
+  - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
   
 # Messages sent to players upon attempting to freeze a player that has sf.exempt
 sf-exempt-message:
