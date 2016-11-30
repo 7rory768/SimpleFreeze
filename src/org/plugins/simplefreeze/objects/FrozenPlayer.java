@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class FrozenPlayer {
 
-	private final Long date;
+	private final Long freezeDate;
 	private final UUID freezee;
 	private final String freezeeName;
 	private final String freezerName;
@@ -18,8 +18,8 @@ public class FrozenPlayer {
 	private Location freezeLoc = null;
 	private boolean online = false;
 	
-	public FrozenPlayer(Long date, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, boolean online, ItemStack helmet) {
-		this.date = date;
+	public FrozenPlayer(Long freezeDate, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, boolean online, ItemStack helmet) {
+		this.freezeDate = freezeDate;
 		this.freezee = freezer;
 		this.freezeeName = freezeeName;
 		this.freezerName = freezerName;
@@ -32,7 +32,7 @@ public class FrozenPlayer {
 	}
 	
 	public FrozenPlayer(Long date, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, boolean online) {
-		this.date = date;
+		this.freezeDate = date;
 		this.freezee = freezer;
 		this.freezeeName = freezeeName;
 		this.freezerName = freezerName;
@@ -42,8 +42,8 @@ public class FrozenPlayer {
 		this.online = online;
 	}
 
-	public Long getDate() {
-		return this.date;
+	public Long getFreezeDate() {
+		return this.freezeDate;
 	}
 
 	public UUID getFreezee() {
