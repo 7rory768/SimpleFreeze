@@ -29,7 +29,7 @@ public class UnfreezeCommand implements CommandExecutor {
 		
 		if (cmd.getName().equalsIgnoreCase("unfreeze")) {
 			
-			if (!sender.hasPermission("sf.freeze")) {
+			if (!sender.hasPermission("sf.unfreeze")) {
 				sender.sendMessage(this.plugin.getConfig().getString("no-permission-message"));
 				return true;
 			}
