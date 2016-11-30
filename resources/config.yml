@@ -268,7 +268,7 @@ sql-temp-frozen-notify-message:
 
 # Messages sent to players with the sf.notify.unfrozen permission upon freezing a player
 unfrozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{FREEZER}'
+  - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{UNFREEZER}'
 
 # Messages sent to players upon using a blocked command
 blocked-command-message:
