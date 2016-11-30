@@ -8,6 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.FreezeManager;
+import org.plugins.simplefreeze.managers.HelmetManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +17,12 @@ public class SimpleFreezeCommand implements CommandExecutor {
 
     private final SimpleFreezeMain plugin;
     private final FreezeManager freezeManager;
+    private final HelmetManager helmetManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, FreezeManager freezeManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, HelmetManager helmetManager) {
         this.plugin = plugin;
         this.freezeManager = freezeManager;
+        this.helmetManager = helmetManager;
     }
 
     @Override
@@ -30,18 +33,17 @@ public class SimpleFreezeCommand implements CommandExecutor {
             if (args.length > 0) {
 
                 if (args[0].equalsIgnoreCase("reload")) {
-                    if (!sender.hasPermission("simplefreeze.reload")) {
+                    if (!sender.hasPermission("sf.reload")) {
                         sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
                         return false;
                     }
 
                     // REPLACE HELMETS IF THEY CHANGED,
                     // CHANGE PARTICLES IF DIFFERENT
-
                     this.plugin.reloadConfig();
                     this.plugin.updateFinalPrefixFormatting();
                     ItemStack newHelmetItem = null;
-                    if (this.plugin.getConfig().isSet("head-item.material")) {
+                    if (this.plugin.getConfig().isSet("head-item")) {
                         short data = this.plugin.getConfig().isSet("head-item.data") ? (short) this.plugin.getConfig().getInt("head-item.data") : 0;
                         newHelmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.material")), 1, data);
                         ItemMeta helmetMeta = newHelmetItem.getItemMeta();
@@ -59,15 +61,15 @@ public class SimpleFreezeCommand implements CommandExecutor {
                         }
                         newHelmetItem.setItemMeta(helmetMeta);
                     }
-                    if (!this.freezeManager.similarToHelmetItem(newHelmetItem)) {
-                        this.freezeManager.updateHelmetItem(newHelmetItem);
-                        this.freezeManager.replaceOldHelmets();
+                    if (!this.helmetManager.similarToHelmetItem(newHelmetItem)) {
+                        this.helmetManager.updateHelmetItem(newHelmetItem);
+                        this.helmetManager.replaceOldHelmets();
                     }
                     sender.sendMessage(this.plugin.placeholders("{PREFIX}Configuration file reloaded successfully"));
                     return true;
                 }
 
-                if (!sender.hasPermission("simplefreeze.help")) {
+                if (!sender.hasPermission("sf.help")) {
                     sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
                     return false;
                 }
@@ -76,7 +78,7 @@ public class SimpleFreezeCommand implements CommandExecutor {
                 return true;
             }
 
-            if (!sender.hasPermission("simplefreeze.help")) {
+            if (!sender.hasPermission("sf.help")) {
                 sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
                 return false;
             }
