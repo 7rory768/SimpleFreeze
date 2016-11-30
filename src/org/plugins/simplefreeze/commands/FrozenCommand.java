@@ -5,6 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.FreezeManager;
+import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
@@ -15,18 +16,20 @@ public class FrozenCommand implements CommandExecutor {
     private final SimpleFreezeMain plugin;
     private final FreezeManager freezeManager;
     private final PlayerManager playerManager;
+    private final LocationManager locationManager;
 
-    public FrozenCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, PlayerManager playerManager) {
+    public FrozenCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, PlayerManager playerManager, LocationManager locationManager) {
         this.plugin = plugin;
         this.freezeManager = freezeManager;
         this.playerManager = playerManager;
+        this.locationManager = locationManager;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
         if (cmd.getName().equalsIgnoreCase("frozen")) {
-            if (!sender.hasPermission("simplefreeze.frozen")) {
+            if (!sender.hasPermission("sf.frozen")) {
                 sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
                 return false;
             }
@@ -46,7 +49,7 @@ public class FrozenCommand implements CommandExecutor {
                 if (!timePlaceholder.equals("")) {
                     path = "temp-frozen";
                 }
-                String locationPlaceholder = this.freezeManager.getLocationName(frozenPlayer.getFreezeLoc());
+                String locationPlaceholder = this.locationManager.getLocationName(frozenPlayer.getFreezeLoc());
                 if (!locationPlaceholder.equals("Unknown")) {
                     path += "-location";
                 }
