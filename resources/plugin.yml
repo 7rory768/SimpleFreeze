@@ -33,6 +33,7 @@ permissions:
       sf.notify.leave: true
       sf.notify.frozen: true
       sf.notify.unfrozen: true
+      sf.notify.update: true
       sf.frozen: true
       sf.freezeall: true
       sf.exempt.distance: true
@@ -55,6 +56,9 @@ permissions:
     description: Notifies player when a frozen player leaves
   sf.notify.unfrozen:
     description: Notifies player when someone is unfrozen
+    default: op
+  sf.notify.update:
+    description: Notifies player when SimpleFreeze becomes outdated
     default: op
   sf.freeze:
     description: Freezes a player
