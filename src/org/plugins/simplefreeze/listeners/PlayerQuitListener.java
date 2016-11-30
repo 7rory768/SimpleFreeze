@@ -18,7 +18,9 @@ public class PlayerQuitListener implements Listener {
 	
 	@EventHandler
 	public void onQuit(PlayerQuitEvent e) {
-		
+		if (this.playerManager.isFrozen(e.getPlayer())) {
+			e.getPlayer().getInventory().setHelmet(this.playerManager.getFrozenPlayer(e.getPlayer()).getHelmet());
+		}
 	}
 
 }
