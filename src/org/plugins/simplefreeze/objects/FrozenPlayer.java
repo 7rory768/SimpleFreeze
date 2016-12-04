@@ -16,9 +16,8 @@ public class FrozenPlayer {
 	private ItemStack helmet = null;
 	private Location originalLoc = null;
 	private Location freezeLoc = null;
-	private boolean online = false;
 	
-	public FrozenPlayer(Long freezeDate, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, boolean online, ItemStack helmet) {
+	public FrozenPlayer(Long freezeDate, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, ItemStack helmet) {
 		this.freezeDate = freezeDate;
 		this.freezee = freezer;
 		this.freezeeName = freezeeName;
@@ -26,12 +25,11 @@ public class FrozenPlayer {
 		this.originalLoc = originalLoc;
 		this.freezeLoc = freezeLoc;
 		this.sqlFreeze = sqlFreeze;
-		this.online = online;
 		this.helmet = helmet;
 		
 	}
 	
-	public FrozenPlayer(Long date, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, boolean online) {
+	public FrozenPlayer(Long date, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze) {
 		this.freezeDate = date;
 		this.freezee = freezer;
 		this.freezeeName = freezeeName;
@@ -39,7 +37,6 @@ public class FrozenPlayer {
 		this.originalLoc = originalLoc;
 		this.freezeLoc = freezeLoc;
 		this.sqlFreeze = sqlFreeze;
-		this.online = online;
 	}
 
 	public Long getFreezeDate() {
@@ -82,14 +79,6 @@ public class FrozenPlayer {
 	
 	public String getFreezeeName() {
 		return this.freezeeName;
-	}
-
-	public boolean isOnline() {
-		return this.online;
-	}
-
-	public void setOnline(boolean online) {
-		this.online = online;
 	}
 	
 	

@@ -85,7 +85,7 @@ public class TempFreezeCommand implements CommandExecutor {
 					sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + location + " &7is not a valid location, try:"));
 					String locations = "";
 					for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-						locations += locationName + ", ";
+						locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
 					}
 					sender.sendMessage(ChatColor.GRAY + locations.substring(0, locations.length() - 2));
 					return false;
