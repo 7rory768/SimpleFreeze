@@ -1,5 +1,6 @@
 package org.plugins.simplefreeze.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -42,7 +43,7 @@ public class FrozenCommand implements CommandExecutor {
 
             for (FrozenPlayer frozenPlayer : this.playerManager.getFrozenPlayers().values()) {
                 String path = "frozen";
-                String onlinePlaceholder = frozenPlayer.isOnline() ? this.plugin.getConfig().getString("frozen-list-format.online-placeholder") : this.plugin.getConfig().getString("frozen-list-format.offline-placeholder");
+                String onlinePlaceholder = Bukkit.getPlayerExact(frozenPlayer.getFreezeeName()) != null ? this.plugin.getConfig().getString("frozen-list-format.online-placeholder") : this.plugin.getConfig().getString("frozen-list-format.offline-placeholder");
                 String playerPlaceholder = frozenPlayer.getFreezeeName();
                 String freezerPlaceholder = frozenPlayer.getFreezerName();
                 String timePlaceholder = frozenPlayer instanceof TempFrozenPlayer ? TimeUtil.formatTime((((TempFrozenPlayer) frozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L) : "";

@@ -1,7 +1,6 @@
 package org.plugins.simplefreeze.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -82,9 +81,9 @@ public class FreezeCommand implements CommandExecutor {
 					sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + location + " &7is not a valid location, try:"));
 					String locations = "";
 					for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-						locations += locationName + ", ";
+						locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
 					}
-					sender.sendMessage(ChatColor.GRAY + locations.substring(0, locations.length() - 2));
+					sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
 					return false;
 				}
 				this.freezeManager.freeze(uuid, playerName, sender.getName(), location);

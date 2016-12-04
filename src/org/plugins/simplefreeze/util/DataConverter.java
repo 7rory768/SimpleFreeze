@@ -50,7 +50,7 @@ public class DataConverter {
                         if (pUUID.equals(p.getUniqueId())) {
                             SFLocation oldLocation = new SFLocation(p.getWorld(), Double.parseDouble(fileInfo[2]), Double.parseDouble(fileInfo[3]), Double.parseDouble(fileInfo[4]), Float.parseFloat(fileInfo[5]), Float.parseFloat(fileInfo[6]));
                             SFLocation freezeLocation = new SFLocation(p.getLocation());
-                            return new FrozenPlayer(System.currentTimeMillis(), null, p.getName(), "Unknown", oldLocation, freezeLocation, false, true, p.getInventory().getHelmet());
+                            return new FrozenPlayer(System.currentTimeMillis(), null, p.getName(), "Unknown", oldLocation, freezeLocation, false, p.getInventory().getHelmet());
 
                         }
                     }

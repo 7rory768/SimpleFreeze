@@ -34,9 +34,10 @@ public class FreezeManager {
     public void unfreeze(UUID uuid) {
         if (this.playerManager.isFrozen(uuid)) {
             FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(uuid);
-            if (frozenPlayer.isOnline()) {
-                Bukkit.getPlayer(uuid).getInventory().setHelmet(frozenPlayer.getHelmet());
-                Bukkit.getPlayer(uuid).teleport(frozenPlayer.getOriginalLoc());
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                p.getInventory().setHelmet(frozenPlayer.getHelmet());
+                p.teleport(frozenPlayer.getOriginalLoc());
             }
             this.plugin.getPlayerConfig().getConfig().set("players." + uuid.toString(), null);
             this.plugin.getPlayerConfig().saveConfig();
@@ -46,7 +47,6 @@ public class FreezeManager {
     }
 
     public void freeze(UUID freezeeUUID, String freezeeName, String freezerName, String location) {
-        boolean online = false;
         ItemStack helmet = null;
         SFLocation originalLoc = null;
         SFLocation freezeLoc = null;
@@ -77,7 +77,6 @@ public class FreezeManager {
         }
 
         if (onlineFreezee != null) {
-            online = true;
             if (onlineFreezee.getInventory().getHelmet() != null) {
                 helmet = onlineFreezee.getInventory().getHelmet();
             }
@@ -105,12 +104,11 @@ public class FreezeManager {
         this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".mysql", false);
         this.plugin.getPlayerConfig().saveConfig();
         this.plugin.getPlayerConfig().reloadConfig();
-        FrozenPlayer frozenPlayer = new FrozenPlayer(freezeDate, freezeeUUID, freezeeName, freezerName, originalLoc, freezeLoc, false, online, helmet);
+        FrozenPlayer frozenPlayer = new FrozenPlayer(freezeDate, freezeeUUID, freezeeName, freezerName, originalLoc, freezeLoc, false, helmet);
         this.playerManager.addFrozenPlayer(freezeeUUID, frozenPlayer);
     }
 
     public void tempFreeze(final UUID freezeeUUID, final String freezeeName, String freezerName, String location, long time) {
-        boolean online = false;
         ItemStack helmet = null;
         SFLocation originalLoc = null;
         SFLocation freezeLoc = null;
@@ -141,7 +139,6 @@ public class FreezeManager {
         }
 
         if (onlineFreezee != null) {
-            online = true;
             if (onlineFreezee.getInventory().getHelmet() != null) {
                 helmet = onlineFreezee.getInventory().getHelmet();
             }
@@ -171,18 +168,19 @@ public class FreezeManager {
         this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".mysql", false);
         this.plugin.getPlayerConfig().saveConfig();
         this.plugin.getPlayerConfig().reloadConfig();
-        final TempFrozenPlayer tempFrozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, freezeeUUID, freezeeName, freezerName, originalLoc, freezeLoc, false, online, helmet);
+        final TempFrozenPlayer tempFrozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, freezeeUUID, freezeeName, freezerName, originalLoc, freezeLoc, false, helmet);
         BukkitTask task;
         if (!tempFrozenPlayer.isSqlFreeze()) {
             task = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    if (tempFrozenPlayer.isOnline()) {
+                    Player p = Bukkit.getPlayer(freezeeUUID);
+                    if (p != null) {
                         for (String msg : plugin.getConfig().getStringList("unfreeze-message")) {
-                            onlineFreezee.sendMessage(plugin.placeholders(msg).replace("{PLAYER}", freezeeName));
+                            p.sendMessage(plugin.placeholders(msg).replace("{PLAYER}", freezeeName));
                         }
-                        onlineFreezee.getInventory().setHelmet(tempFrozenPlayer.getHelmet());
-                        onlineFreezee.teleport(tempFrozenPlayer.getOriginalLoc());
+                        p.getInventory().setHelmet(tempFrozenPlayer.getHelmet());
+                        p.teleport(tempFrozenPlayer.getOriginalLoc());
                     }
                     plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString(), null);
                     plugin.getPlayerConfig().saveConfig();
