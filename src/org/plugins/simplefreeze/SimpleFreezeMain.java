@@ -42,7 +42,7 @@ import org.plugins.simplefreeze.util.PlayersConfig;
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFICATION THROUGH THE TELEPORT-UP OPTION
- * 
+ *
  * */
 
 /* NMS:
