@@ -1,7 +1,6 @@
 package org.plugins.simplefreeze.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -32,7 +31,11 @@ public class TempFreezeCommand implements CommandExecutor {
 		if (cmd.getName().equalsIgnoreCase("tempfreeze")) {
 
 			if (!sender.hasPermission("sf.tempfreeze")) {
-				sender.sendMessage(this.plugin.getConfig().getString("no-permission-message"));
+				for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+					if (!msg.equals("")) {
+						sender.sendMessage(this.plugin.placeholders(msg));
+					}
+				}
 				return true;
 			}
 
@@ -63,9 +66,11 @@ public class TempFreezeCommand implements CommandExecutor {
 			}
 
 			if (this.playerManager.isFrozen(uuid)) {
+				UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid", "null").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid"));
+				String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
 				for (String msg : this.plugin.getConfig().getStringList("already-frozen")) {
 					if (!msg.equals("")) {
-						sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", this.playerManager.getFrozenPlayer(uuid).getFreezerName())));
+						sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", freezerName)));
 					}
 				}
 				return true;
@@ -74,8 +79,12 @@ public class TempFreezeCommand implements CommandExecutor {
 			long time = TimeUtil.convertToSeconds(args[1]);
 
 			if (args.length == 2) {
-				this.freezeManager.tempFreeze(uuid, playerName, sender.getName(), null, time);
-				this.freezeManager.notifyOfFreeze(sender, uuid, null);
+				this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, null, time);
+				if (onlineP == null) {
+					this.freezeManager.notifyOfFreeze(uuid);
+				} else {
+					this.freezeManager.notifyOfFreeze(this.playerManager.getFrozenPlayer(uuid));
+				}
 				return true;
 			}
 
@@ -87,11 +96,15 @@ public class TempFreezeCommand implements CommandExecutor {
 					for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
 						locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
 					}
-					sender.sendMessage(ChatColor.GRAY + locations.substring(0, locations.length() - 2));
+					sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
 					return false;
 				}
-				this.freezeManager.tempFreeze(uuid, playerName, sender.getName(), location, time);
-				this.freezeManager.notifyOfFreeze(sender, uuid, location);
+				this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, location, time);
+				if (onlineP == null) {
+					this.freezeManager.notifyOfFreeze(uuid);
+				} else {
+					this.freezeManager.notifyOfFreeze(this.playerManager.getFrozenPlayer(uuid));
+				}
 				return true;
 			}
 
