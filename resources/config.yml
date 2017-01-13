@@ -285,15 +285,26 @@ already-frozen:
 not-frozen:
   - '{PREFIX}&b{PLAYER} &7is not frozen'
 
-nobody-frozen: '&7Nobody is frozen'
+nobody-frozen: '{PREFIX}&7Nobody is frozen'
+
+not-an-int: '{PREFIX}&b{INTEGER} &7is not a valid integer'
+
+page-doesnt-exist: '{PREFIX}&bPage {PAGENUM} &7does not exist'
+
+# Message sent to a player if they were frozen offline and this is the first time they join since then
+first-join:
+    frozen: '{PREFIX}You were frozen by &b{FREEZER} &7while you were offline'
+    frozen-location: '{PREFIX}You were frozen at &b{LOCATION} &7by &b{FREEZER} &7while you were offline'
+    temp-frozen: '{PREFIX}You were frozen for &b{TIME} &7by &b{FREEZER} &7while you were offline'
+    temp-frozen-location: '{PREFIX}You were frozen at &b{LOCATION} &7for &b{TIME} &7by &b{FREEZER} &7while you were offline)'
 
 frozen-list-format:
   # Comment out header and/or footer if you don''t need them
-  header: '&8&m--------------------------------------------------'
+  header: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
   formats:
     frozen: '{ONLINE}{PLAYER} &7(Frozen by &b{FREEZER}&7)'
     frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7(Frozen by &b{FREEZER}&7)'
-    temp-frozen: '{ONLINE}{PLAYER} &7 for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
+    temp-frozen: '{ONLINE}{PLAYER} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
     temp-frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
   # If the player thats frozen is online the {ONLINE}
   # placeholder will become the string you set below
@@ -301,7 +312,8 @@ frozen-list-format:
   # If the player thats frozen is offline the {ONLINE}
   # placeholder will become the string you set below
   offline-placeholder: '&c'
-  footer: '&8&m--------------------------------------------------'
+  footer: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
+  players-per-page: 5
 
 # Messages sent to players upon using a command they don't have permission for
 no-permission-message:
