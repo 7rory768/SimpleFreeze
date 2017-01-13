@@ -21,8 +21,6 @@ public class DataConverter {
                     String text = scan.nextLine();
                     String[] fileInfo = text.split(",\\s+");
                     UUID pUUID = UUID.fromString(fileInfo[1]);
-                    Bukkit.broadcastMessage(fileInfo[1]);
-                    Bukkit.broadcastMessage(pUUID.toString());
                     if (pUUID.equals(p.getUniqueId())) {
                         return true;
                     }
@@ -50,7 +48,8 @@ public class DataConverter {
                         if (pUUID.equals(p.getUniqueId())) {
                             SFLocation oldLocation = new SFLocation(p.getWorld(), Double.parseDouble(fileInfo[2]), Double.parseDouble(fileInfo[3]), Double.parseDouble(fileInfo[4]), Float.parseFloat(fileInfo[5]), Float.parseFloat(fileInfo[6]));
                             SFLocation freezeLocation = new SFLocation(p.getLocation());
-                            return new FrozenPlayer(System.currentTimeMillis(), null, p.getName(), "Unknown", oldLocation, freezeLocation, false, p.getInventory().getHelmet());
+                            return new FrozenPlayer(System.currentTimeMillis(), p.getUniqueId(), null, oldLocation, freezeLocation, false, p.getInventory().getHelmet
+                                    ());
 
                         }
                     }
@@ -80,7 +79,9 @@ public class DataConverter {
                     }
                 }
                 scan.close();
-                text = text.substring(0, text.length() - 2);
+                if (text.length() > 1) {
+                    text = text.substring(0, text.length() - 2);
+                }
                 PrintWriter clearer = new PrintWriter(DataConverter.file);
                 clearer.close();
                 FileWriter txtWriter = new FileWriter(DataConverter.file, true);
