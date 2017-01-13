@@ -1,5 +1,6 @@
 package org.plugins.simplefreeze.objects;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
@@ -7,79 +8,81 @@ import java.util.UUID;
 
 public class FrozenPlayer {
 
-	private final Long freezeDate;
-	private final UUID freezee;
-	private final String freezeeName;
-	private final String freezerName;
-	private final boolean sqlFreeze;
+    private final Long freezeDate;
+    private final UUID freezeeUUID;
+    private final UUID freezerUUID;
+    private final boolean sqlFreeze;
 
-	private ItemStack helmet = null;
-	private Location originalLoc = null;
-	private Location freezeLoc = null;
-	
-	public FrozenPlayer(Long freezeDate, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze, ItemStack helmet) {
-		this.freezeDate = freezeDate;
-		this.freezee = freezer;
-		this.freezeeName = freezeeName;
-		this.freezerName = freezerName;
-		this.originalLoc = originalLoc;
-		this.freezeLoc = freezeLoc;
-		this.sqlFreeze = sqlFreeze;
-		this.helmet = helmet;
-		
-	}
-	
-	public FrozenPlayer(Long date, UUID freezer, String freezeeName, String freezerName, Location originalLoc, Location freezeLoc, boolean sqlFreeze) {
-		this.freezeDate = date;
-		this.freezee = freezer;
-		this.freezeeName = freezeeName;
-		this.freezerName = freezerName;
-		this.originalLoc = originalLoc;
-		this.freezeLoc = freezeLoc;
-		this.sqlFreeze = sqlFreeze;
-	}
+    private ItemStack helmet = null;
+    private Location originalLoc = null;
+    private Location freezeLoc = null;
 
-	public Long getFreezeDate() {
-		return this.freezeDate;
-	}
+    public FrozenPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, boolean sqlFreeze, ItemStack helmet) {
+        this.freezeDate = freezeDate;
+        this.freezeeUUID = freezeeUUID;
+        this.freezerUUID = freezerUUID;
+        this.originalLoc = originalLoc;
+        this.freezeLoc = freezeLoc;
+        this.sqlFreeze = sqlFreeze;
+        this.helmet = helmet;
 
-	public UUID getFreezee() {
-		return this.freezee;
-	}
+    }
 
-	public boolean isSqlFreeze() {
-		return this.sqlFreeze;
-	}
+    public FrozenPlayer(Long date, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, boolean sqlFreeze) {
+        this.freezeDate = date;
+        this.freezeeUUID = freezeeUUID;
+        this.freezerUUID = freezerUUID;
+        this.originalLoc = originalLoc;
+        this.freezeLoc = freezeLoc;
+        this.sqlFreeze = sqlFreeze;
+    }
 
-	public ItemStack getHelmet() {
-		return this.helmet;
-	}
+    public Long getFreezeDate() {
+        return this.freezeDate;
+    }
 
-	public void setHelmet(ItemStack helmet) { this.helmet = helmet; }
+    public UUID getFreezeeUUID() {
+        return this.freezeeUUID;
+    }
 
-	public Location getOriginalLoc() {
-		return this.originalLoc;
-	}
+    public UUID getFreezerUUID() {
+        return this.freezerUUID;
+    }
 
-	public void setOriginalLoc(Location originalLoc) {
-		this.originalLoc = originalLoc;
-	}
+    public String getFreezeeName() {
+        return Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
+    }
 
-	public Location getFreezeLoc() {
-		return freezeLoc;
-	}
+    public String getFreezerName() {
+        return freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+    }
 
-	public void setFreezeLoc(Location freezeLoc) {
-		this.freezeLoc = freezeLoc;
-	}
-	
-	public String getFreezerName() {
-		return this.freezerName;
-	}
-	
-	public String getFreezeeName() {
-		return this.freezeeName;
-	}
-	
-	
+    public boolean isSqlFreeze() {
+        return this.sqlFreeze;
+    }
+
+    public ItemStack getHelmet() {
+        return this.helmet;
+    }
+
+    public void setHelmet(ItemStack helmet) {
+        this.helmet = helmet;
+    }
+
+    public Location getOriginalLoc() {
+        return this.originalLoc;
+    }
+
+    public void setOriginalLoc(Location originalLoc) {
+        this.originalLoc = originalLoc;
+    }
+
+    public Location getFreezeLoc() {
+        return freezeLoc;
+    }
+
+    public void setFreezeLoc(Location freezeLoc) {
+        this.freezeLoc = freezeLoc;
+    }
+
 }
