@@ -1,29 +1,19 @@
 package org.plugins.simplefreeze.commands;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.plugins.simplefreeze.SimpleFreezeMain;
-import org.plugins.simplefreeze.managers.FreezeManager;
-import org.plugins.simplefreeze.managers.LocationManager;
-import org.plugins.simplefreeze.managers.PlayerManager;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
-import org.plugins.simplefreeze.objects.TempFrozenPlayer;
-import org.plugins.simplefreeze.util.TimeUtil;
+import org.plugins.simplefreeze.cache.FrozenPages;
 
 public class FrozenCommand implements CommandExecutor {
 
     private final SimpleFreezeMain plugin;
-    private final FreezeManager freezeManager;
-    private final PlayerManager playerManager;
-    private final LocationManager locationManager;
+    private final FrozenPages frozenPages;
 
-    public FrozenCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, PlayerManager playerManager, LocationManager locationManager) {
+    public FrozenCommand(SimpleFreezeMain plugin, FrozenPages frozenPages) {
         this.plugin = plugin;
-        this.freezeManager = freezeManager;
-        this.playerManager = playerManager;
-        this.locationManager = locationManager;
+        this.frozenPages = frozenPages;
     }
 
     @Override
@@ -31,39 +21,51 @@ public class FrozenCommand implements CommandExecutor {
 
         if (cmd.getName().equalsIgnoreCase("frozen")) {
             if (!sender.hasPermission("sf.frozen")) {
-                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
+                for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                    if (!msg.equals("")) {
+                        sender.sendMessage(this.plugin.placeholders(msg));
+                    }
+                }
                 return false;
             }
 
-            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format.header")));
+            int page = 1;
+            if (args.length > 0) {
+                if (!this.isInt(args[0])) {
+                    sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("not-an-int").replace("{INTEGER}", args[0])));
+                    return false;
+                }
+                page = Integer.parseInt(args[0]);
+            }
 
-            if (this.playerManager.getFrozenPlayers().isEmpty()) {
+            if (this.frozenPages.noPages()) {
                 sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("nobody-frozen")));
+                return false;
             }
 
-            for (FrozenPlayer frozenPlayer : this.playerManager.getFrozenPlayers().values()) {
-                String path = "frozen";
-                String onlinePlaceholder = Bukkit.getPlayerExact(frozenPlayer.getFreezeeName()) != null ? this.plugin.getConfig().getString("frozen-list-format.online-placeholder") : this.plugin.getConfig().getString("frozen-list-format.offline-placeholder");
-                String playerPlaceholder = frozenPlayer.getFreezeeName();
-                String freezerPlaceholder = frozenPlayer.getFreezerName();
-                String timePlaceholder = frozenPlayer instanceof TempFrozenPlayer ? TimeUtil.formatTime((((TempFrozenPlayer) frozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L) : "";
-                if (!timePlaceholder.equals("")) {
-                    path = "temp-frozen";
-                }
-                String locationPlaceholder = this.locationManager.getLocationName(frozenPlayer.getFreezeLoc());
-                if (!locationPlaceholder.equals("Unknown")) {
-                    path += "-location";
-                }
-
-                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format.formats." + path).replace("{ONLINE}", onlinePlaceholder).replace("{PLAYER}",
-                        playerPlaceholder).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{FREEZER}", freezerPlaceholder)));
+            if (page > this.frozenPages.getMaxPageNum()) {
+                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("page-doesnt-exist").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+                return false;
             }
 
-            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format.footer")));
+
+            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".header").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+            sender.sendMessage(this.frozenPages.getPage(page));
+            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".footer")));
             return true;
         }
 
         return false;
+    }
+
+    private boolean isInt(String arg) {
+        try {
+            Integer.parseInt(arg);
+        }
+        catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
     }
 
 }
