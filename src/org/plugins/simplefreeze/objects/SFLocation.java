@@ -23,7 +23,12 @@ public class SFLocation extends org.bukkit.Location {
     }
 
     public static SFLocation fromString(String arg) {
-        String[] info = arg.split("|");
+        if (arg == null) {
+            return null;
+        } else if (arg.equals("null")) {
+            return null;
+        }
+        String[] info = arg.split("\\|");
         return new SFLocation(Bukkit.getWorld(info[0]), Double.parseDouble(info[1]), Double.parseDouble(info[2]), Double.parseDouble(info[3]), Float.parseFloat(info[4]), Float.parseFloat(info[5]));
     }
 
