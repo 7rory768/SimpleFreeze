@@ -1,5 +1,6 @@
 package org.plugins.simplefreeze.managers;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -18,39 +19,33 @@ public class LocationManager {
     }
 
     public String getLocationName(org.bukkit.Location location) {
-        String locPlaceholder = this.plugin.getConfig().getString("location");
         if (location == null) {
-            return locPlaceholder;
+            return null;
         }
 
         World world = location.getWorld();
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
-        double yaw = location.getYaw();
-        double pitch = location.getPitch();
+        float yaw = location.getYaw();
+        float pitch = location.getPitch();
 
         for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-            if (this.plugin.getConfig().getString("locations." + locationName + ".worldname").equals(world.getName()) && this.plugin.getConfig().getDouble("locations." +
-                    locationName + ".x") == x && this.plugin.getConfig().getDouble("locations." + locationName + ".y") == y && this.plugin.getConfig().getDouble("locations." + locationName + ".z") == z) {
-                locPlaceholder = this.plugin.getConfig().getString("locations." + locationName + ".placeholder", locationName);
-                if (this.plugin.getConfig().isSet("locations." + locationName + ".yaw") && this.plugin.getConfig().isSet("locations." + locationName + ".pitch")) {
-                    if (Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) == yaw && Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) == pitch) {
-                        return locPlaceholder;
-                    }
-                } else if (this.plugin.getConfig().isSet("locations." + locationName + ".yaw") && !this.plugin.getConfig().isSet("locations." + locationName + ".pitch")) {
-                    if (Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) == yaw) {
-                        return locPlaceholder;
-                    }
-                } else if (!this.plugin.getConfig().isSet("locations." + locationName + ".yaw") && this.plugin.getConfig().isSet("locations." + locationName + ".pitch")) {
-                    if (Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) == pitch) {
-                        return locPlaceholder;
-                    }
-                }
+            World locationWorld = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + locationName + ".worldname"));
+            double locationX = this.plugin.getConfig().getDouble("locations." + locationName + ".x");
+            double locationY = this.plugin.getConfig().getDouble("locations." + locationName + ".y");
+            double locationZ = this.plugin.getConfig().getDouble("locations." + locationName + ".z");
+            float locationYaw = this.plugin.getConfig().isSet("locations." + locationName + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) : yaw;
+            float locationPitch = this.plugin.getConfig().isSet("locations." + locationName + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) : pitch;
+            if (world.getName().equals(locationWorld.getName()) && x == locationX && y == locationY && z == locationZ && yaw == locationYaw && pitch == locationPitch) {
+                return locationName;
             }
         }
+        return null;
+    }
 
-        return locPlaceholder;
+    public String getLocationPlaceholder(String locationName) {
+        return this.plugin.getConfig().getString("locations." + locationName + ".placeholder", this.plugin.getConfig().getString("location"));
     }
 
     public SFLocation getHighestAirLocation(SFLocation pLoc) {
