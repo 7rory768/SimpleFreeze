@@ -30,7 +30,11 @@ public class UnfreezeCommand implements CommandExecutor {
 		if (cmd.getName().equalsIgnoreCase("unfreeze")) {
 			
 			if (!sender.hasPermission("sf.unfreeze")) {
-				sender.sendMessage(this.plugin.getConfig().getString("no-permission-message"));
+				for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+					if (!msg.equals("")) {
+						sender.sendMessage(this.plugin.placeholders(msg));
+					}
+				}
 				return true;
 			}
 			
@@ -39,8 +43,8 @@ public class UnfreezeCommand implements CommandExecutor {
 				return true;
 			}
 			
-			String playerName = "";
-			UUID uuid = null;
+			String playerName;
+			UUID uuid;
 			Player onlineP = Bukkit.getPlayer(args[0]);
 			OfflinePlayer offlineP = Bukkit.getOfflinePlayer(args[0]);
 			
@@ -59,7 +63,7 @@ public class UnfreezeCommand implements CommandExecutor {
 				sender.sendMessage(this.plugin.placeholders("{PREFIX}&b{PLAYER} " + this.plugin.getFinalPrefixFormatting() + "has never played this server before").replace("{PLAYER}", args[0]));
 				return true;
 			}
-			
+
 			if (!this.playerManager.isFrozen(uuid)) {
 				for (String msg : this.plugin.getConfig().getStringList("not-frozen")) {
 					if (!msg.equals("")) {
@@ -69,7 +73,7 @@ public class UnfreezeCommand implements CommandExecutor {
 				return true;
 			}
 			
-			this.freezeManager.notifyOfUnfreeze(sender, uuid);
+			this.freezeManager.notifyOfUnfreeze(sender, uuid, playerName);
 			this.freezeManager.unfreeze(uuid);
 			return true;
 		}
