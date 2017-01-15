@@ -1,6 +1,7 @@
 package org.plugins.simplefreeze.managers;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -40,6 +41,29 @@ public class LocationManager {
             if (world.getName().equals(locationWorld.getName()) && x == locationX && y == locationY && z == locationZ && yaw == locationYaw && pitch == locationPitch) {
                 return locationName;
             }
+        }
+        return null;
+    }
+
+    public SFLocation getSFLocation(String locName) {
+        Location loc = this.getLocation(locName);
+        if (loc != null) {
+            return new SFLocation(loc);
+        } else {
+            return null;
+        }
+    }
+
+    public Location getLocation(String locName) {
+        if (this.plugin.getConfig().isSet("locations." + locName) && this.plugin.getConfig().isSet("locations." + locName + ".worldname") && this.plugin.getConfig().isSet("locations." + locName + ".x")
+                && this.plugin.getConfig().isSet("locations." + locName + ".y") && this.plugin.getConfig().isSet("locations." + locName + ".z")) {
+            World world = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + locName + ".worldname"));
+            double x = this.plugin.getConfig().getDouble("locations." + locName + ".x");
+            double y = this.plugin.getConfig().getDouble("locations." + locName + ".y");
+            double z = this.plugin.getConfig().getDouble("locations." + locName + ".z");
+            float yaw = this.plugin.getConfig().isSet("locations." + locName + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locName + ".yaw")) : (float) 0.0;
+            float pitch = this.plugin.getConfig().isSet("locations." + locName + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locName + ".pitch")) : (float) 0.0;
+            return new Location(world, x, y, z, yaw, pitch);
         }
         return null;
     }
