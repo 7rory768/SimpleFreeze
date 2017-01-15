@@ -48,10 +48,9 @@ public class FrozenCommand implements CommandExecutor {
                 return false;
             }
 
-
             sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".header").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
             sender.sendMessage(this.frozenPages.getPage(page));
-            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".footer")));
+            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".footer").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
             return true;
         }
 
