@@ -1,13 +1,13 @@
 package org.plugins.simplefreeze.managers;
 
 import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
+import org.plugins.simplefreeze.objects.FreezeAllPlayer;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
@@ -24,6 +24,8 @@ public class FreezeManager {
     private final SQLManager sqlManager;
     private final FrozenPages frozenPages;
 
+    private boolean freezeAll = false;
+
     public FreezeManager(SimpleFreezeMain plugin, PlayerManager playerManager, HelmetManager helmetManager, LocationManager locationManager, SQLManager sqlManager, FrozenPages frozenPages) {
         this.plugin = plugin;
         this.playerManager = playerManager;
@@ -38,7 +40,11 @@ public class FreezeManager {
             FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(uuid);
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
-                p.getInventory().setHelmet(frozenPlayer.getHelmet());
+                if (frozenPlayer.getHelmet() != null) {
+                    p.getInventory().setHelmet(frozenPlayer.getHelmet());
+                } else {
+                    p.getInventory().setHelmet(null);
+                }
                 p.teleport(frozenPlayer.getOriginalLoc());
                 if (this.plugin.getConfig().getBoolean("enable-fly")) {
                     p.setAllowFlight(false);
@@ -52,6 +58,100 @@ public class FreezeManager {
         }
     }
 
+    public boolean freezeAllActive() {
+        return this.freezeAll;
+    }
+
+    public void freezeAll(UUID freezerUUID, String location) {
+        String locPlaceholder = this.locationManager.getLocationPlaceholder(location);
+        this.plugin.getPlayerConfig().getConfig().set("freezeall", true);
+        this.plugin.getPlayerConfig().saveConfig();
+        this.plugin.getPlayerConfig().reloadConfig();
+        this.freezeAll = true;
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            if (!this.playerManager.isFrozen(p.getUniqueId())) {
+                if (!p.hasPermission("sf.exempt")) {
+                    UUID freezeeUUID = p.getUniqueId();
+                    ItemStack helmet = null;
+                    SFLocation originalLoc = null;
+                    SFLocation freezeLoc = null;
+                    String freezeeName = Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
+                    String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+
+                    if (location != null) {
+                        freezeLoc = this.locationManager.getSFLocation(location);
+                        if (!this.plugin.getConfig().isSet("locations." + location + ".yaw") && p != null) {
+                            freezeLoc.setYaw(p.getLocation().getYaw());
+                        }
+                        if (!this.plugin.getConfig().isSet("locations." + location + ".pitch") && p != null) {
+                            freezeLoc.setPitch(p.getLocation().getPitch());
+                        }
+                    }
+
+                    if (p != null) {
+                        if (p.getInventory().getHelmet() != null) {
+                            helmet = p.getInventory().getHelmet();
+                        }
+                        p.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(freezeeName, freezerName, location, null));
+                        originalLoc = new SFLocation(p.getLocation());
+                        if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
+                            freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
+                        } else if (freezeLoc == null) {
+                            freezeLoc = new SFLocation(originalLoc.clone());
+                            if (this.plugin.getConfig().getBoolean("enable-fly")) {
+                                p.setAllowFlight(true);
+                                p.setFlying(true);
+                            }
+                        }
+                        if (!freezeLoc.equals(originalLoc)) {
+                            p.teleport(freezeLoc);
+                        }
+                    }
+
+                    long freezeDate = System.currentTimeMillis();
+                    this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString() + ".freeze-date", freezeDate);
+                    this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString() + ".freezer-uuid", freezerName.equals("CONSOLE") ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
+                    this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString() + ".original-location", originalLoc == null ? "null" : originalLoc.toString());
+                    this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString() + ".freeze-location", freezeLoc == null ? "null" : freezeLoc.toString());
+                    this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString() + ".mysql", false);
+                    if (p == null) {
+                        this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString() + ".message", true);
+                    }
+                    this.plugin.getPlayerConfig().saveConfig();
+                    this.plugin.getPlayerConfig().reloadConfig();
+
+                    if (p != null) {
+                        FreezeAllPlayer freezeAllPlayer = new FreezeAllPlayer(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
+                        this.playerManager.addFrozenPlayer(freezeeUUID, freezeAllPlayer);
+                    }
+                }
+            }
+        }
+    }
+
+    public void unfreezeAll() {
+        this.plugin.getPlayerConfig().getConfig().set("freezeall", false);
+        this.plugin.getPlayerConfig().saveConfig();
+        this.plugin.getPlayerConfig().reloadConfig();
+        this.freezeAll = false;
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            UUID uuid = p.getUniqueId();
+            if (this.playerManager.isFrozen(uuid) && this.playerManager.isFreezeAllFrozen(uuid)) {
+                FreezeAllPlayer freezeAllPlayer = (FreezeAllPlayer) this.playerManager.getFrozenPlayer(uuid);
+                p.getInventory().setHelmet(freezeAllPlayer.getHelmet());
+                p.teleport(freezeAllPlayer.getOriginalLoc());
+                if (this.plugin.getConfig().getBoolean("enable-fly")) {
+                    p.setAllowFlight(false);
+                    p.setFlying(false);
+                }
+                this.playerManager.removeFrozenPlayer(uuid);
+            }
+        }
+        this.plugin.getPlayerConfig().getConfig().set("freezeall-players", null);
+        this.plugin.getPlayerConfig().saveConfig();
+        this.plugin.getPlayerConfig().reloadConfig();
+    }
+
     public void freeze(UUID freezeeUUID, UUID freezerUUID, String location) {
         ItemStack helmet = null;
         SFLocation originalLoc = null;
@@ -62,21 +162,12 @@ public class FreezeManager {
                 (freezerUUID).getName();
 
         if (location != null) {
-            if (this.plugin.getConfig().isSet("locations." + location) && this.plugin.getConfig().isSet("locations." + location + ".worldname") && this.plugin.getConfig().isSet("locations." + location + ".x")
-                    && this.plugin.getConfig().isSet("locations." + location + ".y") && this.plugin.getConfig().isSet("locations." + location + ".z")) {
-                World world = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + location + ".worldname"));
-                double x = this.plugin.getConfig().getDouble("locations." + location + ".x");
-                double y = this.plugin.getConfig().getDouble("locations." + location + ".y");
-                double z = this.plugin.getConfig().getDouble("locations." + location + ".z");
-                float yaw = this.plugin.getConfig().isSet("locations." + location + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + location + ".yaw")) : (float) 0.0;
-                if (!this.plugin.getConfig().isSet("locations." + location + ".yaw") && onlineFreezee != null) {
-                    yaw = onlineFreezee.getLocation().getYaw();
-                }
-                float pitch = this.plugin.getConfig().isSet("locations." + location + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + location + ".pitch")) : (float) 0.0;
-                if (!this.plugin.getConfig().isSet("locations." + location + ".pitch") && onlineFreezee != null) {
-                    pitch = onlineFreezee.getLocation().getPitch();
-                }
-                freezeLoc = new SFLocation(world, x, y, z, yaw, pitch);
+            freezeLoc = this.locationManager.getSFLocation(location);
+            if (!this.plugin.getConfig().isSet("locNames." + location + ".yaw") && onlineFreezee != null) {
+                freezeLoc.setYaw(onlineFreezee.getLocation().getYaw());
+            }
+            if (!this.plugin.getConfig().isSet("locNames." + location + ".pitch") && onlineFreezee != null) {
+                freezeLoc.setPitch(onlineFreezee.getLocation().getPitch());
             }
         }
 
@@ -88,8 +179,7 @@ public class FreezeManager {
             originalLoc = new SFLocation(onlineFreezee.getLocation());
             if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
                 freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
-            }
-            else if (freezeLoc == null) {
+            } else if (freezeLoc == null) {
                 freezeLoc = new SFLocation(originalLoc.clone());
                 if (this.plugin.getConfig().getBoolean("enable-fly")) {
                     onlineFreezee.setAllowFlight(true);
@@ -116,8 +206,7 @@ public class FreezeManager {
         if (onlineFreezee != null) {
             FrozenPlayer frozenPlayer = new FrozenPlayer(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
             this.playerManager.addFrozenPlayer(freezeeUUID, frozenPlayer);
-        }
-        else {
+        } else {
             this.frozenPages.refreshString(freezeeUUID);
         }
     }
@@ -132,21 +221,14 @@ public class FreezeManager {
                 (freezerUUID).getName();
 
         if (location != null) {
-            if (this.plugin.getConfig().isSet("locations." + location) && this.plugin.getConfig().isSet("locations." + location + ".worldname") && this.plugin.getConfig().isSet("locations." + location + ".x")
-                    && this.plugin.getConfig().isSet("locations." + location + ".y") && this.plugin.getConfig().isSet("locations." + location + ".z")) {
-                World world = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + location + ".worldname"));
-                double x = this.plugin.getConfig().getDouble("locations." + location + ".x");
-                double y = this.plugin.getConfig().getDouble("locations." + location + ".y");
-                double z = this.plugin.getConfig().getDouble("locations." + location + ".z");
-                float yaw = this.plugin.getConfig().isSet("locations." + location + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + location + ".yaw")) : (float) 0.0;
-                if (!this.plugin.getConfig().isSet("locations." + location + ".yaw") && onlineFreezee != null) {
-                    yaw = onlineFreezee.getLocation().getYaw();
+            if (location != null) {
+                freezeLoc = this.locationManager.getSFLocation(location);
+                if (!this.plugin.getConfig().isSet("locNames." + location + ".yaw") && onlineFreezee != null) {
+                    freezeLoc.setYaw(onlineFreezee.getLocation().getYaw());
                 }
-                float pitch = this.plugin.getConfig().isSet("locations." + location + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + location + ".pitch")) : (float) 0.0;
-                if (!this.plugin.getConfig().isSet("locations." + location + ".pitch") && onlineFreezee != null) {
-                    pitch = onlineFreezee.getLocation().getPitch();
+                if (!this.plugin.getConfig().isSet("locNames." + location + ".pitch") && onlineFreezee != null) {
+                    freezeLoc.setPitch(onlineFreezee.getLocation().getPitch());
                 }
-                freezeLoc = new SFLocation(world, x, y, z, yaw, pitch);
             }
         }
 
@@ -158,8 +240,7 @@ public class FreezeManager {
             originalLoc = new SFLocation(onlineFreezee.getLocation());
             if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
                 freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
-            }
-            else if (freezeLoc == null) {
+            } else if (freezeLoc == null) {
                 freezeLoc = new SFLocation(originalLoc.clone());
                 if (this.plugin.getConfig().getBoolean("enable-fly")) {
                     onlineFreezee.setAllowFlight(true);
@@ -188,8 +269,7 @@ public class FreezeManager {
         if (onlineFreezee != null) {
             tempFrozenPlayer.startTask(this.plugin);
             this.playerManager.addFrozenPlayer(freezeeUUID, tempFrozenPlayer);
-        }
-        else {
+        } else {
             this.frozenPages.refreshString(freezeeUUID);
         }
         new BukkitRunnable() {
@@ -206,7 +286,8 @@ public class FreezeManager {
         UUID freezerUUID;
         try {
             freezerUUID = UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + freezeeUUID.toString() + ".freezer-uuid"));
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             freezerUUID = null;
         }
         Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
@@ -227,8 +308,7 @@ public class FreezeManager {
             if (this.plugin.getPlayerConfig().getConfig().getBoolean("players." + freezeeUUID.toString() + ".mysql")) {
                 notifyPath = "sql-temp-frozen-notify-message";
             }
-        }
-        else {
+        } else {
             playerPath = "freeze-message";
             if (location != null) {
                 playerPath = "freeze-location-message";
@@ -251,8 +331,7 @@ public class FreezeManager {
             if (!msg.equals("")) {
                 if (freezerP != null) {
                     freezerP.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
-                }
-                else {
+                } else {
                     Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
                 }
             }
@@ -264,8 +343,7 @@ public class FreezeManager {
                         if (freezerP != null) {
                             freezerP.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}",
                                     timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
-                        }
-                        else {
+                        } else {
                             Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}",
                                     timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
                         }
@@ -295,8 +373,7 @@ public class FreezeManager {
             if (frozenPlayer.isSqlFreeze()) {
                 notifyPath = "sql-temp-frozen-notify-message";
             }
-        }
-        else {
+        } else {
             playerPath = "freeze-message";
             if (location != null) {
                 playerPath = "freeze-location-message";
@@ -319,8 +396,7 @@ public class FreezeManager {
             if (!msg.equals("")) {
                 if (freezerP != null) {
                     freezerP.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
-                }
-                else {
+                } else {
                     Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
                 }
             }
@@ -332,8 +408,7 @@ public class FreezeManager {
                         if (freezerP != null) {
                             freezerP.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}",
                                     timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
-                        }
-                        else {
+                        } else {
                             Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}",
                                     timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
                         }
@@ -369,6 +444,28 @@ public class FreezeManager {
                     }
                 }
             }
+        }
+    }
+
+    public void notifyOfFreezeAll(UUID freezerUUID, String location) {
+        String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+        if (location != null) {
+            String locPlaceholder = this.locationManager.getLocationPlaceholder(location);
+            for (String msg : this.plugin.getConfig().getStringList("freezeall-location-message")) {
+                Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName)));
+            }
+        } else {
+            for (String msg : this.plugin.getConfig().getStringList("freezeall-message")) {
+                Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName)));
+            }
+        }
+    }
+
+    public void notifyOfUnfreezeAll(UUID unfreezerUUID) {
+        String unfreezerName = unfreezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(unfreezerUUID) == null ? Bukkit.getOfflinePlayer(unfreezerUUID).getName() : Bukkit.getPlayer(unfreezerUUID).getName();
+        for (String msg : this.plugin.getConfig().getStringList("unfreezeall-message")) {
+            Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName)));
+
         }
     }
 

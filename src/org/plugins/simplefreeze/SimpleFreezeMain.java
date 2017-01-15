@@ -112,8 +112,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                 this.getPlayerConfig().reloadConfig();
                 DataConverter.removeData(p);
                 this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
-            }
-            else if (this.getPlayerConfig().getConfig().isSet("players." + uuidStr)) {
+            } else if (this.getPlayerConfig().getConfig().isSet("players." + uuidStr)) {
                 Long freezeDate = this.getPlayerConfig().getConfig().getLong("players." + uuidStr + ".freeze-date");
                 UUID freezerUUID = this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freezer-uuid").equals("null") ? null : UUID.fromString(this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freezer-uuid"));
                 String freezeeName = this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freezee-name");
@@ -127,8 +126,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                         frozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, sqlFreeze);
                         ((TempFrozenPlayer) frozenPlayer).startTask(this);
                         this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
-                    }
-                    else if (!getPlayerConfig().getConfig().getBoolean("players." + uuidStr + ".mysql", false)) {
+                    } else if (!getPlayerConfig().getConfig().getBoolean("players." + uuidStr + ".mysql", false)) {
                         frozenPlayer = null;
                         getPlayerConfig().getConfig().set("players." + uuidStr, null);
                         getPlayerConfig().saveConfig();
@@ -141,8 +139,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                                 }
                             }
                         }.runTaskLater(this, 1L);
-                    }
-                    else {
+                    } else {
                         frozenPlayer = null;
                         new BukkitRunnable() {
                             @Override
@@ -151,13 +148,11 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                         }.runTaskLater(this, 1L);
                     }
-                }
-                else {
+                } else {
                     frozenPlayer = new FrozenPlayer(freezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, sqlFreeze);
                     this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
                 }
-            }
-            else {
+            } else {
                 frozenPlayer = null;
             }
 
@@ -177,8 +172,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                             Location freezeLoc = null;
                             if (freezeLoc == null && getConfig().getBoolean("teleport-up")) {
                                 freezeLoc = locationManager.getHighestAirLocation(originalLoc);
-                            }
-                            else if (freezeLoc == null) {
+                            } else if (freezeLoc == null) {
                                 freezeLoc = new SFLocation(originalLoc.clone());
                                 if (getConfig().getBoolean("enable-fly")) {
                                     p.setAllowFlight(true);
@@ -201,8 +195,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                                 if (location != null) {
                                     path = "first-join.temp-frozen-location";
                                 }
-                            }
-                            else {
+                            } else {
                                 path = "first-join.frozen";
                                 if (location != null) {
                                     path = "first-join.frozen-location";
@@ -212,14 +205,23 @@ public class SimpleFreezeMain extends JavaPlugin {
                             getPlayerConfig().getConfig().set("players." + uuidStr + ".message", null);
                             getPlayerConfig().saveConfig();
                             getPlayerConfig().reloadConfig();
-                        }
-                        else {
+                        } else {
                             p.sendMessage(placeholders("{PREFIX}SimpleFreeze was re-enabled so you are now frozen again"));
                         }
                     }
                 }.runTaskLater(this, 10L);
             }
         }
+
+        new BukkitRunnable() {
+
+            @Override
+            public void run() {
+                frozenPages.setupStrings();
+            }
+        }.runTaskLater(this, 20L);
+
+
     }
 
     @Override
@@ -260,6 +262,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
         this.getCommand("frozen").setExecutor(new FrozenCommand(this, this.frozenPages));
+        this.getCommand("freezeall").setExecutor(new FreezeAllCommand(this, this.freezeManager, this.locationManager));
     }
 
     private void registerListeners() {
