@@ -209,11 +209,16 @@ freezeall-message:
   - '&4&m--------------------------------------------------'
   - '&cEveryone was frozen by &l{FREEZER}'
   - '&4&m--------------------------------------------------'
+
+freezeall-location-message:
+  - '&4&m--------------------------------------------------'
+  - '&cEveryone was frozen by &l{FREEZER} &cat &l{LOCATION}'
+  - '&4&m--------------------------------------------------'
   
 # Messages sent to the server when every player is frozen (/freezeall)
 unfreezeall-message:
   - '&4&m--------------------------------------------------'
-  - '&cEveryone was unfrozen by &l{FREEZER}'
+  - '&cEveryone was unfrozen by &l{UNFREEZER}'
   - '&4&m--------------------------------------------------'
 
 # Messages sent to a player when they are frozen because they joined during a freezeall
