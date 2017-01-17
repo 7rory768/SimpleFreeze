@@ -1,7 +1,7 @@
 package org.plugins.simplefreeze.util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.SFLocation;
 
@@ -12,6 +12,12 @@ import java.util.UUID;
 public class DataConverter {
 
     private static File file = new File("plugins" + File.separator + "SimpleFreeze" + File.separator, "playerdata.txt");
+
+    private final SimpleFreezeMain plugin;
+
+    public DataConverter(SimpleFreezeMain plugin) {
+        this.plugin = plugin;
+    }
 
     public static boolean hasDataToConvert(Player p) {
         if (DataConverter.file.exists()) {
@@ -26,17 +32,15 @@ public class DataConverter {
                     }
                 }
                 scan.close();
-            } catch (FileNotFoundException e) {
+            }
+            catch (FileNotFoundException e) {
                 return false;
             }
-        } else {
-            Bukkit.broadcastMessage("doesnt exist");
         }
-
         return false;
     }
 
-    public static FrozenPlayer convertData(Player p) {
+    public FrozenPlayer convertData(Player p) {
         if (DataConverter.file.exists()) {
             try {
                 Scanner scan = new Scanner(DataConverter.file);
@@ -47,15 +51,24 @@ public class DataConverter {
                         UUID pUUID = UUID.fromString(fileInfo[1]);
                         if (pUUID.equals(p.getUniqueId())) {
                             SFLocation oldLocation = new SFLocation(p.getWorld(), Double.parseDouble(fileInfo[2]), Double.parseDouble(fileInfo[3]), Double.parseDouble(fileInfo[4]), Float.parseFloat(fileInfo[5]), Float.parseFloat(fileInfo[6]));
-                            SFLocation freezeLocation = new SFLocation(p.getLocation());
-                            return new FrozenPlayer(System.currentTimeMillis(), p.getUniqueId(), null, oldLocation, freezeLocation, false, p.getInventory().getHelmet
-                                    ());
+                            String uuidStr = pUUID.toString();
+                            Long freezeDate = System.currentTimeMillis();
+                            this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".freeze-date", freezeDate);
+                            this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".freezer-uuid", "null");
+                            this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".original-location", oldLocation.toString());
+                            this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".freeze-location", "null");
+                            this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".mysql", false);
+                            this.plugin.getPlayerConfig().saveConfig();
+                            this.plugin.getPlayerConfig().reloadConfig();
+                            this.removeData(p);
+                            return new FrozenPlayer(freezeDate, p.getUniqueId(), null, oldLocation, null, false, p.getInventory().getHelmet());
 
                         }
                     }
                 }
                 scan.close();
-            } catch (FileNotFoundException e) {
+            }
+            catch (FileNotFoundException e) {
                 return null;
             }
         }
@@ -63,7 +76,7 @@ public class DataConverter {
         return null;
     }
 
-    public static void removeData(Player p) {
+    private void removeData(Player p) {
         if (DataConverter.file.exists()) {
             String text = "";
             try {
@@ -88,7 +101,8 @@ public class DataConverter {
                 PrintWriter pw = new PrintWriter(txtWriter);
                 pw.write(text);
                 pw.close();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 return;
             }
         }

@@ -1,5 +1,8 @@
 players: {}
 
-freezeall: false
-
-freezeall-players: {}
+freezeall-info:
+  freezeall: false
+  freezer: 'null'
+  location: 'null'
+  date: 'null'
+  players: {}

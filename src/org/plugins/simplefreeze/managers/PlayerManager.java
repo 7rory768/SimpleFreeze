@@ -56,7 +56,7 @@ public class PlayerManager {
             return true;
         } else if (this.plugin.getPlayerConfig().getConfig().isSet("players." + uuid.toString())) {
             if (this.plugin.getPlayerConfig().getConfig().isSet("players." + uuid.toString() + ".unfreeze-date")) {
-                if (System.currentTimeMillis() > this.plugin.getPlayerConfig().getConfig().getLong("players." + uuid.toString() + ".unfreeze-date")) {
+                if (System.currentTimeMillis() >= this.plugin.getPlayerConfig().getConfig().getLong("players." + uuid.toString() + ".unfreeze-date")) {
                     return false;
                 }
             }
@@ -70,6 +70,8 @@ public class PlayerManager {
             if (this.frozenPlayers.get(uuid) instanceof FreezeAllPlayer) {
                 return true;
             }
+        } else if (this.plugin.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuid.toString())) {
+            return true;
         }
         return false;
     }

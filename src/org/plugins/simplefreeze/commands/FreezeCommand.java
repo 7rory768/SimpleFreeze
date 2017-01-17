@@ -65,14 +65,16 @@ public class FreezeCommand implements CommandExecutor {
             }
 
             if (this.playerManager.isFrozen(uuid)) {
-                UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid", "null").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid"));
-                String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
-                for (String msg : this.plugin.getConfig().getStringList("already-frozen")) {
-                    if (!msg.equals("")) {
-                        sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", freezerName)));
+                if (!this.playerManager.isFreezeAllFrozen(uuid)) {
+                    UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid", "null").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid"));
+                    String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+                    for (String msg : this.plugin.getConfig().getStringList("already-frozen")) {
+                        if (!msg.equals("")) {
+                            sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", freezerName)));
+                        }
                     }
+                    return true;
                 }
-                return true;
             }
 
             this.plugin.getPlayerConfig().getConfig().set("players." + uuid.toString() + ".unfreeze-date", null);

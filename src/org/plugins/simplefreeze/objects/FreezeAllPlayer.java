@@ -10,12 +10,12 @@ import java.util.UUID;
  */
 public class FreezeAllPlayer extends FrozenPlayer {
 
-    public FreezeAllPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, boolean sqlFreeze, ItemStack helmet) {
-        super(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, sqlFreeze, helmet);
+    public FreezeAllPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, ItemStack helmet) {
+        super(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
     }
 
-    public FreezeAllPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, boolean sqlFreeze) {
-        super(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, sqlFreeze);
+    public FreezeAllPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc) {
+        super(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false);
     }
 
 }
