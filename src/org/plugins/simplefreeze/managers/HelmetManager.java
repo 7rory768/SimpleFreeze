@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
@@ -24,6 +26,7 @@ public class HelmetManager {
 
     private ItemStack helmetItem = null;
     private boolean helmetUsedToBeNull = false;
+    private BukkitTask helmetUpdateTask = null;
 
     public HelmetManager(SimpleFreezeMain plugin, PlayerManager playerManager, LocationManager locationManager) {
         this.plugin = plugin;
@@ -52,6 +55,11 @@ public class HelmetManager {
             helmetItem.setItemMeta(helmetMeta);
         }
         this.helmetItem = helmetItem;
+        if (this.helmetItem != null) {
+            if (this.helmetItem.getItemMeta().hasLore()) {
+                this.startHelmetUpdateTask();
+            }
+        }
     }
 
     public void updateHelmetItem(ItemStack newHelmetItem) {
@@ -59,6 +67,13 @@ public class HelmetManager {
             this.helmetUsedToBeNull = true;
         }
         this.helmetItem = newHelmetItem;
+        if (newHelmetItem == null && !this.helmetUsedToBeNull && this.helmetTaskIsRunning()) {
+            this.endHelmetUpdateTask();
+        } else if (this.helmetUsedToBeNull && this.helmetItem != null && !this.helmetTaskIsRunning()) {
+            if (this.helmetItem.getItemMeta().hasLore()) {
+                this.startHelmetUpdateTask();
+            }
+        }
     }
 
     public boolean similarToHelmetItem(ItemStack newHelmetItem) {
@@ -94,7 +109,7 @@ public class HelmetManager {
         String timePlaceholder = "";
         String serversPlaceholder = "";
         if (frozenPlayer instanceof TempFrozenPlayer) {
-            timePlaceholder = TimeUtil.formatTime((((TempFrozenPlayer) frozenPlayer).getUnfreezeDate() - frozenPlayer.getFreezeDate())/1000L);
+            timePlaceholder = TimeUtil.formatTime((((TempFrozenPlayer) frozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L);
         }
         ItemStack helmetItem = this.helmetItem == null ? null : this.helmetItem.clone();
         if (helmetItem != null) {
@@ -145,5 +160,29 @@ public class HelmetManager {
             helmetItem.setItemMeta(helmetMeta);
         }
         return helmetItem;
+    }
+
+    public boolean helmetTaskIsRunning() {
+        return this.helmetUpdateTask == null;
+    }
+
+    public void startHelmetUpdateTask() {
+        this.helmetUpdateTask = new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (FrozenPlayer frozenPlayer : playerManager.getFrozenPlayers().values()) {
+                    if (frozenPlayer instanceof TempFrozenPlayer) {
+                        Bukkit.getPlayer(frozenPlayer.getFreezeeUUID()).getInventory().setHelmet(getPersonalHelmetItem(frozenPlayer));
+                    }
+                }
+            }
+        }.runTaskTimer(this.plugin, 20L, 20L);
+    }
+
+    public void endHelmetUpdateTask() {
+        if (this.helmetUpdateTask != null) {
+            this.helmetUpdateTask.cancel();
+            this.helmetUpdateTask = null;
+        }
     }
 }
