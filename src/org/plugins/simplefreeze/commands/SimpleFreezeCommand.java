@@ -132,6 +132,7 @@ public class SimpleFreezeCommand implements CommandExecutor {
                         this.helmetManager.updateHelmetItem(newHelmetItem);
                         this.helmetManager.replaceOldHelmets();
                     }
+
                     sender.sendMessage(this.plugin.placeholders("{PREFIX}Configuration file reloaded successfully"));
                     return true;
                 }
