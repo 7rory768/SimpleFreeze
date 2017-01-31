@@ -31,6 +31,8 @@ import java.util.UUID;
  *  - Actionbar
  *  - On leave give helmet back and on join get rid of it
  *  - Block projectile shooting (ex. bow shooting, eggs, fishing rod, splash potions)
+ *  - Block nether portal usage
+ *  - Block book changing
  *  - Particles change on /sf reload
  *  - Make time placeholder on head item update every second
  *  
