@@ -3,6 +3,7 @@ name: SimpleFreeze
 version: 3.0.0
 author: 7rory768
 description: This plugin allows you to freeze players or everyone at once
+softdepend: [Vault]
 
 commands:
   simplefreeze:
