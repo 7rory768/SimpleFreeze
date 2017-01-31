@@ -36,7 +36,13 @@ location: 'Unknown'
 # ||=======================================||
 
 # MAKE SURE THAT THIS IS UNIQUE ACROSS ALL SERVERS CONNECTED TO THE SAME MYSQL DATABASE
+# NOTICE: This id is what you will type when SQLFreezing ex. /freeze 7rory768 lobby
+# Also, make sure you do not have any locations that are named the same as the server-id
 server-id: lobby
+
+# LIST OF ALL SERVER-IDs CONNECTED TO YOUR NETWORK THAT ARE RUNNING SIMPLE-FREEZE
+server-list:
+ - lobby
 
 mysql:
   username: user
@@ -298,6 +304,7 @@ page-doesnt-exist: '{PREFIX}&bPage {PAGENUM} &7does not exist'
 
 # Message sent to a player if they were frozen offline and this is the first time they join since then
 first-join:
+    # AVAILABLE PLACEHOLDERS: PLAYER, FREEZER LOCATION, TIME
     frozen: '{PREFIX}You were frozen by &b{FREEZER} &7while you were offline'
     frozen-location: '{PREFIX}You were frozen at &b{LOCATION} &7by &b{FREEZER} &7while you were offline'
     temp-frozen: '{PREFIX}You were frozen for &b{TIME} &7by &b{FREEZER} &7while you were offline'
@@ -305,17 +312,16 @@ first-join:
 
 frozen-list-format:
   # Comment out header and/or footer if you don''t need them
+  # AVAILABLE PLACEHOLDERS: PAGENUM, MAXPAGENUM, PLAYER, FREEZER, ONLINE, LOCATION, TIME
   header: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
   formats:
     frozen: '{ONLINE}{PLAYER} &7(Frozen by &b{FREEZER}&7)'
     frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7(Frozen by &b{FREEZER}&7)'
     temp-frozen: '{ONLINE}{PLAYER} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
     temp-frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
-  # If the player thats frozen is online the {ONLINE}
-  # placeholder will become the string you set below
+  # If the player thats frozen is online the {ONLINE} placeholder will become the string you set below
   online-placeholder: '&a'
-  # If the player thats frozen is offline the {ONLINE}
-  # placeholder will become the string you set below
+  # If the player thats frozen is offline the {ONLINE} placeholder will become the string you set below
   offline-placeholder: '&c'
   footer: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
   players-per-page: 5
