@@ -56,6 +56,7 @@ public class TempFrozenPlayer extends FrozenPlayer {
 
                 }
             }.runTaskLater(plugin, (tempFrozenPlayer.getUnfreezeDate() - System.currentTimeMillis()) / 1000L * 20L);
+
         } else {
             task = new BukkitRunnable() {
                 @Override
