@@ -1,11 +1,11 @@
 package org.plugins.simplefreeze.listeners;
 
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.projectiles.ProjectileSource;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.PlayerManager;
 
@@ -41,10 +41,10 @@ public class EntityDamageEntityListener implements Listener {
 				}
 			} else if (e.getEntity() instanceof Player && e.getDamager() instanceof Projectile) {
 				Projectile projectile = (Projectile) e.getDamager();
-				LivingEntity livingEntity = projectile.getShooter();
-				if (livingEntity != null) {
-					if (livingEntity instanceof Player) {
-						Player p = (Player) livingEntity;
+				ProjectileSource projectileSource = projectile.getShooter();
+				if (projectileSource != null) {
+					if (projectileSource instanceof Player) {
+						Player p = (Player) projectileSource;
 						if (this.playerManager.isFrozen(p)) {
 							e.setCancelled(true);
 							for (String msg : this.plugin.getConfig().getStringList("frozen-attack-message")) {
