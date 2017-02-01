@@ -71,11 +71,48 @@ freeze-radius: 0
 # Defines what item will be put in the players helmet slot This item will be removed once they are unfrozen (Their current helmet will not be lost)
 # Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-item' and the keys under it)
 head-item:
-  material: ICE
-  data: 0
-  name: '&bYou''re Frozen'
-  lore:
-    - '&7You were frozen by &b{FREEZER}'
+  # YOU CAN DEFINE 4 DIFFERNT HEAD-ITEMS FOR 6 DIFFERNT TYPE OF FREEZES:
+  # frozen, frozen-location, temp-frozen. temp-frozen-location, freeze-all, freeze-all-location
+  # IF ONE IS NOT SET IT WILL DEFAULT TO frozen
+  # AVAILABLE PLACEHOLDERS: PLAYER, FREEZER, ONLINE, LOCATION, TIME
+  frozen:
+    material: ICE
+    data: 0
+    name: '&bYou''re Frozen'
+    lore:
+      - '&7You were frozen by &b{FREEZER}'
+  frozen-location:
+    material: ICE
+    data: 0
+    name: '&bYou''re Frozen'
+    lore:
+      - '&7You were frozen by &b{FREEZER} &7at &b{LOCATION}'
+  temp-frozen:
+    material: ICE
+    data: 0
+    name: '&bYou''re Frozen'
+    lore:
+      - '&7You were frozen by &b{FREEZER}'
+      - '&7You will be unfrozen in &b{TIME}'
+  temp-frozen-location:
+    material: ICE
+    data: 0
+    name: '&bYou''re Frozen'
+    lore:
+      - '&7You were frozen by &b{FREEZER} &7at &b{LOCATION}'
+      - '&7You will be unfrozen in &b{TIME}'
+  freeze-all:
+    material: ICE
+    data: 0
+    name: '&bYou''re Frozen'
+    lore:
+      - '&7The server was frozen by &b{FREEZER}'
+  freeze-all-location:
+    material: ICE
+    data: 0
+    name: '&bYou''re Frozen'
+    lore:
+      - '&7The server was frozen by &b{FREEZER} &7at &b{LOCATION}'
 
 # Defines what sound will be played upon a freeze/unfreeze (Define them as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html)
 # NOTE: Volume can be any number from 0.0 - 1.0 (1.0 = normal))
