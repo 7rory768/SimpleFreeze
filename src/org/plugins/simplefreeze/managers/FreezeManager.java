@@ -132,7 +132,7 @@ public class FreezeManager {
                     if (p.getInventory().getHelmet() != null) {
                         helmet = p.getInventory().getHelmet();
                     }
-                    p.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(freezeeName, freezerName, location, null));
+
                     originalLoc = new SFLocation(p.getLocation());
                     if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
                         freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
@@ -155,6 +155,7 @@ public class FreezeManager {
                     if (p != null) {
                         FreezeAllPlayer freezeAllPlayer = new FreezeAllPlayer(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, helmet);
                         this.playerManager.addFrozenPlayer(freezeeUUID, freezeAllPlayer);
+                        p.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(freezeAllPlayer));
                     }
                 }
             }
@@ -189,7 +190,6 @@ public class FreezeManager {
             if (onlineFreezee.getInventory().getHelmet() != null) {
                 helmet = onlineFreezee.getInventory().getHelmet();
             }
-            onlineFreezee.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(freezeeName, freezerName, location, null));
             originalLoc = new SFLocation(onlineFreezee.getLocation());
             if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
                 freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
@@ -226,6 +226,7 @@ public class FreezeManager {
         if (onlineFreezee != null) {
             FrozenPlayer frozenPlayer = new FrozenPlayer(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
             this.playerManager.addFrozenPlayer(freezeeUUID, frozenPlayer);
+            onlineFreezee.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(frozenPlayer));
         } else {
             this.frozenPages.refreshString(freezeeUUID);
         }
@@ -256,7 +257,7 @@ public class FreezeManager {
             if (onlineFreezee.getInventory().getHelmet() != null) {
                 helmet = onlineFreezee.getInventory().getHelmet();
             }
-            onlineFreezee.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(freezeeName, freezerName, location, time));
+
             originalLoc = new SFLocation(onlineFreezee.getLocation());
             if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
                 freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
@@ -286,7 +287,9 @@ public class FreezeManager {
         this.plugin.getPlayerConfig().saveConfig();
         this.plugin.getPlayerConfig().reloadConfig();
         final TempFrozenPlayer tempFrozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
-
+        if (onlineFreezee != null) {
+        onlineFreezee.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(tempFrozenPlayer));
+        }
 
         if (this.freezeAll == true) {
             this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID, null);
