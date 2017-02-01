@@ -108,30 +108,164 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     }
 
                     // REPLACE HELMETS IF THEY CHANGED,
-                    // CHANGE PARTICLES IF DIFFERENT
-                    ItemStack newHelmetItem = null;
-                    if (this.plugin.getConfig().isSet("head-item")) {
-                        short data = this.plugin.getConfig().isSet("head-item.data") ? (short) this.plugin.getConfig().getInt("head-item.data") : 0;
-                        newHelmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.material")), 1, data);
-                        ItemMeta helmetMeta = newHelmetItem.getItemMeta();
-                        if (this.plugin.getConfig().isSet("head-item.name")) {
+                    ItemStack oldFrozenHelmet = this.helmetManager.getFrozenHelmet();
+                    ItemStack newHelmet = null;
+                    
+                    if (this.plugin.getConfig().isSet("head-item.frozen")) {
+                        short data = this.plugin.getConfig().isSet("head-item.frozen.data") ? (short) this.plugin.getConfig().getInt("head-item.frozen.data") : 0;
+                        newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.frozen.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmet.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.frozen.name")) {
                             // More placeholders should be added here (location, freezer, time)
                             // Also allow enchants and itemflags
-                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.name")));
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.frozen.name")));
                         }
-                        if (this.plugin.getConfig().isSet("head-item.lore")) {
+                        if (this.plugin.getConfig().isSet("head-item.frozen.lore")) {
                             List<String> lore = new ArrayList<String>();
-                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.lore")) {
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.frozen.lore")) {
                                 lore.add(this.plugin.placeholders(loreLine));
                             }
                             helmetMeta.setLore(lore);
                         }
-                        newHelmetItem.setItemMeta(helmetMeta);
+                        newHelmet.setItemMeta(helmetMeta);
                     }
-                    if (!this.helmetManager.similarToHelmetItem(newHelmetItem)) {
-                        this.helmetManager.updateHelmetItem(newHelmetItem);
+                    if (!this.helmetManager.similarToHelmetItem(oldFrozenHelmet, newHelmet)) {
+                        this.helmetManager.updateFrozenHelmet(newHelmet);
                         this.helmetManager.replaceOldHelmets();
                     }
+
+                    ItemStack oldFrozenLocationHelmet = this.helmetManager.getFrozenLocationHelmet();
+                    newHelmet = null;
+
+                    if (this.plugin.getConfig().isSet("head-item.frozen-location")) {
+                        short data = this.plugin.getConfig().isSet("head-item.frozen-location.data") ? (short) this.plugin.getConfig().getInt("head-item.frozen-location.data") : 0;
+                        newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.frozen-location.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmet.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.frozen-location.name")) {
+                            // More placeholders should be added here (location, freezer, time)
+                            // Also allow enchants and itemflags
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.frozen-location.name")));
+                        }
+                        if (this.plugin.getConfig().isSet("head-item.frozen-location.lore")) {
+                            List<String> lore = new ArrayList<String>();
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.frozen-location.lore")) {
+                                lore.add(this.plugin.placeholders(loreLine));
+                            }
+                            helmetMeta.setLore(lore);
+                        }
+                        newHelmet.setItemMeta(helmetMeta);
+                    }
+                    if (!this.helmetManager.similarToHelmetItem(oldFrozenLocationHelmet, newHelmet)) {
+                        this.helmetManager.updateFrozenLocationHelmet(newHelmet);
+                        this.helmetManager.replaceOldHelmets();
+                    }
+
+                    ItemStack oldTempFrozenHelmet = this.helmetManager.getTempFrozenHelmet();
+                    newHelmet = null;
+
+                    if (this.plugin.getConfig().isSet("head-item.temp-frozen")) {
+                        short data = this.plugin.getConfig().isSet("head-item.temp-frozen.data") ? (short) this.plugin.getConfig().getInt("head-item.temp-frozen.data") : 0;
+                        newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.temp-frozen.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmet.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.temp-frozen.name")) {
+                            // More placeholders should be added here (location, freezer, time)
+                            // Also allow enchants and itemflags
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.temp-frozen.name")));
+                        }
+                        if (this.plugin.getConfig().isSet("head-item.temp-frozen.lore")) {
+                            List<String> lore = new ArrayList<String>();
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.temp-frozen.lore")) {
+                                lore.add(this.plugin.placeholders(loreLine));
+                            }
+                            helmetMeta.setLore(lore);
+                        }
+                        newHelmet.setItemMeta(helmetMeta);
+                    }
+                    if (!this.helmetManager.similarToHelmetItem(oldTempFrozenHelmet, newHelmet)) {
+                        this.helmetManager.updateTempFrozenHelmet(newHelmet);
+                        this.helmetManager.replaceOldHelmets();
+                    }
+
+                    ItemStack oldTempFrozenLocationHelmet = this.helmetManager.getTempFrozenLocationHelmet();
+                    newHelmet = null;
+
+                    if (this.plugin.getConfig().isSet("head-item.temp-frozen-location")) {
+                        short data = this.plugin.getConfig().isSet("head-item.temp-frozen-location.data") ? (short) this.plugin.getConfig().getInt("head-item.temp-frozen-location.data") : 0;
+                        newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.temp-frozen-location.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmet.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.temp-frozen-location.name")) {
+                            // More placeholders should be added here (location, freezer, time)
+                            // Also allow enchants and itemflags
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.temp-frozen-location.name")));
+                        }
+                        if (this.plugin.getConfig().isSet("head-item.temp-frozen-location.lore")) {
+                            List<String> lore = new ArrayList<String>();
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.temp-frozen-location.lore")) {
+                                lore.add(this.plugin.placeholders(loreLine));
+                            }
+                            helmetMeta.setLore(lore);
+                        }
+                        newHelmet.setItemMeta(helmetMeta);
+                    }
+                    if (!this.helmetManager.similarToHelmetItem(oldTempFrozenLocationHelmet, newHelmet)) {
+                        this.helmetManager.updateTempFrozenLocationHelmet(newHelmet);
+                        this.helmetManager.replaceOldHelmets();
+                    }
+
+                    ItemStack oldFreezeAllHelmet = this.helmetManager.getFreezeAllHelmet();
+                    newHelmet = null;
+
+                    if (this.plugin.getConfig().isSet("head-item.freeze-all")) {
+                        short data = this.plugin.getConfig().isSet("head-item.freeze-all.data") ? (short) this.plugin.getConfig().getInt("head-item.freeze-all.data") : 0;
+                        newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.freeze-all.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmet.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.freeze-all.name")) {
+                            // More placeholders should be added here (location, freezer, time)
+                            // Also allow enchants and itemflags
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.freeze-all.name")));
+                        }
+                        if (this.plugin.getConfig().isSet("head-item.freeze-all.lore")) {
+                            List<String> lore = new ArrayList<String>();
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.freeze-all.lore")) {
+                                lore.add(this.plugin.placeholders(loreLine));
+                            }
+                            helmetMeta.setLore(lore);
+                        }
+                        newHelmet.setItemMeta(helmetMeta);
+                    }
+                    if (!this.helmetManager.similarToHelmetItem(oldFreezeAllHelmet, newHelmet)) {
+                        this.helmetManager.updateFreezeAllHelmet(newHelmet);
+                        this.helmetManager.replaceOldHelmets();
+                    }
+
+                    ItemStack oldFreezeAllLocationHelmet = this.helmetManager.getFreezeAllLocationHelmet();
+                    newHelmet = null;
+
+                    if (this.plugin.getConfig().isSet("head-item.freeze-all-location")) {
+                        short data = this.plugin.getConfig().isSet("head-item.freeze-all-location.data") ? (short) this.plugin.getConfig().getInt("head-item.freeze-all-location.data") : 0;
+                        newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.freeze-all-location.material")), 1, data);
+                        ItemMeta helmetMeta = newHelmet.getItemMeta();
+                        if (this.plugin.getConfig().isSet("head-item.freeze-all-location.name")) {
+                            // More placeholders should be added here (location, freezer, time)
+                            // Also allow enchants and itemflags
+                            helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.freeze-all-location.name")));
+                        }
+                        if (this.plugin.getConfig().isSet("head-item.freeze-all-location.lore")) {
+                            List<String> lore = new ArrayList<String>();
+                            for (String loreLine : this.plugin.getConfig().getStringList("head-item.freeze-all-location.lore")) {
+                                lore.add(this.plugin.placeholders(loreLine));
+                            }
+                            helmetMeta.setLore(lore);
+                        }
+                        newHelmet.setItemMeta(helmetMeta);
+                    }
+                    if (!this.helmetManager.similarToHelmetItem(oldFreezeAllLocationHelmet, newHelmet)) {
+                        this.helmetManager.updateFreezeAllLocationHelmet(newHelmet);
+                        this.helmetManager.replaceOldHelmets();
+                    }
+
+                    // CHANGE PARTICLES IF DIFFERENT
+                    
 
                     sender.sendMessage(this.plugin.placeholders("{PREFIX}Configuration file reloaded successfully"));
                     return true;
