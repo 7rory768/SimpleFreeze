@@ -1,11 +1,13 @@
 package org.plugins.simplefreeze;
 
+import net.milkbowl.vault.permission.Permission;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.plugins.simplefreeze.cache.FrozenPages;
@@ -16,10 +18,7 @@ import org.plugins.simplefreeze.objects.FreezeAllPlayer;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
-import org.plugins.simplefreeze.util.DataConverter;
-import org.plugins.simplefreeze.util.PlayersConfig;
-import org.plugins.simplefreeze.util.TimeUtil;
-import org.plugins.simplefreeze.util.UpdateNotifier;
+import org.plugins.simplefreeze.util.*;
 
 import java.util.UUID;
 
@@ -72,7 +71,6 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     private String finalPrefixFormatting = this.updateFinalPrefixFormatting();
 
-
     private PlayerManager playerManager;
     private FreezeManager freezeManager;
     private PlayersConfig playersConfig;
@@ -81,13 +79,24 @@ public class SimpleFreezeMain extends JavaPlugin {
     private SQLManager sqlManager;
     private FrozenPages frozenPages;
     private DataConverter dataConverter;
+    private Permission permission = null;
+
+    private boolean setupPermissions() {
+        RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+        if (permissionProvider != null) {
+            this.permission = permissionProvider.getProvider();
+        }
+        return (this.permission != null);
+    }
 
     @Override
     public void onEnable() {
         this.initializeVariables();
         this.loadConfigs();
+        this.setupPermissions();
         this.registerCommands();
         this.registerListeners();
+        Metrics metrics = new Metrics(this);
 
         for (final Player p : Bukkit.getServer().getOnlinePlayers()) {
             if (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion())) {
@@ -141,15 +150,25 @@ public class SimpleFreezeMain extends JavaPlugin {
                 }
             }
 
-            if (frozenPlayer == null && this.freezeManager.freezeAllActive()) {
+            if (frozenPlayer == null && this.freezeManager.freezeAllActive() && !(p.hasPermission("sf.exempt.*") || p.hasPermission("sf.exempt.freezeall"))) {
                 UUID freezerUUID = this.getPlayerConfig().getConfig().getString("freezeall-info.freezer").equals("null") ? null : UUID.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.freezer"));
 
                 SFLocation freezeLocation = this.getPlayerConfig().getConfig().getString("freezeall-info.location").equals("null") ? null : SFLocation.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.location"));
-                if (freezeLocation == null) {
+                if (freezeLocation == null && this.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuidStr + ".freeze-location")) {
                     freezeLocation = this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null") ? null : SFLocation.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location"));
+                } else if (freezeLocation == null) {
+                    if (this.getConfig().getBoolean("teleport-up")) {
+                        freezeLocation = this.locationManager.getHighestAirLocation(new SFLocation(p.getLocation().clone()));
+                    } else {
+                        freezeLocation = new SFLocation(new SFLocation(p.getLocation().clone()));
+                        if (this.getConfig().getBoolean("enable-fly")) {
+                            p.setAllowFlight(true);
+                            p.setFlying(true);
+                        }
+                    }
                 }
 
-                Long freezeDate = this.getPlayerConfig().getConfig().getLong("freezeall-info.date");
+                    Long freezeDate = this.getPlayerConfig().getConfig().getLong("freezeall-info.date");
 
                 frozenPlayer = new FreezeAllPlayer(freezeDate, p.getUniqueId(), freezerUUID, p.getLocation(), freezeLocation);
                 this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
@@ -302,8 +321,8 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     private void registerCommands() {
         this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.freezeManager, this.helmetManager, this.frozenPages));
-        this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager));
-        this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager));
+        this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.permission));
+        this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
         this.getCommand("frozen").setExecutor(new FrozenCommand(this, this.frozenPages));
         this.getCommand("freezeall").setExecutor(new FreezeAllCommand(this, this.freezeManager, this.locationManager));
@@ -327,6 +346,10 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     public PlayerManager getPlayerManager() {
         return this.playerManager;
+    }
+
+    public Permission getPermission() {
+        return this.permission;
     }
 
     public PlayersConfig getPlayerConfig() {
