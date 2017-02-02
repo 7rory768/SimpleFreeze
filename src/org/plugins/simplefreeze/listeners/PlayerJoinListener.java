@@ -94,11 +94,23 @@ public class PlayerJoinListener implements Listener {
             }
         }
 
-        if (frozenPlayer == null && this.freezeManager.freezeAllActive()) {
+        if (frozenPlayer == null && this.freezeManager.freezeAllActive() && !(p.hasPermission("sf.exempt.*") || p.hasPermission("sf.exempt.freezeall"))) {
             UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.freezer").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.freezer"));
 
-            SFLocation freezeLocation = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.location").equals("null") ? null : SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.location"));if (freezeLocation == null) {
+            SFLocation freezeLocation = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.location").equals("null") ? null : SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.location"));
+            if (freezeLocation == null && plugin.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuidStr + ".freeze-location")) {
                 freezeLocation = plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null") ? null : SFLocation.fromString(plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location"));
+            } else if (freezeLocation == null) {
+                if (this.plugin.getConfig().getBoolean("teleport-up")) {
+                    freezeLocation = this.locationManager.getHighestAirLocation(new SFLocation(p.getLocation().clone()));
+                } else {
+                    freezeLocation = new SFLocation(new SFLocation(p.getLocation().clone()));
+                    if (this.plugin.getConfig().getBoolean("enable-fly")) {
+                        p.setAllowFlight(true);
+                        p.setFlying(true);
+                    }
+                }
+
             }
 
             Long freezeDate = this.plugin.getPlayerConfig().getConfig().getLong("freezeall-info.date");
