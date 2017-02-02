@@ -321,10 +321,6 @@ unfrozen-notify-message:
 # Messages sent to players upon using a blocked command
 blocked-command-message:
   - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
-  
-# Messages sent to players upon attempting to freeze a player that has sf.exempt
-sf-exempt-message:
-  - '{PREFIX}You cannot freeze &b{PLAYER} &7because they are exempt'
 
 # Messages sent to a player upon attempting to freeze a player that is already frozen
 already-frozen:
@@ -338,6 +334,11 @@ nobody-frozen: '{PREFIX}&7Nobody is frozen'
 not-an-int: '{PREFIX}&b{INTEGER} &7is not a valid integer'
 
 page-doesnt-exist: '{PREFIX}&bPage {PAGENUM} &7does not exist'
+
+# Messages sent to players upon attempting to freeze a player that is exempt
+exempt-messages:
+  freeze: '{PREFIX}You cannot freeze &b{PLAYER} &7because they are exempt'
+  tempfreeze: '{PREFIX}You cannot tempfreeze &b{PLAYER} &7because they are exempt'
 
 # Message sent to a player if they were frozen offline and this is the first time they join since then
 first-join:
