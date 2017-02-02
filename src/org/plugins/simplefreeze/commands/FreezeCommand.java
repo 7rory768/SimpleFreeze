@@ -1,5 +1,6 @@
 package org.plugins.simplefreeze.commands;
 
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -17,11 +18,13 @@ public class FreezeCommand implements CommandExecutor {
     private final SimpleFreezeMain plugin;
     private final PlayerManager playerManager;
     private final FreezeManager freezeManager;
+    private final Permission permission;
 
-    public FreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager) {
+    public FreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, Permission permission) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.freezeManager = freezeManager;
+        this.permission = permission;
     }
 
     @Override
@@ -51,10 +54,18 @@ public class FreezeCommand implements CommandExecutor {
             if (onlineP != null) {
                 playerName = onlineP.getName();
                 uuid = onlineP.getUniqueId();
+                if (onlineP.hasPermission("sf.exempt.*") || onlineP.hasPermission("sf.exempt.freeze")) {
+                    sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("exempt-messages.freeze").replace("{PLAYER}", playerName)));
+                    return true;
+                }
             } else if (offlineP != null) {
                 if (offlineP.hasPlayedBefore()) {
                     playerName = offlineP.getName();
                     uuid = offlineP.getUniqueId();
+                    if (this.permission.playerHas(null, offlineP, "sf.exempt.*") || this.permission.playerHas(null, offlineP, "sf.exempt.freeze")) {
+                        sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("exempt-messages.freeze").replace("{PLAYER}", playerName)));
+                        return true;
+                    }
                 } else {
                     sender.sendMessage(this.plugin.placeholders("{PREFIX}&b{PLAYER} " + this.plugin.getFinalPrefixFormatting() + "has never played this server before").replace("{PLAYER}", args[0]));
                     return true;

@@ -113,7 +113,7 @@ public class FreezeManager {
 
         for (Player p : Bukkit.getServer().getOnlinePlayers()) {
             if (!this.playerManager.isFrozen(p.getUniqueId())) {
-                if (!p.hasPermission("sf.exempt")) {
+                if (!(p.hasPermission("sf.exempt.*") || p.hasPermission("sf.exempt.freezeall"))) {
                     UUID freezeeUUID = p.getUniqueId();
                     ItemStack helmet = null;
                     SFLocation originalLoc = null;
