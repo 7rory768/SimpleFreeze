@@ -26,7 +26,7 @@ permissions:
     description: Gives all SimpleFreeze permissions
     children:
       sf.help: true
-      sf.exempt: true
+      sf.exempt.*: true
       sf.reload: true
       sf.tempfreeze: true
       sf.freeze: true
@@ -38,15 +38,23 @@ permissions:
       sf.frozen: true
       sf.freezeall: true
       sf.exempt.distance: true
+  sf.exempt.*:
+    description: Gives all exempt permissions
+    children:
+      sf.exempt.freeze: true
+      sf.exempt.tempfreeze: true
+      sf.exempt.freezeall: true
   sf.help:
-    description: Lists all Simple Freeze commands and usage
+    description: Permission to use /sf (Lists all commands and usage)
     default: true
   sf.freezeall:
-    description: Freezes all players on the server (except players with the sf.exempt permission)
+    description: Permission to use /freeze (Freezes all players on the server)
     default: op
-  sf.exempt:
+  sf.exempt.freeze:
     description: Exempt from being frozen
     default: op
+  sf.exempt.tempfreeze:
+    description: Excempt from being
   sf.reload:
     description: Reloads the configuration file
     default: op
