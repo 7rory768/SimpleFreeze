@@ -23,15 +23,14 @@ import org.plugins.simplefreeze.util.*;
 import java.util.UUID;
 
 /* 
- * TODO:
- *  - Remember when freezeall is active after crash/restart
- *  - Add option to spawn block below player if they are in the ground or make it so they cannot be kicked for fly/stop anticheat spam
+ * TODO
  *  - Titles
  *  - Actionbar
- *  - On leave give helmet back and on join get rid of it
  *  - Block projectile shooting (ex. bow shooting, eggs, fishing rod, splash potions)
  *  - Block nether portal usage
  *  - Block book changing
+ *  - Sound upon freeze
+ *  - Freeze within certain distance
  *  - Particles change on /sf reload
  *  - Make time placeholder on head item update every second
  *  
@@ -79,6 +78,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private SQLManager sqlManager;
     private FrozenPages frozenPages;
     private DataConverter dataConverter;
+    private ParticleManager particleManager;
     private Permission permission = null;
 
     private boolean setupPermissions() {
@@ -305,6 +305,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.dataConverter = new DataConverter(this);
         this.frozenPages = new FrozenPages(this, this.locationManager);
         this.playerManager = new PlayerManager(this, this.frozenPages);
+        this.particleManager = new ParticleManager(this, this.playerManager);
         this.helmetManager = new HelmetManager(this, this.playerManager, this.locationManager);
         this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.sqlManager, this.frozenPages);
     }
@@ -320,7 +321,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.freezeManager, this.helmetManager, this.frozenPages));
+        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.freezeManager, this.helmetManager, this.frozenPages, this.particleManager));
         this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.permission));
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
