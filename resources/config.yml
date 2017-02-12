@@ -130,10 +130,10 @@ unfreeze-sound:
 
 # Defines what particles will surround a player while frozen (Define them as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Effect.html)
 frozen-particles:
+  # Add a # if you don't want a sound to be played (ex. #frozen-particles: SNOWBALL_BREAK)
   particle: SNOWBALL_BREAK
-  radius: 10
-  # Radius is the number of blocks from the player where the particles are still visible
-# Add a # if you don't want a sound to be played (ex. #frozen-particles: SNOW_SHOVEL)
+  # Radius is the number of blocks from the player where the particles are still visible by other players
+  radius: 20
 
 # Notify staff if a player leaves during freezeall?
 leave-message-during-freezeall: false
