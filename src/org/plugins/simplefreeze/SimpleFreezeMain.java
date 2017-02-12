@@ -31,8 +31,8 @@ import java.util.UUID;
  *  - Block book changing
  *  - Sound upon freeze
  *  - Freeze within certain distance
- *  - Particles change on /sf reload
- *  - Make time placeholder on head item update every second
+ *  - notify staff on leave
+ *  - go through config to see whats missing
  *  
  *  TODO: Hopefully
  *  - Hologram above players head on freeze option
@@ -40,6 +40,8 @@ import java.util.UUID;
  * */
 
 /* CHANGES:
+ *   - Make time placeholder on head item update every second
+ *   - Particles change on /sf reload
  *   - ALLOW OFFLINE FREEZING/UNFREEZING
  *   - PLAYERS MAY NOW EDIT THEIR INVENTORY WHILE FROZEN
  *   - SQL FREEZING
