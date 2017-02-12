@@ -10,6 +10,7 @@ import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
 import org.plugins.simplefreeze.managers.FreezeManager;
 import org.plugins.simplefreeze.managers.HelmetManager;
+import org.plugins.simplefreeze.managers.ParticleManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,12 +22,14 @@ public class SimpleFreezeCommand implements CommandExecutor {
     private final FreezeManager freezeManager;
     private final HelmetManager helmetManager;
     private final FrozenPages frozenPages;
+    private final ParticleManager particleManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, HelmetManager helmetManager, FrozenPages frozenPages) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager) {
         this.plugin = plugin;
         this.freezeManager = freezeManager;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
+        this.particleManager = particleManager;
     }
 
     @Override
@@ -54,10 +57,10 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     String onlinePlaceholder = this.plugin.getConfig().getString("frozen-list-format.online-placeholder");
                     String offlinePlaceholder = this.plugin.getConfig().getString("frozen-list-format.offline-placeholder");
 
+                    HashSet<String> strings = new HashSet<String>();
+
                     this.plugin.reloadConfig();
                     this.plugin.updateFinalPrefixFormatting();
-
-                    HashSet<String> strings = new HashSet<String>();
 
                     // CHECK IF /FROZEN FORMATS CHANGED
                     if (!frozenStr.equals(this.plugin.getConfig().getString("frozen-list-format.formats.frozen"))) {
@@ -265,7 +268,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     }
 
                     // CHANGE PARTICLES IF DIFFERENT
-                    
+                    this.particleManager.setEffect(this.plugin.getConfig().getString("frozen-particles.particle", "null"));
+                    this.particleManager.setRadius(this.plugin.getConfig().getInt("frozen-particles.radius", 10));
+
 
                     sender.sendMessage(this.plugin.placeholders("{PREFIX}Configuration file reloaded successfully"));
                     return true;
