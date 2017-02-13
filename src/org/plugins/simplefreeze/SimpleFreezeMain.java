@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -212,6 +213,15 @@ public class SimpleFreezeMain extends JavaPlugin {
 
                         p.teleport(finalFreezeAllPlayer.getFreezeLoc());
 
+                        try {
+                            Sound sound = Sound.valueOf(getConfig().getString("freeze-sound.sound"));
+                            float volume = (float) getConfig().getDouble("freeze-sound.volume");
+                            float pitch = (float) getConfig().getDouble("freeze-sound.pitch");
+                            p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
+                        } catch (IllegalArgumentException e) {
+                            Bukkit.getConsoleSender().sendMessage(placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + getConfig().getString("freeze-sound.sound")));
+                        }
+
                         p.sendMessage(placeholders("{PREFIX}SimpleFreeze was re-enabled so you are now frozen again"));
                     }
                 }.runTaskLater(this, 10L);
@@ -249,6 +259,15 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                         }
                         p.teleport(finalFrozenPlayer.getFreezeLoc());
+
+                        try {
+                            Sound sound = Sound.valueOf(getConfig().getString("freeze-sound.sound"));
+                            float volume = (float) getConfig().getDouble("freeze-sound.volume");
+                            float pitch = (float) getConfig().getDouble("freeze-sound.pitch");
+                            p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
+                        } catch (IllegalArgumentException e) {
+                            Bukkit.getConsoleSender().sendMessage(placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + getConfig().getString("freeze-sound.sound")));
+                        }
 
                         if (getPlayerConfig().getConfig().getBoolean("players. " + uuidStr + ".message", false)) {
                             String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
