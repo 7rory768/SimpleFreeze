@@ -26,17 +26,17 @@ permissions:
     description: Gives all SimpleFreeze permissions
     children:
       sf.help: true
-      sf.exempt.*: true
       sf.reload: true
-      sf.tempfreeze: true
       sf.freeze: true
+      sf.tempfreeze: true
       sf.unfreeze: true
+      sf.frozen: true
+      sf.freezeall: true
+      sf.offline: true
       sf.notify.leave: true
       sf.notify.frozen: true
       sf.notify.unfrozen: true
       sf.notify.update: true
-      sf.frozen: true
-      sf.freezeall: true
       sf.exempt.freeze: true
       sf.exempt.tempfreeze: true
       sf.exempt.freezeall: true
@@ -84,6 +84,9 @@ permissions:
     default: true
   sf.reload:
     description: Reloads the configuration file
+    default: op
+  sf.offline:
+    description: Allows freezing of offline players
     default: op
   sf.freeze:
     description: Freezes a player

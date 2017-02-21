@@ -63,7 +63,14 @@ public class TempFreezeCommand implements CommandExecutor {
                 if (offlineP.hasPlayedBefore()) {
                     playerName = offlineP.getName();
                     uuid = offlineP.getUniqueId();
-                    if (this.permission.playerHas(null, offlineP, "sf.exempt.*") || this.permission.playerHas(null, offlineP, "sf.exempt.tempfreeze")) {
+                    if (!sender.hasPermission("sf.offline")) {
+                        for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                            if (!msg.equals("")) {
+                                sender.sendMessage(this.plugin.placeholders(msg));
+                            }
+                        }
+                        return true;
+                    } else if (this.permission.playerHas(null, offlineP, "sf.exempt.*") || this.permission.playerHas(null, offlineP, "sf.exempt.tempfreeze")) {
                         sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("exempt-messages.tempfreeze").replace("{PLAYER}", playerName)));
                         return true;
                     }
