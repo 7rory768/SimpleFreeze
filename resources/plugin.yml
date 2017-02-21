@@ -37,6 +37,9 @@ permissions:
       sf.notify.update: true
       sf.frozen: true
       sf.freezeall: true
+      sf.exempt.freeze: true
+      sf.exempt.tempfreeze: true
+      sf.exempt.freezeall: true
       sf.exempt.distance: true
   sf.exempt.*:
     description: Gives all exempt permissions
@@ -44,43 +47,56 @@ permissions:
       sf.exempt.freeze: true
       sf.exempt.tempfreeze: true
       sf.exempt.freezeall: true
-  sf.help:
-    description: Permission to use /sf (Lists all commands and usage)
-    default: true
-  sf.freezeall:
-    description: Permission to use /freeze (Freezes all players on the server)
-    default: op
+      sf.exempt.distance: true
   sf.exempt.freeze:
     description: Exempt from being frozen
     default: op
   sf.exempt.tempfreeze:
-    description: Excempt from being
-  sf.reload:
-    description: Reloads the configuration file
+    description: Excempt from being temporarily frozen
     default: op
+  sf.exempt.freezeall:
+    description: Excempt from freezeall
+    default: op
+  sf.exempt.distance:
+    description: Can freeze players from anywhere
+    default: op
+  sf.notify.*:
+    description: Gives all notify permissions
+    children:
+      sf.notify.frozen: true
+      sf.notify.unfrozen: true
+      sf.notify.leave: true
+      sf.notify.update: true
   sf.notify.frozen:
     description: Notifies player when someone is frozen
     default: op
-  sf.notify.leave:
-    description: Notifies player when a frozen player leaves
   sf.notify.unfrozen:
     description: Notifies player when someone is unfrozen
+    default: op
+  sf.notify.leave:
+    description: Notifies player when a frozen player leaves
     default: op
   sf.notify.update:
     description: Notifies player when SimpleFreeze becomes outdated
     default: op
+  sf.help:
+    description: Permission to use /sf (Lists all commands and usage)
+    default: true
+  sf.reload:
+    description: Reloads the configuration file
+    default: op
   sf.freeze:
     description: Freezes a player
-    default: op
-  sf.tempfreeze:
-    description: Freezes a player temporarily
     default: op
   sf.unfreeze:
     description: Unfreezes a player
     default: op
+  sf.tempfreeze:
+    description: Freezes a player temporarily
+    default: op
+  sf.freezeall:
+    description: Permission to use /freeze (Freezes all players on the server)
+    default: op
   sf.frozen:
     description: List frozen players
-    default: op
-  sf.exempt.distance:
-    description: Can freeze players from anywhere
     default: op
