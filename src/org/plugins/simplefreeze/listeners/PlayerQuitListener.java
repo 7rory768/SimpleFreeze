@@ -1,6 +1,8 @@
 package org.plugins.simplefreeze.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -33,6 +35,14 @@ public class PlayerQuitListener implements Listener {
             if (this.playerManager.getFrozenPlayer(e.getPlayer()) instanceof TempFrozenPlayer) {
                 ((TempFrozenPlayer) this.playerManager.getFrozenPlayer(e.getPlayer())).cancelTask();
             }
+            
+            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            	if (p.hasPermission("sf.notify.leave")) {
+            		for (String msg : this.plugin.getConfig().getStringList("notify-on-leave-message"))
+            		p.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", e.getPlayer().getName())));
+            	}
+            }
+            
             this.playerManager.removeFrozenPlayer(e.getPlayer());
         }
     }
