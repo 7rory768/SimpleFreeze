@@ -32,7 +32,6 @@ import java.util.UUID;
  *  - Block book changing
  *  - Sound upon freeze
  *  - Freeze within certain distance
- *  - notify staff on leave
  *  - go through config to see whats missing
  *  
  *  TODO: Hopefully
