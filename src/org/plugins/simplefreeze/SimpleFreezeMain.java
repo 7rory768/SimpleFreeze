@@ -31,7 +31,6 @@ import java.util.UUID;
  *  - Block nether portal usage
  *  - Block book changing
  *  - Sound upon freeze
- *  - Freeze within certain distance
  *  - go through config to see whats missing
  *  
  *  TODO: Hopefully
@@ -52,6 +51,7 @@ import java.util.UUID;
  *   - CUSTOMIZABLE /FROZEN FORMAT
  *   - REPLACED THE OLD .TXT FORMAT WITH A NEW CLEANER AND FASTER .YML FORMAT
  *       - ON JOIN DATA WILL CONVERT PER PLAY SO DON'T DELETE UNTIL/UNLESS THE FILE IS EMPTY
+ *   - DISTANCE CHECK NOW OPTIONALLY INCLUDES Y-CORD
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFICATION THROUGH THE TELEPORT-UP OPTION
@@ -342,8 +342,8 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     private void registerCommands() {
         this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.freezeManager, this.helmetManager, this.frozenPages, this.particleManager));
-        this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.permission));
-        this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.permission));
+        this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.permission));
+        this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
         this.getCommand("frozen").setExecutor(new FrozenCommand(this, this.frozenPages));
         this.getCommand("freezeall").setExecutor(new FreezeAllCommand(this, this.freezeManager, this.locationManager));

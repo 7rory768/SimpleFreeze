@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.FreezeManager;
+import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
 import org.plugins.simplefreeze.util.TimeUtil;
 
@@ -19,12 +20,14 @@ public class TempFreezeCommand implements CommandExecutor {
     private final SimpleFreezeMain plugin;
     private final PlayerManager playerManager;
     private final FreezeManager freezeManager;
+    private final LocationManager locationManager;
     private final Permission permission;
 
-    public TempFreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, Permission permission) {
+    public TempFreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, Permission permission) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.freezeManager = freezeManager;
+        this.locationManager = locationManager;
         this.permission = permission;
     }
 
@@ -58,6 +61,17 @@ public class TempFreezeCommand implements CommandExecutor {
                 if (onlineP.hasPermission("sf.exempt.*") || onlineP.hasPermission("sf.exempt.freeze")) {
                     sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("exempt-messages.tempfreeze").replace("{PLAYER}", playerName)));
                     return true;
+                }
+                // CHECK IF MAX DISTANCE IS EXCEEDED
+                if (sender instanceof Player && this.plugin.getConfig().getInt("freeze-radius") > 0) {
+                	int maxDistance = this.plugin.getConfig().getInt("freeze-radius");
+                	int totalDistance = this.locationManager.getTotalDistance((Player) sender, onlineP);
+                	int distanceDifference = totalDistance - maxDistance;
+                	if (!sender.hasPermission("sf.exempt.distance") && distanceDifference > 0) {
+                		for (String msg : this.plugin.getConfig().getStringList("freeze-distance-fail")) {
+                			sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", onlineP.getName()).replace("{MAXDISTANCE}", "" + maxDistance).replace("{TOTALDISTANCE}", "" + totalDistance).replace("{DISTANCEDIFFERENCE}", "" + distanceDifference)));
+                		}
+                	}
                 }
             } else if (offlineP != null) {
                 if (offlineP.hasPlayedBefore()) {

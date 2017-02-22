@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.objects.SFLocation;
 
@@ -66,6 +67,16 @@ public class LocationManager {
             return new Location(world, x, y, z, yaw, pitch);
         }
         return null;
+    }
+    
+    public int getTotalDistance(Player p1, Player p2) {
+    	Location loc1 = p1.getLocation();
+    	Location loc2 = p2.getLocation();
+    	int distance = (int) Math.round(Math.sqrt(Math.pow(Math.abs(loc1.getX() - loc2.getX()), 2) + Math.pow(Math.abs(loc1.getZ() - loc2.getZ()), 2)));
+    	if (this.plugin.getConfig().getBoolean("include-y")) {
+    		distance = (int) Math.round(Math.sqrt(Math.pow(Math.abs(loc1.getY() - loc2.getY()), 2) + Math.pow(distance, 2)));
+    	}
+    	return distance;
     }
 
     public String getLocationPlaceholder(String locationName) {

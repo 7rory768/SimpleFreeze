@@ -65,8 +65,10 @@ enable-fly: true
 # Defines if a player should be teleported back to their old location after being unfrozen (only affects when freezing a player and providing a location or when teleport-up is enabled);
 tp-back: true
 
-# Defines the radius of blocks in which players must be of the freezer for them to freeze that player (Keep 0 if disabled)
-freeze-radius: 0
+# Defines the distance of blocks in which players must be of the freezer for them to freeze that player (Keep 0 if disabled)
+freeze-distance: 0
+# Should the y-value be included in the distance calculations?
+include-y: true
 
 # Defines what item will be put in the players helmet slot This item will be removed once they are unfrozen (Their current helmet will not be lost)
 # Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-item' and the keys under it)
@@ -271,8 +273,9 @@ join-on-freezeall-message:
   - '&4&m--------------------------------------------------'
 
 # Messages sent to a player when they attempt to freeze a player but they are not within freeze-radius
+# AVAIALBLE PLACEHOLDERS: PLAYER, TOTALDISTANCE, MAXDISTANCE, DISTANCEDIFFERENCE
 freeze-distance-fail:
-  - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are too far away'
+  - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are &b{DIFFERENCEDISTANCE} &7blocks too far from you'
 
 # Messages sent to a player that tries to attack a frozen player
 frozen-attacked-message:
