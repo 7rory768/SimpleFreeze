@@ -367,6 +367,8 @@ frozen-list-format:
   footer: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
   players-per-page: 5
 
+no-permission-offline-player-message: '{PREFIX}You don''t have permission to freeze offline players'
+
 # Messages sent to players upon using a command they don't have permission for
 no-permission-message:
   - '&cYou don''t have permission for that'

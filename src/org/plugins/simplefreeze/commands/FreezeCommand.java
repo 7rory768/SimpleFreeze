@@ -70,6 +70,7 @@ public class FreezeCommand implements CommandExecutor {
                 		for (String msg : this.plugin.getConfig().getStringList("freeze-distance-fail")) {
                 			sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", onlineP.getName()).replace("{MAXDISTANCE}", "" + maxDistance).replace("{TOTALDISTANCE}", "" + totalDistance).replace("{DISTANCEDIFFERENCE}", "" + distanceDifference)));
                 		}
+                		return true;
                 	}
                 }
             } else if (offlineP != null) {
@@ -77,7 +78,7 @@ public class FreezeCommand implements CommandExecutor {
                     playerName = offlineP.getName();
                     uuid = offlineP.getUniqueId();
                     if (!sender.hasPermission("sf.offline")) {
-                        for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                        for (String msg : this.plugin.getConfig().getStringList("no-permission-offline-player-message")) {
                             if (!msg.equals("")) {
                                 sender.sendMessage(this.plugin.placeholders(msg));
                             }
