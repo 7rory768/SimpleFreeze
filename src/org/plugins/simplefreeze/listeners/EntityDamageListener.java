@@ -6,6 +6,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.PlayerManager;
 
+import java.util.UUID;
+
 public class EntityDamageListener implements Listener {
 
 	private final SimpleFreezeMain plugin;
@@ -18,8 +20,15 @@ public class EntityDamageListener implements Listener {
 	
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent e) {
-		if (this.plugin.getConfig().getBoolean("player-damage") && this.playerManager.isFrozen(e.getEntity().getUniqueId())) {
+		UUID uuid = e.getEntity().getUniqueId();
+		if (this.plugin.getConfig().getBoolean("player-damage") && this.playerManager.isFrozen(uuid)) {
 			e.setCancelled(true);
+			return;
+		}
+
+		if (this.playerManager.isFallingPlayer(uuid) && e.getCause() == EntityDamageEvent.DamageCause.FALL) {
+			e.setCancelled(true);
+			this.playerManager.removeFallingPlayer(uuid);
 		}
 	}
 

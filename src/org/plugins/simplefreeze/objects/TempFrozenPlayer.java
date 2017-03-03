@@ -7,7 +7,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
+import org.plugins.simplefreeze.managers.LocationManager;
+import org.plugins.simplefreeze.managers.PlayerManager;
 
+import java.util.List;
 import java.util.UUID;
 
 public class TempFrozenPlayer extends FrozenPlayer {
@@ -33,26 +36,43 @@ public class TempFrozenPlayer extends FrozenPlayer {
 
     public void startTask(final SimpleFreezeMain plugin) {
         final TempFrozenPlayer tempFrozenPlayer = this;
+        final PlayerManager playerManager = plugin.getPlayerManager();
+        final LocationManager locationManager = plugin.getLocationManager();
         if (!this.isSqlFreeze()) {
             this.task = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    Player p = Bukkit.getPlayer(getFreezeeUUID());
+                    UUID uuid = getFreezeeUUID();
+                    Player p = Bukkit.getPlayer(uuid);
                     if (p != null) {
                         for (String msg : plugin.getConfig().getStringList("unfreeze-message")) {
                             p.sendMessage(plugin.placeholders(msg).replace("{PLAYER}", tempFrozenPlayer.getFreezeeName()));
                         }
                         p.getInventory().setHelmet(tempFrozenPlayer.getHelmet());
+                        p.setAllowFlight(false);
+                        p.setFlying(false);
                         p.teleport(tempFrozenPlayer.getOriginalLoc());
-                        if (plugin.getConfig().getBoolean("enable-fly")) {
-                            p.setAllowFlight(false);
-                            p.setFlying(false);
+
+                        Location originalLoc = tempFrozenPlayer.getOriginalLoc();
+                        Location freezeLoc = tempFrozenPlayer.getFreezeLoc();
+                        if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && originalLoc.getY() - freezeLoc.getY() > 3) {
+                            playerManager.addFallingPlayer(uuid);
+                        }
+                    } else {
+
+                        Location originalLoc = SFLocation.fromString(plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".original-location"));
+                        Location freezeLoc = SFLocation.fromString(plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freeze-location"));
+                        if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && (originalLoc.getY() - freezeLoc.getY() > 3 || freezeLoc.getY() - locationManager.getGroundLocation(freezeLoc).getY() > 3)) {
+                            List<String> fallingList = plugin.getPlayerConfig().getConfig().getStringList("falling-players");
+                            fallingList.add(uuid.toString());
+                            plugin.getPlayerConfig().getConfig().set("falling-players", fallingList);
                         }
                     }
-                    plugin.getPlayerConfig().getConfig().set("players." + tempFrozenPlayer.getFreezeeUUID().toString(), null);
+
+                    plugin.getPlayerConfig().getConfig().set("players." + uuid.toString(), null);
                     plugin.getPlayerConfig().saveConfig();
                     plugin.getPlayerConfig().reloadConfig();
-                    plugin.getPlayerManager().removeFrozenPlayer(tempFrozenPlayer.getFreezeeUUID());
+                    plugin.getPlayerManager().removeFrozenPlayer(uuid);
 
                 }
             }.runTaskLater(plugin, (tempFrozenPlayer.getUnfreezeDate() - System.currentTimeMillis()) / 1000L * 20L);

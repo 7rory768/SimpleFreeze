@@ -1,5 +1,7 @@
 players: {}
 
+falling-players: []
+
 freezeall-info:
   freezeall: false
   freezer: 'null'

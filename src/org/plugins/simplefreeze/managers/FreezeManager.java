@@ -1,6 +1,7 @@
 package org.plugins.simplefreeze.managers;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.TimeUtil;
 
+import java.util.List;
 import java.util.UUID;
 
 public class FreezeManager {
@@ -51,12 +53,11 @@ public class FreezeManager {
                 } else {
                     p.getInventory().setHelmet(null);
                 }
+
+                p.setAllowFlight(false);
+                p.setFlying(false);
                 if (frozenPlayer.getOriginalLoc() != null) {
                     p.teleport(frozenPlayer.getOriginalLoc());
-                }
-                if (this.plugin.getConfig().getBoolean("enable-fly")) {
-                    p.setAllowFlight(false);
-                    p.setFlying(false);
                 }
 
                 try {
@@ -64,11 +65,28 @@ public class FreezeManager {
                     float volume = (float) this.plugin.getConfig().getDouble("unfreeze-sound.volume");
                     float pitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound.pitch");
                     p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                } catch (IllegalArgumentException e) {
+                }
+                catch (IllegalArgumentException e) {
                     Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
                 }
 
+                Location originalLoc = frozenPlayer.getOriginalLoc();
+                Location freezeLoc = frozenPlayer.getFreezeLoc();
+                if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && (originalLoc.getY() - freezeLoc.getY() > 3 || freezeLoc.getY() - this.locationManager.getGroundLocation(freezeLoc).getY() > 3)) {
+                    this.playerManager.addFallingPlayer(uuid);
+                }
+
+            } else {
+                Location originalLoc = SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".original-location"));
+                Location freezeLoc = SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freeze-location"));
+                if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && originalLoc.getY() - freezeLoc.getY() > 3) {
+                    List<String> fallingList = this.plugin.getPlayerConfig().getConfig().getStringList("falling-players");
+                    fallingList.add(uuid.toString());
+                    this.plugin.getPlayerConfig().getConfig().set("falling-players", fallingList);
+                }
             }
+
+
             this.plugin.getPlayerConfig().getConfig().set("players." + uuid.toString(), null);
             this.plugin.getPlayerConfig().saveConfig();
             this.plugin.getPlayerConfig().reloadConfig();
@@ -84,26 +102,46 @@ public class FreezeManager {
         this.plugin.getPlayerConfig().saveConfig();
         this.plugin.getPlayerConfig().reloadConfig();
         this.freezeAll = false;
-        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-            UUID uuid = p.getUniqueId();
-            if (this.playerManager.isFreezeAllFrozen(uuid)) {
-                FreezeAllPlayer freezeAllPlayer = (FreezeAllPlayer) this.playerManager.getFrozenPlayer(uuid);
-                p.getInventory().setHelmet(freezeAllPlayer.getHelmet());
-                p.teleport(freezeAllPlayer.getOriginalLoc());
-                if (this.plugin.getConfig().getBoolean("enable-fly")) {
+        for (String uuidStr : this.plugin.getPlayerConfig().getConfig().getConfigurationSection("freezeall-info.players").getKeys(false)) {
+            UUID uuid = UUID.fromString(uuidStr);
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                if (this.playerManager.isFreezeAllFrozen(uuid)) {
+                    FreezeAllPlayer freezeAllPlayer = (FreezeAllPlayer) this.playerManager.getFrozenPlayer(uuid);
+                    p.getInventory().setHelmet(freezeAllPlayer.getHelmet());
+
                     p.setAllowFlight(false);
                     p.setFlying(false);
-                }
-                this.playerManager.removeFrozenPlayer(uuid);
-            }
+                    p.teleport(freezeAllPlayer.getOriginalLoc());
 
-            try {
-                Sound sound = Sound.valueOf(this.plugin.getConfig().getString("unfreeze-sound.sound"));
-                float volume = (float) this.plugin.getConfig().getDouble("unfreeze-sound.volume");
-                float pitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound.pitch");
-                p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-            } catch (IllegalArgumentException e) {
-                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
+                    Location originalLoc = freezeAllPlayer.getOriginalLoc();
+                    Location freezeLoc = freezeAllPlayer.getFreezeLoc();
+                    if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && originalLoc.getY() - freezeLoc.getY() > 3) {
+                        this.playerManager.addFallingPlayer(uuid);
+                    }
+
+                    this.playerManager.removeFrozenPlayer(uuid);
+                }
+
+                try {
+                    Sound sound = Sound.valueOf(this.plugin.getConfig().getString("unfreeze-sound.sound"));
+                    float volume = (float) this.plugin.getConfig().getDouble("unfreeze-sound.volume");
+                    float pitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound.pitch");
+                    p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
+                }
+                catch (IllegalArgumentException e) {
+                    Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
+                }
+            } else {
+                Location originalLoc = SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + "original-location"));
+                Location freezeLoc = SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + "freeze-location"));
+                if (originalLoc != null && freezeLoc != null) {
+                    if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && (originalLoc.getY() - freezeLoc.getY() > 3 || freezeLoc.getY() - this.locationManager.getGroundLocation(freezeLoc).getY() > 3)) {
+                        List<String> fallingList = this.plugin.getPlayerConfig().getConfig().getStringList("falling-players");
+                        fallingList.add(uuid.toString());
+                        this.plugin.getPlayerConfig().getConfig().set("falling-players", fallingList);
+                    }
+                }
             }
         }
         this.plugin.getPlayerConfig().getConfig().set("freezeall-info.players", null);
@@ -137,8 +175,6 @@ public class FreezeManager {
                     UUID freezeeUUID = p.getUniqueId();
                     ItemStack helmet = null;
                     SFLocation originalLoc = null;
-                    String freezeeName = Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
-                    String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
 
                     if (freezeLoc != null) {
                         if (!this.plugin.getConfig().isSet("locations." + location + ".yaw") && p != null) {
@@ -154,14 +190,15 @@ public class FreezeManager {
                     }
 
                     originalLoc = new SFLocation(p.getLocation());
-                    if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
-                        freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
+                    if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-to-ground")) {
+                        freezeLoc = new SFLocation(this.locationManager.getGroundLocation(originalLoc));
                     } else if (freezeLoc == null) {
                         freezeLoc = new SFLocation(originalLoc.clone());
-                        if (this.plugin.getConfig().getBoolean("enable-fly")) {
-                            p.setAllowFlight(true);
-                            p.setFlying(true);
-                        }
+                    }
+
+                    if (this.plugin.getConfig().getBoolean("enable-fly")) {
+                        p.setAllowFlight(true);
+                        p.setFlying(true);
                     }
                     if (!freezeLoc.equals(originalLoc)) {
                         p.teleport(freezeLoc);
@@ -182,7 +219,8 @@ public class FreezeManager {
                             float volume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
                             float pitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
                             p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                        } catch (IllegalArgumentException e) {
+                        }
+                        catch (IllegalArgumentException e) {
                             Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
                         }
                     }
@@ -201,7 +239,6 @@ public class FreezeManager {
         SFLocation originalLoc = null;
         SFLocation freezeLoc = null;
         Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
-        String freezeeName = Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
         String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer
                 (freezerUUID).getName();
 
@@ -220,14 +257,15 @@ public class FreezeManager {
                 helmet = onlineFreezee.getInventory().getHelmet();
             }
             originalLoc = new SFLocation(onlineFreezee.getLocation());
-            if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
-                freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
+            if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-to-ground")) {
+                freezeLoc = new SFLocation(this.locationManager.getGroundLocation(originalLoc));
             } else if (freezeLoc == null) {
                 freezeLoc = new SFLocation(originalLoc.clone());
-                if (this.plugin.getConfig().getBoolean("enable-fly")) {
-                    onlineFreezee.setAllowFlight(true);
-                    onlineFreezee.setFlying(true);
-                }
+            }
+
+            if (this.plugin.getConfig().getBoolean("enable-fly")) {
+                onlineFreezee.setAllowFlight(true);
+                onlineFreezee.setFlying(true);
             }
             if (!freezeLoc.equals(originalLoc)) {
                 onlineFreezee.teleport(freezeLoc);
@@ -238,7 +276,8 @@ public class FreezeManager {
                 float volume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
                 float pitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
                 onlineFreezee.playSound(onlineFreezee.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-            } catch (IllegalArgumentException e) {
+            }
+            catch (IllegalArgumentException e) {
                 Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
             }
         }
@@ -275,7 +314,6 @@ public class FreezeManager {
         SFLocation originalLoc = null;
         SFLocation freezeLoc = null;
         final Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
-        final String freezeeName = Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
         String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer
                 (freezerUUID).getName();
 
@@ -297,14 +335,15 @@ public class FreezeManager {
             }
 
             originalLoc = new SFLocation(onlineFreezee.getLocation());
-            if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-up")) {
-                freezeLoc = this.locationManager.getHighestAirLocation(originalLoc);
+            if (freezeLoc == null && this.plugin.getConfig().getBoolean("teleport-to-ground")) {
+                freezeLoc = new SFLocation(this.locationManager.getGroundLocation(originalLoc));
             } else if (freezeLoc == null) {
                 freezeLoc = new SFLocation(originalLoc.clone());
-                if (this.plugin.getConfig().getBoolean("enable-fly")) {
-                    onlineFreezee.setAllowFlight(true);
-                    onlineFreezee.setFlying(true);
-                }
+            }
+
+            if (this.plugin.getConfig().getBoolean("enable-fly")) {
+                onlineFreezee.setAllowFlight(true);
+                onlineFreezee.setFlying(true);
             }
             if (!freezeLoc.equals(originalLoc)) {
                 onlineFreezee.teleport(freezeLoc);
@@ -315,7 +354,8 @@ public class FreezeManager {
                 float volume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
                 float pitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
                 onlineFreezee.playSound(onlineFreezee.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-            } catch (IllegalArgumentException e) {
+            }
+            catch (IllegalArgumentException e) {
                 Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
             }
         }
@@ -335,7 +375,7 @@ public class FreezeManager {
         this.plugin.getPlayerConfig().reloadConfig();
         final TempFrozenPlayer tempFrozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
         if (onlineFreezee != null) {
-        onlineFreezee.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(tempFrozenPlayer));
+            onlineFreezee.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(tempFrozenPlayer));
         }
 
         if (this.freezeAll == true) {

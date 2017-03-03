@@ -9,6 +9,8 @@ import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.SFLocation;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 public class PlayerManager {
@@ -17,6 +19,7 @@ public class PlayerManager {
     private final FrozenPages frozenPages;
 
     private HashMap<UUID, FrozenPlayer> frozenPlayers = new HashMap<UUID, FrozenPlayer>();
+    private HashSet<UUID> fallingPlayers = new HashSet<>();
 
     public PlayerManager(SimpleFreezeMain plugin, FrozenPages frozenPages) {
         this.plugin = plugin;
@@ -97,6 +100,23 @@ public class PlayerManager {
 
     public FrozenPlayer getFrozenPlayer(UUID uuid) {
         return this.isFrozen(uuid) ? this.frozenPlayers.get(uuid) : null;
+    }
+
+    public boolean isFallingPlayer(UUID uuid) {
+        return this.fallingPlayers.contains(uuid) || this.plugin.getPlayerConfig().getConfig().getStringList("falling-players").contains(uuid.toString());
+    }
+
+    public void addFallingPlayer(UUID uuid) {
+        this.fallingPlayers.add(uuid);
+    }
+
+    public void removeFallingPlayer(UUID uuid) {
+        this.fallingPlayers.remove(uuid);
+        List<String> fallingList = this.plugin.getPlayerConfig().getConfig().getStringList("falling-players");
+        if (fallingList.contains(uuid.toString())) {
+            fallingList.remove(uuid.toString());
+
+        }
     }
 
 }
