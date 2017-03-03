@@ -2,7 +2,6 @@ package org.plugins.simplefreeze.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,10 +25,11 @@ public class FreezeManager {
     private final LocationManager locationManager;
     private final SQLManager sqlManager;
     private final FrozenPages frozenPages;
+    private final SoundManager soundManager;
 
     private boolean freezeAll = false;
 
-    public FreezeManager(SimpleFreezeMain plugin, PlayerManager playerManager, HelmetManager helmetManager, LocationManager locationManager, SQLManager sqlManager, FrozenPages frozenPages) {
+    public FreezeManager(SimpleFreezeMain plugin, PlayerManager playerManager, HelmetManager helmetManager, LocationManager locationManager, SQLManager sqlManager, FrozenPages frozenPages, SoundManager soundManager) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.helmetManager = helmetManager;
@@ -37,6 +37,7 @@ public class FreezeManager {
         this.sqlManager = sqlManager;
         this.frozenPages = frozenPages;
         this.freezeAll = this.plugin.getPlayerConfig().getConfig().getBoolean("freezeall-info.freezeall");
+        this.soundManager = soundManager;
     }
 
     public boolean freezeAllActive() {
@@ -60,15 +61,7 @@ public class FreezeManager {
                     p.teleport(frozenPlayer.getOriginalLoc());
                 }
 
-                try {
-                    Sound sound = Sound.valueOf(this.plugin.getConfig().getString("unfreeze-sound.sound"));
-                    float volume = (float) this.plugin.getConfig().getDouble("unfreeze-sound.volume");
-                    float pitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound.pitch");
-                    p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                }
-                catch (IllegalArgumentException e) {
-                    Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
-                }
+                this.soundManager.playUnfreezeSound(p);
 
                 Location originalLoc = frozenPlayer.getOriginalLoc();
                 Location freezeLoc = frozenPlayer.getFreezeLoc();
@@ -123,15 +116,7 @@ public class FreezeManager {
                     this.playerManager.removeFrozenPlayer(uuid);
                 }
 
-                try {
-                    Sound sound = Sound.valueOf(this.plugin.getConfig().getString("unfreeze-sound.sound"));
-                    float volume = (float) this.plugin.getConfig().getDouble("unfreeze-sound.volume");
-                    float pitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound.pitch");
-                    p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                }
-                catch (IllegalArgumentException e) {
-                    Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
-                }
+                this.soundManager.playUnfreezeSound(p);
             } else {
                 Location originalLoc = SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + "original-location"));
                 Location freezeLoc = SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + "freeze-location"));
@@ -214,15 +199,7 @@ public class FreezeManager {
                         this.playerManager.addFrozenPlayer(freezeeUUID, freezeAllPlayer);
                         p.getInventory().setHelmet(this.helmetManager.getPersonalHelmetItem(freezeAllPlayer));
 
-                        try {
-                            Sound sound = Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
-                            float volume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
-                            float pitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
-                            p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                        }
-                        catch (IllegalArgumentException e) {
-                            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
-                        }
+                        this.soundManager.playFreezeSound(p);
                     }
                 }
             }
@@ -271,15 +248,8 @@ public class FreezeManager {
                 onlineFreezee.teleport(freezeLoc);
             }
 
-            try {
-                Sound sound = Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
-                float volume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
-                float pitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
-                onlineFreezee.playSound(onlineFreezee.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-            }
-            catch (IllegalArgumentException e) {
-                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
-            }
+            this.soundManager.playFreezeSound(onlineFreezee);
+
         }
 
         long freezeDate = System.currentTimeMillis();
@@ -349,15 +319,7 @@ public class FreezeManager {
                 onlineFreezee.teleport(freezeLoc);
             }
 
-            try {
-                Sound sound = Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
-                float volume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
-                float pitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
-                onlineFreezee.playSound(onlineFreezee.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-            }
-            catch (IllegalArgumentException e) {
-                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
-            }
+            this.soundManager.playFreezeSound(onlineFreezee);
         }
 
         long freezeDate = System.currentTimeMillis();

@@ -5,7 +5,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -84,6 +83,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private FrozenPages frozenPages;
     private DataConverter dataConverter;
     private ParticleManager particleManager;
+    private SoundManager soundManager;
     private Permission permission = null;
 
     private boolean setupPermissions() {
@@ -94,15 +94,12 @@ public class SimpleFreezeMain extends JavaPlugin {
         return (this.permission != null);
     }
 
-    public static SimpleFreezeMain getSimpleFreezee() {
-        return SimpleFreezeMain.plugin;
-    }
-
     @Override
     public void onEnable() {
         SimpleFreezeMain.plugin = this;
         this.initializeVariables();
         this.loadConfigs();
+        this.soundManager.reset();
         this.setupPermissions();
         this.registerCommands();
         this.registerListeners();
@@ -178,7 +175,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                     }
                 }
 
-                    Long freezeDate = this.getPlayerConfig().getConfig().getLong("freezeall-info.date");
+                Long freezeDate = this.getPlayerConfig().getConfig().getLong("freezeall-info.date");
 
                 frozenPlayer = new FreezeAllPlayer(freezeDate, p.getUniqueId(), freezerUUID, p.getLocation(), freezeLocation);
                 this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
@@ -220,14 +217,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                         }
                         p.teleport(finalFreezeAllPlayer.getFreezeLoc());
 
-                        try {
-                            Sound sound = Sound.valueOf(getConfig().getString("freeze-sound.sound"));
-                            float volume = (float) getConfig().getDouble("freeze-sound.volume");
-                            float pitch = (float) getConfig().getDouble("freeze-sound.pitch");
-                            p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                        } catch (IllegalArgumentException e) {
-                            Bukkit.getConsoleSender().sendMessage(placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + getConfig().getString("freeze-sound.sound")));
-                        }
+                        soundManager.playFreezeSound(p);
 
                         p.sendMessage(placeholders("{PREFIX}SimpleFreeze was re-enabled so you are now frozen again"));
                     }
@@ -268,14 +258,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                         }
                         p.teleport(finalFrozenPlayer.getFreezeLoc());
 
-                        try {
-                            Sound sound = Sound.valueOf(getConfig().getString("freeze-sound.sound"));
-                            float volume = (float) getConfig().getDouble("freeze-sound.volume");
-                            float pitch = (float) getConfig().getDouble("freeze-sound.pitch");
-                            p.playSound(p.getLocation().clone().add(0, 2, 0), sound, volume, pitch);
-                        } catch (IllegalArgumentException e) {
-                            Bukkit.getConsoleSender().sendMessage(placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + getConfig().getString("freeze-sound.sound")));
-                        }
+                        soundManager.playFreezeSound(p);
 
                         if (getPlayerConfig().getConfig().getBoolean("players. " + uuidStr + ".message", false)) {
                             String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
@@ -337,11 +320,12 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.sqlManager = new SQLManager(this);
         this.locationManager = new LocationManager(this);
         this.dataConverter = new DataConverter(this);
+        this.soundManager = new SoundManager(this);
         this.frozenPages = new FrozenPages(this, this.locationManager);
         this.playerManager = new PlayerManager(this, this.frozenPages);
         this.particleManager = new ParticleManager(this, this.playerManager);
         this.helmetManager = new HelmetManager(this, this.playerManager, this.locationManager);
-        this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.sqlManager, this.frozenPages);
+        this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.sqlManager, this.frozenPages, this.soundManager);
     }
 
     private void loadConfigs() {
@@ -355,7 +339,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.freezeManager, this.helmetManager, this.frozenPages, this.particleManager));
+        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager));
         this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.permission));
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
@@ -374,7 +358,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new PlayerDropListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerEnderpearlListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerInteractListener(this, this.playerManager), this);
-        plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter), this);
+        plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager), this);
         plManager.registerEvents(new PlayerMoveListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerQuitListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerToggleFlightListener(this, this.playerManager), this);

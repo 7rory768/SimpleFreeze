@@ -8,9 +8,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
-import org.plugins.simplefreeze.managers.FreezeManager;
 import org.plugins.simplefreeze.managers.HelmetManager;
 import org.plugins.simplefreeze.managers.ParticleManager;
+import org.plugins.simplefreeze.managers.SoundManager;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,17 +19,17 @@ import java.util.List;
 public class SimpleFreezeCommand implements CommandExecutor {
 
     private final SimpleFreezeMain plugin;
-    private final FreezeManager freezeManager;
     private final HelmetManager helmetManager;
     private final FrozenPages frozenPages;
     private final ParticleManager particleManager;
+    private final SoundManager soundManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, FreezeManager freezeManager, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager) {
         this.plugin = plugin;
-        this.freezeManager = freezeManager;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
         this.particleManager = particleManager;
+        this.soundManager = soundManager;
     }
 
     @Override
@@ -49,6 +49,15 @@ public class SimpleFreezeCommand implements CommandExecutor {
                         return false;
                     }
 
+                    // STORE OLD SOUND VALUES
+                    String freezeSound = this.plugin.getConfig().getString("freeze-sound.sound");
+                    float freezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound-volume");
+                    float freezePitch = (float) this.plugin.getConfig().getDouble("freeze-sound-pitch");
+
+                    String unfreezeSound = this.plugin.getConfig().getString("unfreeze-sound.sound");
+                    float unfreezeVolume = (float) this.plugin.getConfig().getDouble("unfreeze-sound-volume");
+                    float unfreezePitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound-pitch");
+
                     // STORE OLD /FROZEN FORMATS
                     String frozenStr = this.plugin.getConfig().getString("frozen-list-format.formats.frozen");
                     String frozenLocStr = this.plugin.getConfig().getString("frozen-list-format.formats.frozen-location");
@@ -57,10 +66,44 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     String onlinePlaceholder = this.plugin.getConfig().getString("frozen-list-format.online-placeholder");
                     String offlinePlaceholder = this.plugin.getConfig().getString("frozen-list-format.offline-placeholder");
 
-                    HashSet<String> strings = new HashSet<String>();
-
+                    // RELOAD CONFIG
                     this.plugin.reloadConfig();
                     this.plugin.updateFinalPrefixFormatting();
+
+                    // CHECK IF SOUND VALUES CHANGED
+                    String newFreezeSound = this.plugin.getConfig().getString("freeze-sound.sound");
+                    float newFreezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound-volume");
+                    float newFreezePitch = (float) this.plugin.getConfig().getDouble("freeze-sound-pitch");
+
+                    String newUnfreezeSound = this.plugin.getConfig().getString("unfreeze-sound.sound");
+                    float newUnfreezeVolume = (float) this.plugin.getConfig().getDouble("unfreeze-sound-volume");
+                    float newUnfreezePitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound-pitch");
+
+                    if (!this.soundManager.setFreezeSound(newFreezeSound)) {
+                        sender.sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
+                    }
+
+                    if (!this.soundManager.setUnfreezeSound(newUnfreezeSound)) {
+                        sender.sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
+                    }
+
+                    if (freezeVolume != newFreezeVolume) {
+                        this.soundManager.setFreezeVolume(newFreezeVolume);
+                    }
+
+                    if (unfreezeVolume != newUnfreezeVolume) {
+                        this.soundManager.setUnfreezeVolume(newUnfreezeVolume);
+                    }
+
+                    if (freezePitch != newFreezePitch) {
+                        this.soundManager.setFreezePitch(newFreezePitch);
+                    }
+
+                    if (unfreezePitch != newUnfreezePitch) {
+                        this.soundManager.setUnfreezePitch(newUnfreezePitch);
+                    }
+
+                    HashSet<String> strings = new HashSet<String>();
 
                     // CHECK IF /FROZEN FORMATS CHANGED
                     if (!frozenStr.equals(this.plugin.getConfig().getString("frozen-list-format.formats.frozen"))) {
@@ -113,7 +156,7 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     // REPLACE HELMETS IF THEY CHANGED,
                     ItemStack oldFrozenHelmet = this.helmetManager.getFrozenHelmet();
                     ItemStack newHelmet = null;
-                    
+
                     if (this.plugin.getConfig().isSet("head-item.frozen")) {
                         short data = this.plugin.getConfig().isSet("head-item.frozen.data") ? (short) this.plugin.getConfig().getInt("head-item.frozen.data") : 0;
                         newHelmet = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.frozen.material")), 1, data);
