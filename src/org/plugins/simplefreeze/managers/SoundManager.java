@@ -16,7 +16,7 @@ public class SoundManager {
     private float freezeVolume;
     private float freezePitch;
 
-    Sound unfreezeSound;
+    private Sound unfreezeSound;
     private float unfreezeVolume;
     private float unfreezePitch;
 
@@ -64,11 +64,6 @@ public class SoundManager {
 
 
     public void playFreezeSound(Player p) {
-        try {
-            Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
-        } catch (IllegalArgumentException e) {
-            Bukkit.getConsoleSender().sendMessage(plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + plugin.getConfig().getString("freeze-sound.sound")));
-        }
         if (this.freezeSound != null) {
             p.playSound(p.getLocation().clone().add(0, 2, 0), this.freezeSound, this.freezeVolume, this.freezePitch);
         }
@@ -82,7 +77,7 @@ public class SoundManager {
 
     public boolean setFreezeSound(String soundString) {
         try {
-            this.freezeSound = Sound.NOTE_BASS;
+            this.freezeSound = Sound.valueOf(soundString);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -91,7 +86,7 @@ public class SoundManager {
 
     public boolean setUnfreezeSound(String soundString) {
         try {
-            this.unfreezeSound = Sound.NOTE_BASS;
+            this.unfreezeSound = Sound.valueOf(soundString);
         } catch (IllegalArgumentException e) {
             return false;
         }
