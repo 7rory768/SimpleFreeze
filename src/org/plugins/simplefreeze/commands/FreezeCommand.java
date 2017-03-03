@@ -110,7 +110,7 @@ public class FreezeCommand implements CommandExecutor {
                 }
             }
 
-            this.plugin.getPlayerConfig().getConfig().set("players." + uuid.toString() + ".unfreeze-date", null);
+            //this.plugin.getPlayerConfig().getConfig().set("players." + uuid.toString() + ".unfreeze-date", null);
 
             if (args.length == 1) {
                 this.freezeManager.freeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, null);

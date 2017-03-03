@@ -90,7 +90,7 @@ public class LocationManager {
         for (int y = pLoc.getBlockY(); y >= 0; y--) {
             Block block = world.getBlockAt(new SFLocation(world, x, y, z));
             if (block.getType() != Material.AIR) {
-                return new SFLocation(world, pLoc.getX(), y + 1, pLoc.getZ());
+                return new SFLocation(world, pLoc.getX(), y + 1, pLoc.getZ(), pLoc.getYaw(), pLoc.getPitch());
             }
         }
         return pLoc;
