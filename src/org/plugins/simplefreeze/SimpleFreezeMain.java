@@ -52,6 +52,7 @@ import java.util.UUID;
  *   - REPLACED THE OLD .TXT FORMAT WITH A NEW CLEANER AND FASTER .YML FORMAT
  *       - ON JOIN DATA WILL CONVERT PER PLAY SO DON'T DELETE UNTIL/UNLESS THE FILE IS EMPTY
  *   - DISTANCE CHECK NOW OPTIONALLY INCLUDES Y-CORD
+ *   - TELEPORT-UP REPLACED WITH TELEPORT-TO-GROUND
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFICATION THROUGH THE TELEPORT-UP OPTION
@@ -69,6 +70,8 @@ import java.util.UUID;
  * */
 
 public class SimpleFreezeMain extends JavaPlugin {
+
+    private static SimpleFreezeMain plugin;
 
     private String finalPrefixFormatting = this.updateFinalPrefixFormatting();
 
@@ -91,8 +94,13 @@ public class SimpleFreezeMain extends JavaPlugin {
         return (this.permission != null);
     }
 
+    public static SimpleFreezeMain getSimpleFreezee() {
+        return SimpleFreezeMain.plugin;
+    }
+
     @Override
     public void onEnable() {
+        SimpleFreezeMain.plugin = this;
         this.initializeVariables();
         this.loadConfigs();
         this.setupPermissions();
@@ -159,8 +167,8 @@ public class SimpleFreezeMain extends JavaPlugin {
                 if (freezeLocation == null && this.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuidStr + ".freeze-location")) {
                     freezeLocation = this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null") ? null : SFLocation.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location"));
                 } else if (freezeLocation == null) {
-                    if (this.getConfig().getBoolean("teleport-up")) {
-                        freezeLocation = this.locationManager.getHighestAirLocation(new SFLocation(p.getLocation().clone()));
+                    if (this.getConfig().getBoolean("teleport-to-ground")) {
+                        freezeLocation = new SFLocation(this.locationManager.getGroundLocation(p.getLocation()));
                     } else {
                         freezeLocation = new SFLocation(new SFLocation(p.getLocation().clone()));
                         if (this.getConfig().getBoolean("enable-fly")) {
@@ -194,14 +202,10 @@ public class SimpleFreezeMain extends JavaPlugin {
                         if (finalFreezeAllPlayer.getFreezeLoc() == null) {
                             SFLocation originalLoc = new SFLocation(finalFreezeAllPlayer.getOriginalLoc());
                             Location freezeLoc;
-                            if (getConfig().getBoolean("teleport-up")) {
-                                freezeLoc = locationManager.getHighestAirLocation(originalLoc);
+                            if (getConfig().getBoolean("teleport-to-ground")) {
+                                freezeLoc = locationManager.getGroundLocation(originalLoc);
                             } else {
                                 freezeLoc = new SFLocation(originalLoc.clone());
-                                if (getConfig().getBoolean("enable-fly")) {
-                                    p.setAllowFlight(true);
-                                    p.setFlying(true);
-                                }
                             }
                             finalFreezeAllPlayer.setFreezeLoc(freezeLoc);
 
@@ -210,6 +214,10 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                         }
 
+                        if (getConfig().getBoolean("enable-fly")) {
+                            p.setAllowFlight(true);
+                            p.setFlying(true);
+                        }
                         p.teleport(finalFreezeAllPlayer.getFreezeLoc());
 
                         try {
@@ -242,20 +250,21 @@ public class SimpleFreezeMain extends JavaPlugin {
                         if (finalFrozenPlayer.getFreezeLoc() == null) {
                             SFLocation originalLoc = new SFLocation(finalFrozenPlayer.getOriginalLoc());
                             Location freezeLoc;
-                            if (getConfig().getBoolean("teleport-up")) {
-                                freezeLoc = locationManager.getHighestAirLocation(originalLoc);
+                            if (getConfig().getBoolean("teleport-to-ground")) {
+                                freezeLoc = locationManager.getGroundLocation(originalLoc);
                             } else {
                                 freezeLoc = new SFLocation(originalLoc.clone());
-                                if (getConfig().getBoolean("enable-fly")) {
-                                    p.setAllowFlight(true);
-                                    p.setFlying(true);
-                                }
                             }
                             finalFrozenPlayer.setFreezeLoc(freezeLoc);
 
                             if (getPlayerConfig().getConfig().getString("players." + uuidStr + ".freeze-location").equals("null")) {
                                 getPlayerConfig().getConfig().set("players." + uuidStr + ".freeze-location", new SFLocation(freezeLoc).toString());
                             }
+                        }
+
+                        if (getConfig().getBoolean("enable-fly")) {
+                            p.setAllowFlight(true);
+                            p.setFlying(true);
                         }
                         p.teleport(finalFrozenPlayer.getFreezeLoc());
 
@@ -312,6 +321,11 @@ public class SimpleFreezeMain extends JavaPlugin {
             if (this.playerManager.isFrozen(p)) {
                 FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(p);
                 p.teleport(frozenPlayer.getOriginalLoc());
+                if (p.isFlying()) {
+                    p.setFlying(false);
+                    p.setAllowFlight(false);
+                    p.teleport(this.locationManager.getGroundLocation(p.getLocation()));
+                }
                 p.getInventory().setHelmet(frozenPlayer.getHelmet());
                 p.sendMessage(this.placeholders("{PREFIX}SimpleFreeze has been disabled, you will remain unfrozen until it is re-enabled"));
             }
@@ -363,10 +377,15 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter), this);
         plManager.registerEvents(new PlayerMoveListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerQuitListener(this, this.playerManager), this);
+        plManager.registerEvents(new PlayerToggleFlightListener(this, this.playerManager), this);
     }
 
     public PlayerManager getPlayerManager() {
         return this.playerManager;
+    }
+
+    public LocationManager getLocationManager() {
+        return this.locationManager;
     }
 
     public Permission getPermission() {

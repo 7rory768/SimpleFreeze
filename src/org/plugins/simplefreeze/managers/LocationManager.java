@@ -83,18 +83,14 @@ public class LocationManager {
         return this.plugin.getConfig().getString("locations." + locationName + ".placeholder", this.plugin.getConfig().getString("location"));
     }
 
-    public SFLocation getHighestAirLocation(SFLocation pLoc) {
+    public Location getGroundLocation(Location pLoc) {
         World world = pLoc.getWorld();
         int x = pLoc.getBlockX();
         int z = pLoc.getBlockZ();
-        for (int y = 256; y > 0; y--) {
+        for (int y = pLoc.getBlockY(); y >= 0; y--) {
             Block block = world.getBlockAt(new SFLocation(world, x, y, z));
             if (block.getType() != Material.AIR) {
-                if (world.getBlockAt(new SFLocation(world, pLoc.getX(), pLoc.getY() + 1, pLoc.getZ())) == null && world.getBlockAt(new SFLocation(world, pLoc.getX(), pLoc.getY() + 2, pLoc.getZ())) == null) {
-                    return new SFLocation(pLoc.getWorld(), pLoc.getX(), y + 1, pLoc.getZ(), pLoc.getYaw(), pLoc.getPitch());
-                } else if (world.getBlockAt(new SFLocation(world, pLoc.getX(), pLoc.getY() + 1, pLoc.getZ())).getType() == Material.AIR && world.getBlockAt(new SFLocation(world, pLoc.getX(), pLoc.getY() + 2, pLoc.getZ())).getType() == Material.AIR) {
-                    return new SFLocation(pLoc.getWorld(), pLoc.getX(), y + 1, pLoc.getZ(), pLoc.getYaw(), pLoc.getPitch());
-                }
+                return new SFLocation(world, pLoc.getX(), y + 1, pLoc.getZ());
             }
         }
         return pLoc;

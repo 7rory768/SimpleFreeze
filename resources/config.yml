@@ -55,11 +55,11 @@ mysql:
 # ||              Preferences              ||
 # ||=======================================||
 
-# Defines if a player should be teleported to the highest block at their location when frozen (prevents glitches when a player is floating while frozen (Kicked: Flying is not enabled on this server))
-teleport-up: true
-# teleport-up will not run if a location is specified (ex. /freeze <playername> example-location)
+# Defines if a player should be teleported to the the ground at their location when frozen (prevents glitches when a player is floating while frozen (Kicked: Flying is not enabled on this server))
+teleport-to-ground: true
+# teleport-to-ground will not run if a location is specified (ex. /freeze <playername> example-location)
 
-# If teleport-up is false, should the player have their fly enabled so that they aren't kicked for flying/don't glitch while in the air
+# If teleport-to-ground is false, should the player have their fly enabled so that they aren't kicked for flying/don't glitch while in the air
 enable-fly: true
 
 # Defines if a player should be teleported back to their old location after being unfrozen (only affects when freezing a player and providing a location or when teleport-up is enabled);

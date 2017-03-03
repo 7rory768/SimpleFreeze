@@ -102,8 +102,8 @@ public class PlayerJoinListener implements Listener {
             if (freezeLocation == null && plugin.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuidStr + ".freeze-location")) {
                 freezeLocation = plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null") ? null : SFLocation.fromString(plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location"));
             } else if (freezeLocation == null) {
-                if (this.plugin.getConfig().getBoolean("teleport-up")) {
-                    freezeLocation = this.locationManager.getHighestAirLocation(new SFLocation(p.getLocation().clone()));
+                if (this.plugin.getConfig().getBoolean("teleport-to-ground")) {
+                    freezeLocation = new SFLocation(this.locationManager.getGroundLocation(new SFLocation(p.getLocation().clone())));
                 } else {
                     freezeLocation = new SFLocation(new SFLocation(p.getLocation().clone()));
                     if (this.plugin.getConfig().getBoolean("enable-fly")) {
@@ -138,14 +138,10 @@ public class PlayerJoinListener implements Listener {
                     if (finalFreezeAllPlayer.getFreezeLoc() == null) {
                         SFLocation originalLoc = new SFLocation(finalFreezeAllPlayer.getOriginalLoc());
                         Location freezeLoc;
-                        if (plugin.getConfig().getBoolean("teleport-up")) {
-                            freezeLoc = locationManager.getHighestAirLocation(originalLoc);
+                        if (plugin.getConfig().getBoolean("teleport-to-ground")) {
+                            freezeLoc = locationManager.getGroundLocation(originalLoc);
                         } else {
                             freezeLoc = new SFLocation(originalLoc.clone());
-                            if (plugin.getConfig().getBoolean("enable-fly")) {
-                                p.setAllowFlight(true);
-                                p.setFlying(true);
-                            }
                         }
                         finalFreezeAllPlayer.setFreezeLoc(freezeLoc);
 
@@ -154,6 +150,10 @@ public class PlayerJoinListener implements Listener {
                         }
                     }
 
+                    if (plugin.getConfig().getBoolean("enable-fly")) {
+                        p.setAllowFlight(true);
+                        p.setFlying(true);
+                    }
                     p.teleport(finalFreezeAllPlayer.getFreezeLoc());
 
                     String freezerName = "";
@@ -193,20 +193,21 @@ public class PlayerJoinListener implements Listener {
                     if (finalFrozenPlayer.getFreezeLoc() == null) {
                         SFLocation originalLoc = new SFLocation(finalFrozenPlayer.getOriginalLoc());
                         Location freezeLoc;
-                        if (plugin.getConfig().getBoolean("teleport-up")) {
-                            freezeLoc = locationManager.getHighestAirLocation(originalLoc);
+                        if (plugin.getConfig().getBoolean("teleport-to-ground")) {
+                            freezeLoc = locationManager.getGroundLocation(originalLoc);
                         } else {
                             freezeLoc = new SFLocation(originalLoc.clone());
-                            if (plugin.getConfig().getBoolean("enable-fly")) {
-                                p.setAllowFlight(true);
-                                p.setFlying(true);
-                            }
                         }
                         finalFrozenPlayer.setFreezeLoc(freezeLoc);
 
                         if (plugin.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freeze-location").equals("null")) {
                             plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".freeze-location", new SFLocation(freezeLoc).toString());
                         }
+                    }
+
+                    if (plugin.getConfig().getBoolean("enable-fly")) {
+                        p.setAllowFlight(true);
+                        p.setFlying(true);
                     }
                     p.teleport(finalFrozenPlayer.getFreezeLoc());
                     
