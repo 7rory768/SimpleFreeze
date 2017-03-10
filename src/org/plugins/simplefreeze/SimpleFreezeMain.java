@@ -27,9 +27,6 @@ import java.util.UUID;
  *  - Titles
  *  - Actionbar
  *  - Block projectile shooting (ex. bow shooting, eggs, fishing rod, splash potions)
- *  - Block nether portal usage
- *  - Block book changing
- *  - Sound upon freeze
  *  - go through config to see whats missing
  *  
  *  TODO: Hopefully
@@ -52,6 +49,8 @@ import java.util.UUID;
  *       - ON JOIN DATA WILL CONVERT PER PLAY SO DON'T DELETE UNTIL/UNLESS THE FILE IS EMPTY
  *   - DISTANCE CHECK NOW OPTIONALLY INCLUDES Y-CORD
  *   - TELEPORT-UP REPLACED WITH TELEPORT-TO-GROUND
+ *   - BLOCKED NETHER PORTAL AND END PORTAL TELEPORTATION WHILE FROZEN
+ *   - BLOCKED BOOK CHANGING
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFICATION THROUGH THE TELEPORT-UP OPTION
@@ -356,12 +355,14 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new PlayerChatListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerCommandListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerDropListener(this, this.playerManager), this);
-        plManager.registerEvents(new PlayerEnderpearlListener(this, this.playerManager), this);
+        plManager.registerEvents(new PlayerEditBookListener(this, this.playerManager), this);
+        plManager.registerEvents(new PlayerTeleportListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerInteractListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager), this);
         plManager.registerEvents(new PlayerMoveListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerQuitListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerToggleFlightListener(this, this.playerManager), this);
+        plManager.registerEvents(new ProjectileLaunchListener(this, this.playerManager), this);
     }
 
     public PlayerManager getPlayerManager() {

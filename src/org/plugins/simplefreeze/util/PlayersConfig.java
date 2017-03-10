@@ -1,22 +1,18 @@
 package org.plugins.simplefreeze.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.plugins.simplefreeze.SimpleFreezeMain;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.*;
 
 public class PlayersConfig {
 
-	private SimpleFreezeMain plugin;
+	private JavaPlugin plugin;
 	private FileConfiguration playerDataConfig = null;
 	private File playerDataConfigFile = null;
 
-	public PlayersConfig(SimpleFreezeMain plugin) {
+	public PlayersConfig(JavaPlugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -66,7 +62,5 @@ public class PlayersConfig {
 			this.plugin.saveResource("playerdata.yml", false);
 		}
 	}
-	
-	
 	
 }
