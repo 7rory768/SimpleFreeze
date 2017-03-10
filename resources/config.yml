@@ -40,7 +40,7 @@ location: 'Unknown'
 # Also, make sure you do not have any locations that are named the same as the server-id
 server-id: lobby
 
-# LIST OF ALL SERVER-IDs CONNECTED TO YOUR NETWORK THAT ARE RUNNING SIMPLE-FREEZE
+# LIST OF ALL SERVER-IDs CONNECTED TO YOUR NETWORK THAT ARE RUNNING SIMPLE FREEZE
 server-list:
  - lobby
 
@@ -73,7 +73,7 @@ include-y: true
 # Defines what item will be put in the players helmet slot This item will be removed once they are unfrozen (Their current helmet will not be lost)
 # Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-item' and the keys under it)
 head-item:
-  # YOU CAN DEFINE 4 DIFFERNT HEAD-ITEMS FOR 6 DIFFERNT TYPE OF FREEZES:
+  # YOU CAN DEFINE 4 DIFFERENT HEAD-ITEMS FOR 6 DIFFERENT TYPE OF FREEZES:
   # frozen, frozen-location, temp-frozen. temp-frozen-location, freeze-all, freeze-all-location
   # IF ONE IS NOT SET IT WILL DEFAULT TO frozen
   # AVAILABLE PLACEHOLDERS: PLAYER, FREEZER, ONLINE, LOCATION, TIME
@@ -155,19 +155,17 @@ logout-commands:
 # yaw and pitch are optional
 locations:
   example-location:
-    placeholder: 'Example SFLocation'
+    # What {LOCATION} will be replaced by in messages
+    placeholder: Example SFLocation
+    # Worldname
     worldname: world
+    # Coordinate info
     x: 0.5
     y: 100.0
     z: 0.5
+    # Direction info
     yaw: 0.0
     pitch: 0.0
-  another-location:
-    placeholder: 'Another SFLocation'
-    worldname: 'world'
-    x: 10.5
-    y: 100.0
-    z: 10.5
 
 # ||======================================||
 # ||               Blocking               ||
@@ -182,6 +180,10 @@ head-movement: false
 block-chat: false
 block-chat-message:
   - '{PREFIX}You cannot chat while frozen'
+
+book-editing: false
+book-edit-message:
+  - '{PREFIX}You cannot edit a book while frozen'
 
 # Whitelist = true, Blacklist = false (Whitelist: Only commands not listed are blocked, Blacklist: Only commands listed are blocked)
 whitelist-or-blacklist: false
@@ -275,7 +277,7 @@ join-on-freezeall-message:
 # Messages sent to a player when they attempt to freeze a player but they are not within freeze-radius
 # AVAIALBLE PLACEHOLDERS: PLAYER, TOTALDISTANCE, MAXDISTANCE, DISTANCEDIFFERENCE
 freeze-distance-fail:
-  - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are &b{DIFFERENCEDISTANCE} &7blocks too far from you'
+  - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are &b{DISTANCEDIFFERENCE} &7blocks too far from you'
 
 # Messages sent to a player that tries to attack a frozen player
 frozen-attacked-message:
