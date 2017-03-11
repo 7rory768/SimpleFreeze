@@ -312,6 +312,10 @@ book-edit-message:
 block-chat-message:
   - '{PREFIX}You cannot chat while frozen'
 
+# Message sent to a frozen player who tries to break a block
+block-break-message:
+  - '{PREFIX}You cannot break blocks while frozen'
+
 # Message sent to players upon using a blocked command
 blocked-command-message:
   - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
