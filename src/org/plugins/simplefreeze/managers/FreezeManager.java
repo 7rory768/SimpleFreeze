@@ -47,6 +47,10 @@ public class FreezeManager {
     public void unfreeze(UUID uuid) {
         if (this.playerManager.isFrozen(uuid)) {
             FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(uuid);
+            if (frozenPlayer instanceof TempFrozenPlayer) {
+                TempFrozenPlayer tempFrozenPlayer = (TempFrozenPlayer) frozenPlayer;
+                tempFrozenPlayer.cancelTask();
+            }
             Player p = Bukkit.getPlayer(uuid);
             if (p != null) {
                 if (frozenPlayer.getHelmet() != null) {
@@ -57,7 +61,7 @@ public class FreezeManager {
 
                 p.setAllowFlight(false);
                 p.setFlying(false);
-                if (frozenPlayer.getOriginalLoc() != null) {
+                if (frozenPlayer.getOriginalLoc() != null && this.plugin.getConfig().getBoolean("tp-back")) {
                     p.teleport(frozenPlayer.getOriginalLoc());
                 }
 
@@ -84,6 +88,10 @@ public class FreezeManager {
             this.plugin.getPlayerConfig().saveConfig();
             this.plugin.getPlayerConfig().reloadConfig();
             this.playerManager.removeFrozenPlayer(uuid);
+
+            this.plugin.getStatsConfig().getConfig().set("unfreeze-count", this.plugin.getStatsConfig().getConfig().getInt("unfreeze-count", 0) + 1);
+            this.plugin.getStatsConfig().saveConfig();
+            this.plugin.getStatsConfig().reloadConfig();
         }
     }
 
@@ -209,6 +217,10 @@ public class FreezeManager {
                 freezeLoc = null;
             }
         }
+
+        this.plugin.getStatsConfig().getConfig().set("freezeall-count", this.plugin.getStatsConfig().getConfig().getInt("freezeall-count", 0) + 1);
+        this.plugin.getStatsConfig().saveConfig();
+        this.plugin.getStatsConfig().reloadConfig();
     }
 
     public void freeze(UUID freezeeUUID, UUID freezerUUID, String location) {
@@ -269,6 +281,10 @@ public class FreezeManager {
             this.plugin.getPlayerConfig().saveConfig();
             this.plugin.getPlayerConfig().reloadConfig();
         }
+
+        this.plugin.getStatsConfig().getConfig().set("freeze-count", this.plugin.getStatsConfig().getConfig().getInt("freeze-count", 0) + 1);
+        this.plugin.getStatsConfig().saveConfig();
+        this.plugin.getStatsConfig().reloadConfig();
 
         if (onlineFreezee != null) {
             FrozenPlayer frozenPlayer = new FrozenPlayer(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, false, helmet);
@@ -345,6 +361,10 @@ public class FreezeManager {
             this.plugin.getPlayerConfig().saveConfig();
             this.plugin.getPlayerConfig().reloadConfig();
         }
+
+        this.plugin.getStatsConfig().getConfig().set("temp-freeze-count", this.plugin.getStatsConfig().getConfig().getInt("temp-freeze-count", 0) + 1);
+        this.plugin.getStatsConfig().saveConfig();
+        this.plugin.getStatsConfig().reloadConfig();
 
         if (onlineFreezee != null) {
             tempFrozenPlayer.startTask(this.plugin);
