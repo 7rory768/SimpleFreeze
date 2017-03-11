@@ -32,25 +32,35 @@ public class FrozenCommand implements CommandExecutor {
             int page = 1;
             if (args.length > 0) {
                 if (!this.isInt(args[0])) {
-                    sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("not-an-int").replace("{INTEGER}", args[0])));
+                    for (String msg : this.plugin.getConfig().getStringList("not-an-int")) {
+                        sender.sendMessage(this.plugin.placeholders(msg.replace("{INTEGER}", args[0])));
+                    }
                     return false;
                 }
                 page = Integer.parseInt(args[0]);
             }
 
             if (this.frozenPages.noPages()) {
-                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("nobody-frozen")));
+                for (String msg : this.plugin.getConfig().getStringList("nobody-frozen")) {
+                    sender.sendMessage(this.plugin.placeholders(msg));
+                }
                 return false;
             }
 
             if (page > this.frozenPages.getMaxPageNum()) {
-                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("page-doesnt-exist").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+                for (String msg : this.plugin.getConfig().getStringList("page-doesnt-exist")) {
+                    sender.sendMessage(this.plugin.placeholders(msg.replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+                }
                 return false;
             }
 
-            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".header").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+            if (this.plugin.getConfig().isSet("frozen-list-format.header")) {
+                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".header").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+            }
             sender.sendMessage(this.frozenPages.getPage(page));
-            sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".footer").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+            if (this.plugin.getConfig().isSet("frozen-list-format.footer")) {
+                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("frozen-list-format" + ".footer").replace("{PAGENUM}", "" + page).replace("{MAXPAGENUM}", "" + this.frozenPages.getMaxPageNum())));
+            }
             return true;
         }
 
@@ -60,8 +70,7 @@ public class FrozenCommand implements CommandExecutor {
     private boolean isInt(String arg) {
         try {
             Integer.parseInt(arg);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
         return true;
