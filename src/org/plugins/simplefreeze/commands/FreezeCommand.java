@@ -20,14 +20,14 @@ public class FreezeCommand implements CommandExecutor {
     private final PlayerManager playerManager;
     private final FreezeManager freezeManager;
     private final LocationManager locationManager;
-    private final Permission permission;
+    private final Permission permissions;
 
-    public FreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, Permission permission) {
+    public FreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, Permission permissions) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.freezeManager = freezeManager;
         this.locationManager = locationManager;
-        this.permission = permission;
+        this.permissions = permissions;
     }
 
     @Override
@@ -75,6 +75,10 @@ public class FreezeCommand implements CommandExecutor {
                 }
             } else if (offlineP != null) {
                 if (offlineP.hasPlayedBefore()) {
+                    if (this.permissions == null) {
+                        sender.sendMessage(this.plugin.placeholders("{PREFIX}You can't freeze offline players without &bVault {PREFIXFORMAT}enabled"));
+                        return false;
+                    }
                     playerName = offlineP.getName();
                     uuid = offlineP.getUniqueId();
                     if (!sender.hasPermission("sf.offline")) {
@@ -84,7 +88,7 @@ public class FreezeCommand implements CommandExecutor {
                             }
                         }
                         return true;
-                    } else if (this.permission.playerHas(null, offlineP, "sf.exempt.*") || this.permission.playerHas(null, offlineP, "sf.exempt.freeze")) {
+                    } else if (this.permissions.playerHas(null, offlineP, "sf.exempt.*") || this.permissions.playerHas(null, offlineP, "sf.exempt.freeze")) {
                         sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("exempt-messages.freeze").replace("{PLAYER}", playerName)));
                         return true;
                     }
