@@ -68,18 +68,21 @@ public class LocationManager {
         }
         return null;
     }
-    
+
     public int getTotalDistance(Player p1, Player p2) {
-    	Location loc1 = p1.getLocation();
-    	Location loc2 = p2.getLocation();
-    	int distance = (int) Math.round(Math.sqrt(Math.pow(Math.abs(loc1.getX() - loc2.getX()), 2) + Math.pow(Math.abs(loc1.getZ() - loc2.getZ()), 2)));
-    	if (this.plugin.getConfig().getBoolean("include-y")) {
-    		distance = (int) Math.round(Math.sqrt(Math.pow(Math.abs(loc1.getY() - loc2.getY()), 2) + Math.pow(distance, 2)));
-    	}
-    	return distance;
+        Location loc1 = p1.getLocation();
+        Location loc2 = p2.getLocation();
+        int distance = (int) Math.round(Math.sqrt(Math.pow(Math.abs(loc1.getX() - loc2.getX()), 2) + Math.pow(Math.abs(loc1.getZ() - loc2.getZ()), 2)));
+        if (this.plugin.getConfig().getBoolean("include-y")) {
+            distance = (int) Math.round(Math.sqrt(Math.pow(Math.abs(loc1.getY() - loc2.getY()), 2) + Math.pow(distance, 2)));
+        }
+        return distance;
     }
 
     public String getLocationPlaceholder(String locationName) {
+        if (locationName == null) {
+            return this.plugin.getConfig().getString("location");
+        }
         return this.plugin.getConfig().getString("locations." + locationName + ".placeholder", this.plugin.getConfig().getString("location"));
     }
 
@@ -90,7 +93,9 @@ public class LocationManager {
         for (int y = pLoc.getBlockY(); y >= 0; y--) {
             Block block = world.getBlockAt(new SFLocation(world, x, y, z));
             if (block.getType() != Material.AIR) {
-                return new SFLocation(world, pLoc.getX(), y + 1, pLoc.getZ(), pLoc.getYaw(), pLoc.getPitch());
+                if (block.getType().isSolid()) {
+                    return new SFLocation(world, pLoc.getX(), y + 1, pLoc.getZ(), pLoc.getYaw(), pLoc.getPitch());
+                }
             }
         }
         return pLoc;
