@@ -21,14 +21,14 @@ public class TempFreezeCommand implements CommandExecutor {
     private final PlayerManager playerManager;
     private final FreezeManager freezeManager;
     private final LocationManager locationManager;
-    private final Permission permission;
+    private final Permission permissions;
 
-    public TempFreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, Permission permission) {
+    public TempFreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, Permission permissions) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.freezeManager = freezeManager;
         this.locationManager = locationManager;
-        this.permission = permission;
+        this.permissions = permissions;
     }
 
     @Override
@@ -76,6 +76,10 @@ public class TempFreezeCommand implements CommandExecutor {
                 }
             } else if (offlineP != null) {
                 if (offlineP.hasPlayedBefore()) {
+                    if (this.permissions == null) {
+                        sender.sendMessage(this.plugin.placeholders("{PREFIX}You can't freeze offline players without &bVault {PREFIXFORMAT}enabled"));
+                        return false;
+                    }
                     playerName = offlineP.getName();
                     uuid = offlineP.getUniqueId();
                     if (!sender.hasPermission("sf.offline")) {
@@ -85,7 +89,7 @@ public class TempFreezeCommand implements CommandExecutor {
                             }
                         }
                         return true;
-                    } else if (this.permission.playerHas(null, offlineP, "sf.exempt.*") || this.permission.playerHas(null, offlineP, "sf.exempt.tempfreeze")) {
+                    } else if (this.permissions.playerHas(null, offlineP, "sf.exempt.*") || this.permissions.playerHas(null, offlineP, "sf.exempt.tempfreeze")) {
                         sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("exempt-messages.tempfreeze").replace("{PLAYER}", playerName)));
                         return true;
                     }
@@ -112,6 +116,10 @@ public class TempFreezeCommand implements CommandExecutor {
             }
 
             long time = TimeUtil.convertToSeconds(args[1]);
+            if (time == -1) {
+                sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + args[1] + " {PREFIXFORMAT}is not a valid unit of time, try &bs&7, &bm&7, &bh&7, &bd&7, &bw&7, &bmo&7 or &by&7"));
+                return false;
+            }
 
             if (args.length == 2) {
                 this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, null, time);
