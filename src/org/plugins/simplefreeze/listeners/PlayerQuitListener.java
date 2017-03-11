@@ -41,7 +41,7 @@ public class PlayerQuitListener implements Listener {
                 for (Player onlineP : Bukkit.getServer().getOnlinePlayers()) {
                     if (onlineP.hasPermission("sf.notify.leave")) {
                         for (String msg : this.plugin.getConfig().getStringList("notify-on-leave-message")) {
-                            onlineP.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", onlineP.getName())));
+                            onlineP.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", p.getName())));
                         }
                     }
                 }
@@ -49,6 +49,9 @@ public class PlayerQuitListener implements Listener {
 
             if (!(this.playerManager.isFreezeAllFrozen(p) && !this.plugin.getConfig().getBoolean("freezeall-logout-commands"))) {
                 for (String cmd : this.plugin.getConfig().getStringList("logout-commands")) {
+                    if (cmd.startsWith("/")) {
+                        cmd = cmd.substring(1);
+                    }
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{PLAYER}", p.getName()));
                 }
             }
