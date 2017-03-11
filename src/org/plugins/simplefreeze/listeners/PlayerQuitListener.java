@@ -22,28 +22,39 @@ public class PlayerQuitListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        if (this.playerManager.isFrozen(e.getPlayer())) {
-            Location originalLocation = this.playerManager.getOriginalLocation(e.getPlayer().getUniqueId());
-            if (originalLocation != null) {
-                e.getPlayer().teleport(originalLocation);
+        Player p = e.getPlayer();
+        if (this.playerManager.isFrozen(p)) {
+            Location originalLocation = this.playerManager.getOriginalLocation(p.getUniqueId());
+            if (originalLocation != null && this.plugin.getConfig().getBoolean("tp-back")) {
+                p.teleport(originalLocation);
             }
-            e.getPlayer().getInventory().setHelmet(this.playerManager.getFrozenPlayer(e.getPlayer()).getHelmet());
+            p.getInventory().setHelmet(this.playerManager.getFrozenPlayer(p).getHelmet());
             if (this.plugin.getConfig().getBoolean("enable-fly")) {
-                e.getPlayer().setAllowFlight(false);
-                e.getPlayer().setFlying(false);
+                p.setAllowFlight(false);
+                p.setFlying(false);
             }
-            if (this.playerManager.getFrozenPlayer(e.getPlayer()) instanceof TempFrozenPlayer) {
-                ((TempFrozenPlayer) this.playerManager.getFrozenPlayer(e.getPlayer())).cancelTask();
+            if (this.playerManager.getFrozenPlayer(p) instanceof TempFrozenPlayer) {
+                ((TempFrozenPlayer) this.playerManager.getFrozenPlayer(p)).cancelTask();
             }
-            
-            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-            	if (p.hasPermission("sf.notify.leave")) {
-            		for (String msg : this.plugin.getConfig().getStringList("notify-on-leave-message"))
-            		p.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", e.getPlayer().getName())));
-            	}
+
+            if (!(this.playerManager.isFreezeAllFrozen(p) && !this.plugin.getConfig().getBoolean("leave-message-during-freezeall"))) {
+                for (Player onlineP : Bukkit.getServer().getOnlinePlayers()) {
+                    if (onlineP.hasPermission("sf.notify.leave")) {
+                        for (String msg : this.plugin.getConfig().getStringList("notify-on-leave-message")) {
+                            onlineP.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", onlineP.getName())));
+                        }
+                    }
+                }
             }
-            
-            this.playerManager.removeFrozenPlayer(e.getPlayer());
+
+            if (!(this.playerManager.isFreezeAllFrozen(p) && !this.plugin.getConfig().getBoolean("freezeall-logout-commands"))) {
+                for (String cmd : this.plugin.getConfig().getStringList("logout-commands")) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd.replace("{PLAYER}", p.getName()));
+                }
+            }
+
+            this.playerManager.removeFrozenPlayer(p);
+
         }
     }
 
