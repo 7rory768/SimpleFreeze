@@ -85,6 +85,7 @@ public class FreezeManager {
 
 
             this.plugin.getPlayerConfig().getConfig().set("players." + uuid.toString(), null);
+            this.plugin.getPlayerConfig().getConfig().set("freezeall-info.players." + uuid.toString(), null);
             this.plugin.getPlayerConfig().saveConfig();
             this.plugin.getPlayerConfig().reloadConfig();
             this.playerManager.removeFrozenPlayer(uuid);

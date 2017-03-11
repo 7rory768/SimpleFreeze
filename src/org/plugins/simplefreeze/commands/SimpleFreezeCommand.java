@@ -50,11 +50,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     }
 
                     // STORE OLD SOUND VALUES
-                    String freezeSound = this.plugin.getConfig().getString("freeze-sound.sound");
                     float freezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound-volume");
                     float freezePitch = (float) this.plugin.getConfig().getDouble("freeze-sound-pitch");
 
-                    String unfreezeSound = this.plugin.getConfig().getString("unfreeze-sound.sound");
                     float unfreezeVolume = (float) this.plugin.getConfig().getDouble("unfreeze-sound-volume");
                     float unfreezePitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound-pitch");
 
@@ -80,11 +78,11 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     float newUnfreezePitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound-pitch");
 
                     if (!this.soundManager.setFreezeSound(newFreezeSound)) {
-                        sender.sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
+                        sender.sendMessage(this.plugin.placeholders("&c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
                     }
 
                     if (!this.soundManager.setUnfreezeSound(newUnfreezeSound)) {
-                        sender.sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
+                        sender.sendMessage(this.plugin.placeholders("&c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
                     }
 
                     if (freezeVolume != newFreezeVolume) {

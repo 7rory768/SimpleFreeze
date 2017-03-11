@@ -72,7 +72,7 @@ public class UnfreezeCommand implements CommandExecutor {
 				}
 				return true;
 			}
-			
+
 			this.freezeManager.notifyOfUnfreeze(sender, uuid, playerName);
 			this.freezeManager.unfreeze(uuid);
 			return true;
