@@ -140,10 +140,6 @@ frozen-particles:
 # Notify staff if a player leaves during freezeall?
 leave-message-during-freezeall: false
 
-# Message sent when a player leave while frozen
-notify-on-leave-message:
-  - ''
-
 # Should logout commands be ran if somebody leaves during freezeall?
 freezeall-logout-commands: false
 
@@ -171,19 +167,29 @@ locations:
 # ||               Blocking               ||
 # ||======================================||
 
-# true = Blocked
-player-damage: true
-fire-damage: true
-head-movement: false
+# Should players take damage from other players while frozen?
+player-damage: false
 
-# true = Blocked
-block-chat: false
-block-chat-message:
-  - '{PREFIX}You cannot chat while frozen'
+# Should players take fire damage while frozen?
+fire-damage: false
 
-book-editing: false
-book-edit-message:
-  - '{PREFIX}You cannot edit a book while frozen'
+# Should players be able to move their heads while frozen?
+head-movement: true
+
+# Should players be able to break blocks while frozen?
+block-break: false
+
+# Should players be able to interact while frozen?
+interact: false
+
+# Should players be able to drop items while frozen?
+item-drop: true
+
+# Should players be able to type while frozen?
+block-chat: true
+
+# Should players be able to edit books while frozen?
+book-editing: true
 
 # Whitelist = true, Blacklist = false (Whitelist: Only commands not listed are blocked, Blacklist: Only commands listed are blocked)
 whitelist-or-blacklist: false
@@ -220,7 +226,7 @@ blocked-commands:
 
 # NOTE: If you don't want any messages to be sent change it to - '';
 
-# Messages sent to a player when they are frozen
+# Message sent to a player when they are frozen
 freeze-message:
   - '&4&m--------------------------------------------------'
   - '&cYou were frozen by &l{FREEZER}'
@@ -238,20 +244,20 @@ temp-freeze-message:
   - '&cYou were frozen by &l{FREEZER} &cfor &l{TIME}'
   - '&4&m--------------------------------------------------'
 
-# Messages sent to a player when they are frozen temporarily at a specific location
+# Message sent to a player when they are frozen temporarily at a specific location
 temp-freeze-location-message:
   - '&4&m--------------------------------------------------'
   - '&cYou were frozen by &l{FREEZER} &cat &l{LOCATION}'
   - '&cfor &l{TIME}'
   - '&4&m--------------------------------------------------'
 
-# Messages sent to a player when they are unfrozen
+# Message sent to a player when they are unfrozen
 unfreeze-message:
   - '&4&m--------------------------------------------------'
-  - '&cYou are now unfrozen'
+  - '&cYou were unfrozen by &l{UNFREEZER}'
   - '&4&m--------------------------------------------------'
 
-# Messages sent to the server when every player is frozen (/freezeall)
+# Message sent to the server when every player is frozen (/freezeall)
 freezeall-message:
   - '&4&m--------------------------------------------------'
   - '&cEveryone was frozen by &l{FREEZER}'
@@ -262,85 +268,135 @@ freezeall-location-message:
   - '&cEveryone was frozen by &l{FREEZER} &cat &l{LOCATION}'
   - '&4&m--------------------------------------------------'
   
-# Messages sent to the server when every player is frozen (/freezeall)
+# Message sent to the server when every player is frozen (/freezeall)
 unfreezeall-message:
   - '&4&m--------------------------------------------------'
   - '&cEveryone was unfrozen by &l{UNFREEZER}'
   - '&4&m--------------------------------------------------'
 
-# Messages sent to a player when they are frozen because they joined during a freezeall
+# Message sent to a player when they are frozen because they joined during a freezeall
 join-on-freezeall-message:
   - '&4&m--------------------------------------------------'
   - '&cYou have joined while freezeall is active by {FREEZER}'
   - '&4&m--------------------------------------------------'
 
-# Messages sent to a player when they attempt to freeze a player but they are not within freeze-radius
+# Message sent to a player that tries to attack a frozen player
+frozen-attacked-message:
+  - '{PREFIX}You can''t attack &b{PLAYER} &7because they''re frozen'
+  
+# Message sent to a frozen player that tries to attack another entity
+frozen-attack-message:
+    - '{PREFIX}You can''t attack while frozen'
+
+# Message sent to a player when they try to use an enderpearl
+enderpearl-message:
+    - '{PREFIX}You can''t use enderpearls while frozen'
+
+# Message sent to a frozen player that tries to interact with, place, or break blocks
+interact-message:
+  - '{PREFIX}You can''t interact while frozen'
+
+# Message sent to a frozen player that tries to move their helmet while frozen
+inventory-message:
+  - '{PREFIX}You may not move your helmet while frozen'
+
+# Message sent to a frozen player that tries to drop an item
+item-drop-message:
+  - '{PREFIX}You can''t drop items while frozen'
+
+# Message sent to a frozen player who tries to edit a book
+book-edit-message:
+  - '{PREFIX}You cannot edit a book while frozen'
+
+# Message sent to a frozen player who tries to type in chat
+block-chat-message:
+  - '{PREFIX}You cannot chat while frozen'
+
+# Message sent to players upon using a blocked command
+blocked-command-message:
+  - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
+
+# Message sent to players with the sf.notify.frozen permission upon freezing a player
+frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER}'
+
+# Message sent to players with the sf.notify.frozen permission upon temporarily freezing a player
+temp-frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME}'
+
+# Message sent to players with the sf.notify.frozen permission upon temporarily freezing a player
+sql-frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7on &b{SERVERS}'
+
+# Message sent to players with the sf.notify.frozen permission upon temporarily freezing a player
+sql-temp-frozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME} &7on &b{SERVERS}'
+
+# Message sent to players with the sf.notify.unfrozen permission upon freezing a player
+unfrozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{UNFREEZER}'
+
+# Message sent when a player leave while frozen
+notify-on-leave-message:
+  - '{PREFIX}&b{PLAYER} &7left the game while frozen'
+
+# Message sent to a players upon using a fishing rod while frozen
+fishing-rod-message:
+  - '{PREFIX}You can''t fish while frozen'
+
+# Message sent to a players upon shooting a bow while frozen
+bow-shoot-message:
+  - '{PREFIX}You can''t shoot a bow while frozen'
+
+# Message sent to a players upon throwing a splash potion while frozen
+splash-potion-message:
+  - '{PREFIX}You can''t throw potions while frozen'
+
+# Message sent to a players upon throwing a snowball while frozen
+snowball-message:
+  - '{PREFIX}You can''t throw snowballs while frozen'
+
+# Message sent to a players upon throwing an egg while frozen
+egg-message:
+  - '{PREFIX}You can''t throw eggs while frozen'
+
+# Message sent to a players upon throwing an exp bottle while frozen
+exp-bottle-message:
+  - '{PREFIX}You can''t throw xp bottles while frozen'
+
+# Message sent to a player when they attempt to freeze a player but they are not within freeze-radius
 # AVAIALBLE PLACEHOLDERS: PLAYER, TOTALDISTANCE, MAXDISTANCE, DISTANCEDIFFERENCE
 freeze-distance-fail:
   - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are &b{DISTANCEDIFFERENCE} &7blocks too far from you'
 
-# Messages sent to a player that tries to attack a frozen player
-frozen-attacked-message:
-  - '{PREFIX}You can''t attack &b{PLAYER} &7because they''re frozen'
-  
-# Messages sent to a frozen player that tries to attack another entity
-frozen-attack-message:
-    - '{PREFIX}You can''t attack while frozen'
-
-# Messages sent to a player when they try to use an enderpearl
-enderpearl-message:
-    - '{PREFIX}You can''t use enderpearls while frozen'
-
-# Messages sent to a frozen player that tries to interact with, place, or break blocks
-interact-message:
-  - '{PREFIX}You can''t interact while frozen'
-
-# Messages sent to a frozen player that tries to move their helmet while frozen
-inventory-message:
-  - '{PREFIX}You may not move your helmet while frozen'
-
-# Messages sent to a frozen player that tries to drop an item
-item-drop-message:
-  - '{PREFIX}You can''t drop items while frozen'
-
-# Messages sent to players with the sf.notify.frozen permission upon freezing a player
-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER}'
-
-# Messages sent to players with the sf.notify.frozen permission upon temporarily freezing a player
-temp-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME}'
-
-# Messages sent to players with the sf.notify.frozen permission upon temporarily freezing a player
-sql-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7on &b{SERVERS}'
-
-# Messages sent to players with the sf.notify.frozen permission upon temporarily freezing a player
-sql-temp-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME} &7on &b{SERVERS}'
-
-# Messages sent to players with the sf.notify.unfrozen permission upon freezing a player
-unfrozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{UNFREEZER}'
-
-# Messages sent to players upon using a blocked command
-blocked-command-message:
-  - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
-
-# Messages sent to a player upon attempting to freeze a player that is already frozen
+# Message sent to a player upon attempting to freeze a player that is already frozen
 already-frozen:
   - '{PREFIX}&b{PLAYER} &7is already frozen by &b{FREEZER}'
 
+# Message sent when attempting to unfreeze a player that isn't frozen
 not-frozen:
   - '{PREFIX}&b{PLAYER} &7is not frozen'
 
-nobody-frozen: '{PREFIX}&7Nobody is frozen'
+# Message sent when the frozen list is empty
+nobody-frozen:
+  - '{PREFIX}&7Nobody is frozen'
 
-not-an-int: '{PREFIX}&b{INTEGER} &7is not a valid integer'
+# Message sent when a non valid integer is given
+not-an-int:
+  - '{PREFIX}&b{INTEGER} &7is not a valid integer'
 
-page-doesnt-exist: '{PREFIX}&bPage {PAGENUM} &7does not exist'
+# Message sent when a pl;yer tries to view a page that doesnt exist
+page-doesnt-exist:
+  - '{PREFIX}&bPage {PAGENUM} &7does not exist'
 
-# Messages sent to players upon attempting to freeze a player that is exempt
+# Message sent to a player tries to freeze an offline player without the sf.offline permission
+no-permission-offline-player-message: '{PREFIX}You don''t have permission to freeze offline players'
+
+# Message sent to players upon using a command they don't have permission for
+no-permission-message:
+  - '&cYou don''t have permission for that'
+
+# Message sent to players upon attempting to freeze a player that is exempt
 exempt-messages:
   freeze: '{PREFIX}You cannot freeze &b{PLAYER} &7because they are exempt'
   tempfreeze: '{PREFIX}You cannot tempfreeze &b{PLAYER} &7because they are exempt'
@@ -362,15 +418,10 @@ frozen-list-format:
     frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7(Frozen by &b{FREEZER}&7)'
     temp-frozen: '{ONLINE}{PLAYER} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
     temp-frozen-location: '{ONLINE}{PLAYER} &7at {ONLINE}{LOCATION} &7for {ONLINE}{TIME} &7(Frozen by &b{FREEZER}&7)'
-  # If the player thats frozen is online the {ONLINE} placeholder will become the string you set below
+  # If the player thats frozen is online the {ONLINE} placeholder will be replaced with what you set below
   online-placeholder: '&a'
-  # If the player thats frozen is offline the {ONLINE} placeholder will become the string you set below
+  # If the player thats frozen is offline the {ONLINE} placeholder will be replace with what you set below
   offline-placeholder: '&c'
   footer: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
+  # Amount of players that will display per page
   players-per-page: 5
-
-no-permission-offline-player-message: '{PREFIX}You don''t have permission to freeze offline players'
-
-# Messages sent to players upon using a command they don't have permission for
-no-permission-message:
-  - '&cYou don''t have permission for that'
