@@ -21,7 +21,7 @@ public class EntityDamageEntityListener implements Listener {
 
 	@EventHandler
 	public void onEntityDamageEntity(EntityDamageByEntityEvent e) {
-		if (this.plugin.getConfig().getBoolean("player-damage")) {
+		if (!this.plugin.getConfig().getBoolean("player-damage")) {
 			if (e.getDamager() instanceof Player) {
 				Player p = (Player) e.getDamager();
 				if (this.playerManager.isFrozen(p)) {

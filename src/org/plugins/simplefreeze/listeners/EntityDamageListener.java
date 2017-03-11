@@ -21,7 +21,7 @@ public class EntityDamageListener implements Listener {
 	@EventHandler
 	public void onEntityDamage(EntityDamageEvent e) {
 		UUID uuid = e.getEntity().getUniqueId();
-		if (this.plugin.getConfig().getBoolean("player-damage") && this.playerManager.isFrozen(uuid)) {
+		if (!this.plugin.getConfig().getBoolean("player-damage") && this.playerManager.isFrozen(uuid)) {
 			e.setCancelled(true);
 			return;
 		}

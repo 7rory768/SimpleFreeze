@@ -21,7 +21,7 @@ public class PlayerEditBookListener implements Listener {
 
     @EventHandler
     public void onBookEdit(PlayerEditBookEvent e) {
-        if (this.playerManager.isFrozen(e.getPlayer()) && this.plugin.getConfig().getBoolean("book-editing")) {
+        if (this.playerManager.isFrozen(e.getPlayer()) && !this.plugin.getConfig().getBoolean("book-editing")) {
             e.setCancelled(true);
             for (String msg : this.plugin.getConfig().getStringList("book-edit-message")) {
                 e.getPlayer().sendMessage(this.plugin.placeholders(msg));

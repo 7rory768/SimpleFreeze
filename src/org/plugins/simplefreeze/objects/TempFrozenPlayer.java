@@ -46,18 +46,24 @@ public class TempFrozenPlayer extends FrozenPlayer {
                     Player p = Bukkit.getPlayer(uuid);
                     if (p != null) {
                         for (String msg : plugin.getConfig().getStringList("unfreeze-message")) {
-                            p.sendMessage(plugin.placeholders(msg).replace("{PLAYER}", tempFrozenPlayer.getFreezeeName()));
+                            p.sendMessage(plugin.placeholders(msg).replace("{PLAYER}", tempFrozenPlayer.getFreezeeName()).replace("{UNFREEZER}", "CONSOLE"));
                         }
-                        p.getInventory().setHelmet(tempFrozenPlayer.getHelmet());
-                        p.setAllowFlight(false);
-                        p.setFlying(false);
-                        p.teleport(tempFrozenPlayer.getOriginalLoc());
 
-                        Location originalLoc = tempFrozenPlayer.getOriginalLoc();
+                        p.getInventory().setHelmet(tempFrozenPlayer.getHelmet());
+
+                        Location originalLoc =  tempFrozenPlayer.getOriginalLoc();
                         Location freezeLoc = tempFrozenPlayer.getFreezeLoc();
                         if (freezeLoc.getBlockX() == originalLoc.getBlockX() && freezeLoc.getBlockZ() == originalLoc.getBlockZ() && originalLoc.getY() - freezeLoc.getY() > 3) {
                             playerManager.addFallingPlayer(uuid);
                         }
+
+                        if (originalLoc != null && plugin.getConfig().getBoolean("tp-back")) {
+                            p.teleport(originalLoc);
+                        }
+
+                        p.setAllowFlight(false);
+                        p.setFlying(false);
+
                     } else {
 
                         Location originalLoc = SFLocation.fromString(plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".original-location"));

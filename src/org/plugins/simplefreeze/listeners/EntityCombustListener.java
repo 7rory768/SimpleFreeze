@@ -21,7 +21,7 @@ public class EntityCombustListener implements Listener {
 	public void onEntityCombust(EntityCombustEvent e) {
 		if (e.getEntity() instanceof Player) {
 			if (this.playerManager.isFrozen(e.getEntity().getUniqueId())) {
-				if (this.plugin.getConfig().getBoolean("fire-damage")) {
+				if (!this.plugin.getConfig().getBoolean("fire-damage")) {
 					e.setCancelled(true);
 				}
 			}

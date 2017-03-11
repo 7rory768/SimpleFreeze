@@ -18,7 +18,7 @@ public class PlayerDropListener implements Listener {
 	
 	@EventHandler
 	public void onItemDrop(PlayerDropItemEvent e) {
-		if (this.playerManager.isFrozen(e.getPlayer())) {
+		if (this.playerManager.isFrozen(e.getPlayer()) && !this.plugin.getConfig().getBoolean("item-drop")) {
 		    e.setCancelled(true);
 		    for (String msg : this.plugin.getConfig().getStringList("item-drop-message")) {
 		        e.getPlayer().sendMessage(this.plugin.placeholders(msg));

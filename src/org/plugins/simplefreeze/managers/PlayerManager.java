@@ -1,6 +1,5 @@
 package org.plugins.simplefreeze.managers;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.plugins.simplefreeze.SimpleFreezeMain;
@@ -67,6 +66,10 @@ public class PlayerManager {
             return true;
         }
         return false;
+    }
+
+    public boolean isFreezeAllFrozen(Player p) {
+        return this.isFreezeAllFrozen(p.getUniqueId());
     }
 
     public boolean isFreezeAllFrozen(UUID uuid) {
