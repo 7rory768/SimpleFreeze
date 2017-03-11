@@ -20,14 +20,17 @@ import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.*;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 /* 
  * TODO
  *  - Titles
  *  - Actionbar
- *  - Block projectile shooting (ex. bow shooting, eggs, fishing rod, splash potions)
- *  - go through config to see whats missing
+ *  - Unfreeze upon ban
+ *  - Reason for freeze
+ *  - Spam freeze message
+ *  - Player history
  *  
  *  TODO: Hopefully
  *  - Hologram above players head on freeze option
@@ -51,9 +54,12 @@ import java.util.UUID;
  *   - TELEPORT-UP REPLACED WITH TELEPORT-TO-GROUND
  *   - BLOCKED NETHER PORTAL AND END PORTAL TELEPORTATION WHILE FROZEN
  *   - BLOCKED BOOK CHANGING
+ *   - MADE BLOCKING OF INTERACTION, BLOCK-BREAKING, ITEM DROPPING AND BOOK EDITING TOGGLEABLE
+ *   - ENABLE FLY ON FREEZE SO PLAYERS ARENT KICKED FOR FLYING
+ *   - PROPERLY BLOCKED PROJECTILE SHOOTING (ex. bow shooting, eggs, snowballs, fishing rod, splash potions, exp bottles)
  * 
  * BUGS:
- *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFICATION THROUGH THE TELEPORT-UP OPTION
+ *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFOCATION THROUGH THE TELEPORT-UP OPTION
  *
  * */
 
@@ -76,6 +82,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private PlayerManager playerManager;
     private FreezeManager freezeManager;
     private PlayersConfig playersConfig;
+    private StatsConfig statsConfig;
     private HelmetManager helmetManager;
     private LocationManager locationManager;
     private SQLManager sqlManager;
@@ -93,16 +100,36 @@ public class SimpleFreezeMain extends JavaPlugin {
         return (this.permission != null);
     }
 
+    public boolean vaultEnabled() {
+        return Bukkit.getPluginManager().getPlugin("Vault") != null;
+    }
+
     @Override
     public void onEnable() {
         SimpleFreezeMain.plugin = this;
         this.initializeVariables();
         this.loadConfigs();
         this.soundManager.reset();
-        this.setupPermissions();
+        if (vaultEnabled()) {
+            this.setupPermissions();
+            Bukkit.getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Vault found, offline freezing &aenabled"));
+        } else {
+            Bukkit.getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Vault not found, offline freezing &cdisabled"));
+        }
         this.registerCommands();
         this.registerListeners();
         Metrics metrics = new Metrics(this);
+        metrics.addCustomChart(new Metrics.AdvancedPie("freeze_counts") {
+
+            @Override
+            public HashMap<String, Integer> getValues(HashMap<String, Integer> valueMap) {
+                valueMap.put("Freeze", statsConfig.getConfig().getInt("freeze-count"));
+                valueMap.put("Temp Freeze", statsConfig.getConfig().getInt("temp-freeze-count"));
+                valueMap.put("Freezeall", statsConfig.getConfig().getInt("freezeall-count"));
+                valueMap.put("Unfreeze", statsConfig.getConfig().getInt("unfreeze-count"));
+                return valueMap;
+            }
+        });
 
         for (final Player p : Bukkit.getServer().getOnlinePlayers()) {
             if (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion())) {
@@ -316,6 +343,7 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     private void initializeVariables() {
         this.playersConfig = new PlayersConfig(this);
+        this.statsConfig = new StatsConfig(this);
         this.sqlManager = new SQLManager(this);
         this.locationManager = new LocationManager(this);
         this.dataConverter = new DataConverter(this);
@@ -335,6 +363,10 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.playersConfig.getConfig().options().copyDefaults(true);
         this.playersConfig.saveDefaultConfig();
         this.playersConfig.reloadConfig();
+
+        this.statsConfig.getConfig().options().copyDefaults(true);
+        this.statsConfig.saveDefaultConfig();
+        this.statsConfig.reloadConfig();
     }
 
     private void registerCommands() {
@@ -348,6 +380,7 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     private void registerListeners() {
         PluginManager plManager = this.getServer().getPluginManager();
+        plManager.registerEvents(new BlockBreakListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityCombustListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageEntityListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageListener(this, this.playerManager), this);
@@ -373,16 +406,16 @@ public class SimpleFreezeMain extends JavaPlugin {
         return this.locationManager;
     }
 
-    public Permission getPermission() {
-        return this.permission;
-    }
-
     public PlayersConfig getPlayerConfig() {
         return this.playersConfig;
     }
 
+    public StatsConfig getStatsConfig() {
+        return this.statsConfig;
+    }
+
     public String placeholders(String arg) {
-        return StringEscapeUtils.unescapeJava(ChatColor.translateAlternateColorCodes('&', arg.replace("{PREFIX}", this.getConfig().getString("prefix"))));
+        return StringEscapeUtils.unescapeJava(ChatColor.translateAlternateColorCodes('&', arg.replace("{PREFIX}", this.getConfig().getString("prefix")).replace("{PREFIXFORMAT}", this.getFinalPrefixFormatting())));
     }
 
     public String getHelpMessage() {
@@ -392,7 +425,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     public String getFinalPrefixFormatting() {
-        return this.finalPrefixFormatting;
+        return this.finalPrefixFormatting == null ? "" : this.finalPrefixFormatting;
     }
 
     public String updateFinalPrefixFormatting() {
