@@ -154,10 +154,7 @@ public class PlayerJoinListener implements Listener {
                     }
                     p.teleport(finalFreezeAllPlayer.getFreezeLoc());
 
-                    String freezerName = "";
-                    if (freezerUUID != null) {
-                        freezerName = Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
-                    }
+                    String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
 
                     for (String msg : plugin.getConfig().getStringList("join-on-freezeall-message")) {
                         p.sendMessage(plugin.placeholders(msg.replace("{FREEZER}", freezerName)));
