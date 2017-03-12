@@ -70,6 +70,15 @@ freeze-distance: 0
 # Should the y-value be included in the distance calculations?
 include-y: true
 
+message-intervals:
+  # Amount of seconds between each freeze-message (0 to disable)
+  freeze: 0
+  freeze-location: 0
+  temp-freeze: 0
+  temp-freeze-location: 0
+  freezeall: 0
+  freezeall-location: 0
+
 # Defines what item will be put in the players helmet slot This item will be removed once they are unfrozen (Their current helmet will not be lost)
 # Define head-item material as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html (Don't want a head-item? Add a # before 'head-item' and the keys under it)
 head-item:

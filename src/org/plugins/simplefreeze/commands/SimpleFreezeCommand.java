@@ -9,6 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
 import org.plugins.simplefreeze.managers.HelmetManager;
+import org.plugins.simplefreeze.managers.MessageManager;
 import org.plugins.simplefreeze.managers.ParticleManager;
 import org.plugins.simplefreeze.managers.SoundManager;
 
@@ -23,13 +24,15 @@ public class SimpleFreezeCommand implements CommandExecutor {
     private final FrozenPages frozenPages;
     private final ParticleManager particleManager;
     private final SoundManager soundManager;
+    private final MessageManager messageManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager) {
         this.plugin = plugin;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
         this.particleManager = particleManager;
         this.soundManager = soundManager;
+        this.messageManager = messageManager;
     }
 
     @Override
@@ -101,9 +104,17 @@ public class SimpleFreezeCommand implements CommandExecutor {
                         this.soundManager.setUnfreezePitch(newUnfreezePitch);
                     }
 
-                    HashSet<String> strings = new HashSet<String>();
+                    // CHANGE MESSAGE-INTERVALS
+                    this.messageManager.setFreezeInterval(this.plugin.getConfig().getInt("message-intervals.freeze"));
+                    this.messageManager.setFreezeLocInterval(this.plugin.getConfig().getInt("message-intervals.freeze-location"));
+                    this.messageManager.setTempFreezeInterval(this.plugin.getConfig().getInt("message-intervals.temp-freeze"));
+                    this.messageManager.setTempFreezeLocInterval(this.plugin.getConfig().getInt("message-intervals.temp-freeze-location"));
+                    this.messageManager.setFreezeAllInterval(this.plugin.getConfig().getInt("message-intervals.freeze-all"));
+                    this.messageManager.setFreezeAllLocInterval(this.plugin.getConfig().getInt("message-intervals.freeze-all-location"));
 
                     // CHECK IF /FROZEN FORMATS CHANGED
+                    HashSet<String> strings = new HashSet<String>();
+
                     if (!frozenStr.equals(this.plugin.getConfig().getString("frozen-list-format.formats.frozen"))) {
                         strings.add("frozen");
                     }

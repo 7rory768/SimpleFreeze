@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.plugins.simplefreeze.SimpleFreezeMain;
+import org.plugins.simplefreeze.managers.MessageManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
 
@@ -14,10 +15,12 @@ public class PlayerQuitListener implements Listener {
 
     private final SimpleFreezeMain plugin;
     private final PlayerManager playerManager;
+    private final MessageManager messageManager;
 
-    public PlayerQuitListener(SimpleFreezeMain plugin, PlayerManager playerManager) {
+    public PlayerQuitListener(SimpleFreezeMain plugin, PlayerManager playerManager, MessageManager messageManager) {
         this.plugin = plugin;
         this.playerManager = playerManager;
+        this.messageManager = messageManager;
     }
 
     @EventHandler
@@ -57,6 +60,7 @@ public class PlayerQuitListener implements Listener {
             }
 
             this.playerManager.removeFrozenPlayer(p);
+            this.messageManager.removePlayer(p);
 
         }
     }

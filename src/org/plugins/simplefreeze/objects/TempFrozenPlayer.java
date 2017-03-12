@@ -38,6 +38,7 @@ public class TempFrozenPlayer extends FrozenPlayer {
         final TempFrozenPlayer tempFrozenPlayer = this;
         final PlayerManager playerManager = plugin.getPlayerManager();
         final LocationManager locationManager = plugin.getLocationManager();
+
         if (!this.isSqlFreeze()) {
             this.task = new BukkitRunnable() {
                 @Override
@@ -79,6 +80,8 @@ public class TempFrozenPlayer extends FrozenPlayer {
                     plugin.getPlayerConfig().saveConfig();
                     plugin.getPlayerConfig().reloadConfig();
                     plugin.getPlayerManager().removeFrozenPlayer(uuid);
+
+                    plugin.getMessageManager().removePlayer(p);
 
                 }
             }.runTaskLater(plugin, (tempFrozenPlayer.getUnfreezeDate() - System.currentTimeMillis()) / 1000L * 20L);
