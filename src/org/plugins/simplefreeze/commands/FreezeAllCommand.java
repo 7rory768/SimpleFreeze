@@ -35,26 +35,34 @@ public class FreezeAllCommand implements CommandExecutor {
                 return false;
             }
 
-            UUID senderUUID = sender instanceof Player ? ((Player)sender).getUniqueId() : null;
+            UUID senderUUID = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
 
             if (this.freezeManager.freezeAllActive()) {
                 this.freezeManager.unfreezeAll();
                 this.freezeManager.notifyOfUnfreezeAll(senderUUID);
             } else if (args.length > 0) {
+                String reason;
                 if (!this.plugin.getConfig().isSet("locations." + args[0])) {
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + args[0] + " &7is not a valid location, try:"));
-                    String locations = "";
-                    for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-                        locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
+                    if (args.length == 1) {
+                        sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + args[0] + " &7is not a valid location, try:"));
+                        String locations = "";
+                        for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
+                            locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
+                        }
+                        sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
+                        return false;
+                    } else {
+                        reason = "";
+                        for (int i = 1; i < args.length; i++) {
+                            reason += args[i] + " ";
+                        }
+                        reason = reason.substring(0, reason.length() - 1);
                     }
-                    sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
-                    return false;
-                } else {
-                    this.freezeManager.freezeAll(senderUUID, args[0]);
+                    this.freezeManager.freezeAll(senderUUID, args[0], reason);
                     this.freezeManager.notifyOfFreezeAll(senderUUID, args[0]);
                 }
             } else {
-                this.freezeManager.freezeAll(senderUUID, null);
+                this.freezeManager.freezeAll(senderUUID, null, null);
                 this.freezeManager.notifyOfFreezeAll(senderUUID, null);
             }
 

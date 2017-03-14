@@ -64,15 +64,15 @@ public class TempFreezeCommand implements CommandExecutor {
                 }
                 // CHECK IF MAX DISTANCE IS EXCEEDED
                 if (sender instanceof Player && this.plugin.getConfig().getInt("freeze-radius") > 0) {
-                	int maxDistance = this.plugin.getConfig().getInt("freeze-radius");
-                	int totalDistance = this.locationManager.getTotalDistance((Player) sender, onlineP);
-                	int distanceDifference = totalDistance - maxDistance;
-                	if (!sender.hasPermission("sf.exempt.distance") && distanceDifference > 0) {
-                		for (String msg : this.plugin.getConfig().getStringList("freeze-distance-fail")) {
-                			sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", onlineP.getName()).replace("{MAXDISTANCE}", "" + maxDistance).replace("{TOTALDISTANCE}", "" + totalDistance).replace("{DISTANCEDIFFERENCE}", "" + distanceDifference)));
-                		}
+                    int maxDistance = this.plugin.getConfig().getInt("freeze-radius");
+                    int totalDistance = this.locationManager.getTotalDistance((Player) sender, onlineP);
+                    int distanceDifference = totalDistance - maxDistance;
+                    if (!sender.hasPermission("sf.exempt.distance") && distanceDifference > 0) {
+                        for (String msg : this.plugin.getConfig().getStringList("freeze-distance-fail")) {
+                            sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", onlineP.getName()).replace("{MAXDISTANCE}", "" + maxDistance).replace("{TOTALDISTANCE}", "" + totalDistance).replace("{DISTANCEDIFFERENCE}", "" + distanceDifference)));
+                        }
                         return true;
-                	}
+                    }
                 }
             } else if (offlineP != null) {
                 if (offlineP.hasPlayedBefore()) {
@@ -122,7 +122,7 @@ public class TempFreezeCommand implements CommandExecutor {
             }
 
             if (args.length == 2) {
-                this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, null, time);
+                this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, null, time, null);
                 if (onlineP == null) {
                     this.freezeManager.notifyOfFreeze(uuid);
                 } else {
@@ -132,17 +132,27 @@ public class TempFreezeCommand implements CommandExecutor {
             }
 
             if (args.length > 2) {
-                String location = args[2];
-                if (!this.plugin.getConfig().isSet("locations." + location)) {
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + location + " &7is not a valid location, try:"));
-                    String locations = "";
-                    for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-                        locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
+                String location = null;
+                String reason = "";
+                if (!this.plugin.getConfig().isSet("locations." + args[2])) {
+                    if (args.length == 3) {
+                        location = args[2];
+                        sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + location + " &7is not a valid location, try:"));
+                        String locations = "";
+                        for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
+                            locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
+                        }
+                        sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
+                        return false;
+                    } else {
+                        reason = "";
+                        for (int i = 1; i < args.length; i++) {
+                            reason += args[i] + " ";
+                        }
+                        reason = reason.substring(0, reason.length() - 1);
                     }
-                    sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
-                    return false;
                 }
-                this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, location, time);
+                this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, location, time, reason);
                 if (onlineP == null) {
                     this.freezeManager.notifyOfFreeze(uuid);
                 } else {

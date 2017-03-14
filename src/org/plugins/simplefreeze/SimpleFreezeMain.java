@@ -28,8 +28,6 @@ import java.util.UUID;
  *  - Titles
  *  - Actionbar
  *  - Unfreeze upon ban
- *  - Reason for freeze
- *  - Spam freeze message
  *  - Player history
  *  
  *  TODO: Hopefully
@@ -57,6 +55,8 @@ import java.util.UUID;
  *   - MADE BLOCKING OF INTERACTION, BLOCK-BREAKING, ITEM DROPPING AND BOOK EDITING TOGGLEABLE
  *   - ENABLE FLY ON FREEZE SO PLAYERS ARENT KICKED FOR FLYING
  *   - PROPERLY BLOCKED PROJECTILE SHOOTING (ex. bow shooting, eggs, snowballs, fishing rod, splash potions, exp bottles)
+ *   - FREEZE MESSAGES CAN NOW BE SENT ON AN INTERVAL
+ *   - ADDED OPTIONAL REASON PARAMETER TO /freeze, /tempfreeze AND /freezeall
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFOCATION THROUGH THE TELEPORT-UP OPTION
@@ -472,9 +472,9 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     public String getHelpMessage() {
-        return this.placeholders("                                           &b&lSimpleFreeze\n" + "&b/sf &8- &7Displays this message\n" + "&b/sf reload &8- &7Reloads configuration file\n" + "&b/frozen &8- &7Lists frozen players\n"
-                + "&b/freeze <name> [location] [servers] &8- &7Freezes a player\n" + "&b/tempfreeze <name> <time> [servers] &8- &7Temporarily freezes a player\n" + "&b/unfreeze <name> &8- &7Unfreezes a player\n"
-                + "&b/freezeall &8- &7Freeze all players\n");
+        return this.placeholders("                                           &b&lSimpleFreeze\n" + "&b/sf &8- &7Displays this message\n" + "&b/sf reload &8- &7Reloads configuration file\n" + "&b/frozenlist [page] &8- &7Lists frozen players\n"
+                + "&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player\n" + "&b/tempfreeze <name> <time> [location/servers] &8- &7Temporarily freezes a player\n" + "&b/unfreeze <name> &8- &7Unfreezes a player\n"
+                + "&b/freezeall [reason] &8- &7Freeze all players\n");
     }
 
     public String getFinalPrefixFormatting() {

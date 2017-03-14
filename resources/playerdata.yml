@@ -8,4 +8,5 @@ freezeall-info:
   freezer: 'null'
   location: 'null'
   date: 'null'
+  reason: ''
   players: {}
