@@ -8,10 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
-import org.plugins.simplefreeze.managers.HelmetManager;
-import org.plugins.simplefreeze.managers.MessageManager;
-import org.plugins.simplefreeze.managers.ParticleManager;
-import org.plugins.simplefreeze.managers.SoundManager;
+import org.plugins.simplefreeze.managers.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,14 +22,16 @@ public class SimpleFreezeCommand implements CommandExecutor {
     private final ParticleManager particleManager;
     private final SoundManager soundManager;
     private final MessageManager messageManager;
+    private final MovementManager movementManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager) {
         this.plugin = plugin;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
         this.particleManager = particleManager;
         this.soundManager = soundManager;
         this.messageManager = messageManager;
+        this.movementManager = movementManager;
     }
 
     @Override
@@ -111,6 +110,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     this.messageManager.setTempFreezeLocInterval(this.plugin.getConfig().getInt("message-intervals.temp-freeze-location"));
                     this.messageManager.setFreezeAllInterval(this.plugin.getConfig().getInt("message-intervals.freeze-all"));
                     this.messageManager.setFreezeAllLocInterval(this.plugin.getConfig().getInt("message-intervals.freeze-all-location"));
+
+                    // CHANGE HEAD-MOVEMENT BOOLEAN
+                    this.movementManager.setHeadMovementBoolean(this.plugin.getConfig().getBoolean("head-movement"));
 
                     // CHECK IF /FROZEN FORMATS CHANGED
                     HashSet<String> strings = new HashSet<String>();

@@ -12,6 +12,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.plugins.simplefreeze.cache.FrozenPages;
 import org.plugins.simplefreeze.commands.*;
+import org.plugins.simplefreeze.hooks.BanManagerHook;
+import org.plugins.simplefreeze.hooks.EssentialsHook;
+import org.plugins.simplefreeze.hooks.LiteBansHook;
 import org.plugins.simplefreeze.listeners.*;
 import org.plugins.simplefreeze.managers.*;
 import org.plugins.simplefreeze.objects.FreezeAllPlayer;
@@ -25,15 +28,17 @@ import java.util.UUID;
 
 /* 
  * TODO
+ *  - MySQL
+ *  
+ *  TODO: (Hopefully)
+ *  - Player history
+ *  - Effects on freeze
+ *  - GUI for commands
+ *  - Hologram above players head on freeze option
  *  - Titles
  *  - Actionbar
- *  - Unfreeze upon ban
- *  - Player history
- *  
- *  TODO: Hopefully
- *  - Hologram above players head on freeze option
  *
- * */
+ */
 
 /* CHANGES:
  *   - Make time placeholder on head item update every second
@@ -57,11 +62,13 @@ import java.util.UUID;
  *   - PROPERLY BLOCKED PROJECTILE SHOOTING (ex. bow shooting, eggs, snowballs, fishing rod, splash potions, exp bottles)
  *   - FREEZE MESSAGES CAN NOW BE SENT ON AN INTERVAL
  *   - ADDED OPTIONAL REASON PARAMETER TO /freeze, /tempfreeze AND /freezeall
+ *   - PLAYERS ARE UNFREEZED ON BAN
+ *   - MOVEMENT HANDLED MORE EFFICIENTLY
  * 
  * BUGS:
  *   - FIXED BUG WHERE PLAYERS WERE SOMETIMES TELEPORTED INTO SUFFOCATION THROUGH THE TELEPORT-UP OPTION
  *
- * */
+ */
 
 /* NMS:
  * net.minecraft.server.v1_7_R4
@@ -71,13 +78,18 @@ import java.util.UUID;
  * net.minecraft.server.v1_9_R1
  * net.minecraft.server.v1_9_R2
  * net.minecraft.server.v1_10_R1
- * */
+ */
 
 public class SimpleFreezeMain extends JavaPlugin {
 
     private static SimpleFreezeMain plugin;
 
     private String finalPrefixFormatting = this.updateFinalPrefixFormatting();
+
+    private Permission permission = null;
+    private boolean usingLiteBans = false;
+    private boolean usingBanManager = false;
+    private boolean usingEssentials = false;
 
     private PlayerManager playerManager;
     private FreezeManager freezeManager;
@@ -91,7 +103,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private ParticleManager particleManager;
     private SoundManager soundManager;
     private MessageManager messageManager;
-    private Permission permission = null;
+    private MovementManager movementManager;
 
     private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
@@ -385,8 +397,20 @@ public class SimpleFreezeMain extends JavaPlugin {
                 }
                 p.getInventory().setHelmet(frozenPlayer.getHelmet());
                 p.sendMessage(this.placeholders("{PREFIX}SimpleFreeze has been disabled, you will remain unfrozen until it is re-enabled"));
+                if (frozenPlayer instanceof TempFrozenPlayer) {
+                    ((TempFrozenPlayer) frozenPlayer).cancelTask();
+                }
             }
         }
+        this.movementManager.endTask();
+        this.particleManager.endTask();
+    }
+
+    public void setupHookBooleans() {
+        PluginManager plManager = Bukkit.getServer().getPluginManager();
+        this.usingLiteBans = plManager.getPlugin("LiteBans") != null;
+        this.usingBanManager = plManager.getPlugin("BanManager") != null;
+        this.usingEssentials = (plManager.getPlugin("Essentials") != null || plManager.getPlugin("EssentialsX") != null);
     }
 
     private void initializeVariables() {
@@ -400,8 +424,10 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.frozenPages = new FrozenPages(this, this.locationManager);
         this.playerManager = new PlayerManager(this, this.frozenPages);
         this.particleManager = new ParticleManager(this, this.playerManager);
+        this.movementManager = new MovementManager(this, this.playerManager);
         this.helmetManager = new HelmetManager(this, this.playerManager, this.locationManager);
         this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.sqlManager, this.frozenPages, this.soundManager, this.messageManager);
+        this.setupHookBooleans();
     }
 
     private void loadConfigs() {
@@ -419,7 +445,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager));
+        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager));
         this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.permission));
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager));
@@ -441,10 +467,13 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new PlayerTeleportListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerInteractListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager, this.messageManager), this);
-        plManager.registerEvents(new PlayerMoveListener(this, this.playerManager), this);
+        //plManager.registerEvents(new PlayerMoveListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerQuitListener(this, this.playerManager, this.messageManager), this);
         plManager.registerEvents(new PlayerToggleFlightListener(this, this.playerManager), this);
         plManager.registerEvents(new ProjectileLaunchListener(this, this.playerManager), this);
+        plManager.registerEvents(new LiteBansHook(this, this.playerManager, this.freezeManager), this);
+        plManager.registerEvents(new BanManagerHook(this, this.playerManager, this.freezeManager), this);
+        plManager.registerEvents(new EssentialsHook(this, this.playerManager, this.freezeManager), this);
     }
 
     public PlayerManager getPlayerManager() {
@@ -465,6 +494,18 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     public StatsConfig getStatsConfig() {
         return this.statsConfig;
+    }
+
+    public boolean usingLiteBans() {
+        return this.usingLiteBans;
+    }
+
+    public boolean usingEssentials() {
+        return this.usingEssentials;
+    }
+
+    public boolean usingBanManager() {
+        return this.usingBanManager;
     }
 
     public String placeholders(String arg) {

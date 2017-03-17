@@ -21,7 +21,7 @@ public class PlayerMoveListener implements Listener {
 		if (this.playerManager.isFrozen(e.getPlayer())) {
 			if (!this.plugin.getConfig().getBoolean("head-movement")) {
 				e.getPlayer().teleport(e.getFrom());
-			} else if ((e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ() || e.getFrom().getY() != e.getTo().getY())) {
+			} else if (e.getFrom().distanceSquared(e.getTo()) > 0) {
 				e.getPlayer().teleport(e.getFrom());
 			}
 		}
