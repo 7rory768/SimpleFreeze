@@ -64,6 +64,8 @@ public class PlayerManager {
                 }
             }
             return true;
+        } else if (this.plugin.usingMySQL()) {
+            return this.plugin.getSQLManager().checkIfFrozen(uuid);
         }
         return false;
     }
@@ -83,8 +85,12 @@ public class PlayerManager {
         return false;
     }
 
+    public boolean isSQLFrozen(Player p) {
+        return this.isSQLFrozen(p.getUniqueId());
+    }
+
     public boolean isSQLFrozen(UUID uuid) {
-        return this.frozenPlayers.containsKey(uuid) ? this.frozenPlayers.get(uuid).isSqlFreeze() : this.plugin.getPlayerConfig().getConfig().getBoolean("players." + uuid.toString() + ".mysql", false);
+        return plugin.getPlayerConfig().getConfig().isSet("players." + uuid.toString() + ".servers");
     }
 
     public Location getOriginalLocation(UUID uuid) {

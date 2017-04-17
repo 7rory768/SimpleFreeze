@@ -61,7 +61,7 @@ public class DataConverter {
                             this.plugin.getPlayerConfig().saveConfig();
                             this.plugin.getPlayerConfig().reloadConfig();
                             this.removeData(p);
-                            return new FrozenPlayer(freezeDate, p.getUniqueId(), null, oldLocation, null, false, p.getInventory().getHelmet());
+                            return new FrozenPlayer(freezeDate, p.getUniqueId(), null, oldLocation, null, plugin.getConfig().getString("default-reason", "None"), false, p.getInventory().getHelmet());
 
                         }
                     }

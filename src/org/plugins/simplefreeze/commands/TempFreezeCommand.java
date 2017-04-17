@@ -11,8 +11,11 @@ import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.FreezeManager;
 import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
+import org.plugins.simplefreeze.managers.SQLManager;
 import org.plugins.simplefreeze.util.TimeUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class TempFreezeCommand implements CommandExecutor {
@@ -21,13 +24,15 @@ public class TempFreezeCommand implements CommandExecutor {
     private final PlayerManager playerManager;
     private final FreezeManager freezeManager;
     private final LocationManager locationManager;
+    private final SQLManager sqlManager;
     private final Permission permissions;
 
-    public TempFreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, Permission permissions) {
+    public TempFreezeCommand(SimpleFreezeMain plugin, PlayerManager playerManager, FreezeManager freezeManager, LocationManager locationManager, SQLManager sqlManager, Permission permissions) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.freezeManager = freezeManager;
         this.locationManager = locationManager;
+        this.sqlManager = sqlManager;
         this.permissions = permissions;
     }
 
@@ -46,7 +51,7 @@ public class TempFreezeCommand implements CommandExecutor {
             }
 
             if (args.length < 2) {
-                sender.sendMessage(this.plugin.placeholders("{PREFIX}" + "Not enough arguments, try &b/tempfreeze <name> <time> [location] [servers]"));
+                sender.sendMessage(this.plugin.placeholders("{PREFIX}" + "Not enough arguments, try &b/tempfreeze <name> <time> [location/servers]"));
                 return true;
             }
 
@@ -115,52 +120,68 @@ public class TempFreezeCommand implements CommandExecutor {
                 }
             }
 
-            long time = TimeUtil.convertToSeconds(args[1]);
+            UUID senderUUID = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
+            String location = null;
+            String reason = null;
+            String timeString = "";
+            List<String> serverIDs = this.sqlManager.getServerIDs();
+            List<String> servers = new ArrayList<>();
+            boolean calculatingTime = true;
+            for (int i = 1; i < args.length; i++) {
+                if (calculatingTime) {
+                    if (TimeUtil.isUnitOfTime(args[i])) {
+                        timeString += args[i];
+                    } else {
+                        calculatingTime = false;
+                    }
+                }
+                if (!calculatingTime) {
+                    if (reason != null) {
+                        reason += " " + args[i];
+                    } else {
+                        boolean addedServer = false;
+                        for (String serverID : serverIDs) {
+                            if (serverID.equalsIgnoreCase(args[i])) {
+                                servers.add(serverID);
+                                addedServer = true;
+                                break;
+                            }
+                        }
+                        if (servers.isEmpty() && this.plugin.getConfig().isSet("locations." + args[i])) {
+                            location = args[i];
+                        } else if (!addedServer) {
+                            reason = args[i];
+                        }
+                    }
+                }
+            }
+
+            long time = TimeUtil.convertToSeconds(timeString);
             if (time == -1) {
                 sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + args[1] + " {PREFIXFORMAT}is not a valid unit of time, try &bs&7, &bm&7, &bh&7, &bd&7, &bw&7, &bmo&7 or &by&7"));
                 return false;
             }
 
-            if (args.length == 2) {
-                this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, null, time, null);
-                if (onlineP == null) {
-                    this.freezeManager.notifyOfFreeze(uuid);
-                } else {
-                    this.freezeManager.notifyOfFreeze(this.playerManager.getFrozenPlayer(uuid));
-                }
-                return true;
+            if (location == null && this.locationManager.getLocation(this.plugin.getConfig().getString("default-location", "")) != null) {
+                location = this.plugin.getConfig().getString("default-location");
             }
 
-            if (args.length > 2) {
-                String location = null;
-                String reason = "";
-                if (!this.plugin.getConfig().isSet("locations." + args[2])) {
-                    if (args.length == 3) {
-                        location = args[2];
-                        sender.sendMessage(this.plugin.placeholders("{PREFIX}&b" + location + " &7is not a valid location, try:"));
-                        String locations = "";
-                        for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-                            locations += "&b" + locationName + this.plugin.getFinalPrefixFormatting() + ", ";
-                        }
-                        sender.sendMessage(this.plugin.placeholders(locations.substring(0, locations.length() - 2)));
-                        return false;
-                    } else {
-                        reason = "";
-                        for (int i = 1; i < args.length; i++) {
-                            reason += args[i] + " ";
-                        }
-                        reason = reason.substring(0, reason.length() - 1);
-                    }
-                }
-                this.freezeManager.tempFreeze(uuid, sender instanceof Player ? ((Player) sender).getUniqueId() : null, location, time, reason);
-                if (onlineP == null) {
-                    this.freezeManager.notifyOfFreeze(uuid);
-                } else {
-                    this.freezeManager.notifyOfFreeze(this.playerManager.getFrozenPlayer(uuid));
-                }
-                return true;
+            if (reason == null) {
+                reason = this.plugin.getConfig().getString("default-reason");
             }
 
+            if (!servers.isEmpty()) {
+                this.sqlManager.addFreeze(playerName, uuid, sender.getName(), senderUUID, System.currentTimeMillis() + (time * 1000L), reason, servers);
+                return true;
+            }
+            this.freezeManager.tempFreeze(uuid, senderUUID, location, time, reason, null);
+
+            if (onlineP == null) {
+                this.freezeManager.notifyOfFreeze(uuid);
+            } else {
+                this.freezeManager.notifyOfFreeze(this.playerManager.getFrozenPlayer(uuid));
+            }
+            return true;
         }
 
         return false;

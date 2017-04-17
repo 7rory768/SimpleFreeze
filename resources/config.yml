@@ -29,35 +29,37 @@
 prefix: '&b&lSimpleFreeze &8\u00BB &7'
 
 # This sets the message held by the {LOCATION} placeholder when there is no actual freeze location; ('' = nothing)
-location: 'Unknown'
+empty-location: 'Unknown'
+
+default-reason: 'None'
 
 # ||=======================================||
 # ||                 MySQL                 ||
 # ||=======================================||
 
-# MAKE SURE THAT THIS IS UNIQUE ACROSS ALL SERVERS CONNECTED TO THE SAME MYSQL DATABASE
+# MAKE SURE THE SERVER-ID IS DIFFERENT FOR EACH SERVER ON YOUR NETWORK
+# (If you make multiple servers have the same id, it will only freeze the player on one server)
 # NOTICE: This id is what you will type when SQLFreezing ex. /freeze 7rory768 lobby
-# Also, make sure you do not have any locations that are named the same as the server-id
+# Also, make sure you do not have any locations that are named the same as any server-id's you have on your network
 server-id: lobby
 
-# LIST OF ALL SERVER-IDs CONNECTED TO YOUR NETWORK THAT ARE RUNNING SIMPLE FREEZE
-server-list:
- - lobby
-
 mysql:
+  # Database username
   username: user
+  # Database password
   password: pass
+  # IP of database
   hostname: localhost
-  port: 3306
-  database: database
+  # Database name
+  database-name: database
 
 # ||=======================================||
 # ||              Preferences              ||
 # ||=======================================||
 
 # Defines if a player should be teleported to the the ground at their location when frozen (prevents glitches when a player is floating while frozen (Kicked: Flying is not enabled on this server))
-teleport-to-ground: true
 # teleport-to-ground will not run if a location is specified (ex. /freeze <playername> example-location)
+teleport-to-ground: true
 
 # If teleport-to-ground is false, should the player have their fly enabled so that they aren't kicked for flying/don't glitch while in the air
 enable-fly: true
@@ -156,6 +158,7 @@ freezeall-logout-commands: false
 logout-commands:
   - '/broadcast &c&l{PLAYER} &cleft while frozen'
 
+
 # Defines locations that can be called when freezing a player (ex. /freeze <playername> example-location)
 # yaw and pitch are optional
 locations:
@@ -171,6 +174,9 @@ locations:
     # Direction info
     yaw: 0.0
     pitch: 0.0
+
+# If no locaton is given in the freeze command this location will be used, (if you want to use this remove the #)
+#default-location: example-location
 
 # ||======================================||
 # ||               Blocking               ||
@@ -237,57 +243,94 @@ blocked-commands:
 
 # Message sent to a player when they are frozen
 freeze-message:
-  - '&4&m--------------------------------------------------'
-  - '&cYou were frozen by &l{FREEZER}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7Frozen by: &a{FREEZER}'
+  - '&7Length: &aPermanent'
+  - '&7Reason: &a{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+
+# Message sent to a player when they are frozen on muliple servers
+sql-freeze-message:
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7Frozen by: &a{FREEZER} &7from &a{SERVER}'
+  - '&7Length: &aPermanent'
+  - '&7Reason: &a{REASON}'
+  - '&7Servers: &a{SERVERS}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to a player when they are frozen at a specific location
 freeze-location-message:
-  - '&4&m--------------------------------------------------'
-  - '&cYou were frozen by &l{FREEZER} &cat &l{LOCATION}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&aFrozen by: &7{FREEZER}'
+  - '&aLength: &7Permanent'
+  - '&aLocation: &7{LOCATION}'
+  - '&aReason: &7{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to a player when they are frozen temporarily
 temp-freeze-message:
-  - '&4&m--------------------------------------------------'
-  - '&cYou were frozen by &l{FREEZER} &cfor &l{TIME}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&aFrozen by: &7{FREEZER}'
+  - '&aLength: &7{TIME}'
+  - '&aReason: &7{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+
+# Message sent to a player when they are frozen temporarily on multiple servers
+sql-temp-freeze-message:
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7Frozen by: &a{FREEZER} &7from &a{SERVER}'
+  - '&7Length: &a{TIME}'
+  - '&7Reason: &a{REASON}'
+  - '&7Servers: &a{SERVERS}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to a player when they are frozen temporarily at a specific location
 temp-freeze-location-message:
-  - '&4&m--------------------------------------------------'
-  - '&cYou were frozen by &l{FREEZER} &cat &l{LOCATION}'
-  - '&cfor &l{TIME}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&aFrozen by: &7{FREEZER}'
+  - '&aLength: &7{TIME}'
+  - '&aLocation: &7{LOCATION}'
+  - '&aReason: &7{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to a player when they are unfrozen
 unfreeze-message:
-  - '&4&m--------------------------------------------------'
-  - '&cYou were unfrozen by &l{UNFREEZER}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7You were unfrozen by &a{UNFREEZER}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+
+# Message sent to a player when they are unfrozen
+sql-unfreeze-message:
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7You were unfrozen by &a{UNFREEZER} &7from &b{SERVER}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to the server when every player is frozen (/freezeall)
 freezeall-message:
-  - '&4&m--------------------------------------------------'
-  - '&cEveryone was frozen by &l{FREEZER}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7Server freeze enabled by &a{FREEZER}'
+  - '&7Reason: &a{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 freezeall-location-message:
-  - '&4&m--------------------------------------------------'
-  - '&cEveryone was frozen by &l{FREEZER} &cat &l{LOCATION}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7Server freeze enabled by &a{FREEZER}'
+  - '&7Location: &a{LOCATION}'
+  - '&7Reason: &a{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
   
 # Message sent to the server when every player is frozen (/freezeall)
 unfreezeall-message:
-  - '&4&m--------------------------------------------------'
-  - '&cEveryone was unfrozen by &l{UNFREEZER}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7Server freeze disabled by &a{UNFREEZER}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to a player when they are frozen because they joined during a freezeall
 join-on-freezeall-message:
-  - '&4&m--------------------------------------------------'
-  - '&cYou have joined while freezeall is active by {FREEZER}'
-  - '&4&m--------------------------------------------------'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - '&7You have joined during a server freeze, activated by &a{FREEZER}'
+  - '&7Reason: &a{REASON}'
+  - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
 # Message sent to a player that tries to attack a frozen player
 frozen-attacked-message:
@@ -329,25 +372,51 @@ block-break-message:
 blocked-command-message:
   - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
 
-# Message sent to players with the sf.notify.frozen permission upon freezing a player
+# Messages sent to players with the sf.notify.frozen permission upon freezing a player
 frozen-notify-message:
   - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER}'
+  - '&8&m-----------------------------------------------------'
+  - '&7Location: &b{LOCATION}'
+  - '&7Length: &b{TIME}'
+  - '&7Reason: &b{REASON}'
+  - '&8&m-----------------------------------------------------'
 
 # Message sent to players with the sf.notify.frozen permission upon temporarily freezing a player
 temp-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME}'
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER}'
+  - '&8&m-----------------------------------------------------'
+  - '&7Location: &b{LOCATION}'
+  - '&7Length: &b{TIME}'
+  - '&7Reason: &b{REASON}'
+  - '&8&m-----------------------------------------------------'
 
 # Message sent to players with the sf.notify.frozen permission upon temporarily freezing a player
 sql-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7on &b{SERVERS}'
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7from &b{SERVER}'
+  - '&8&m-----------------------------------------------------'
+  - '&7Location: &b{LOCATION}'
+  - '&7Length: &b{TIME}'
+  - '&7Reason: &b{REASON}'
+  - '&7Servers: &b{SERVERS}'
+  - '&8&m-----------------------------------------------------'
 
 # Message sent to players with the sf.notify.frozen permission upon temporarily freezing a player
 sql-temp-frozen-notify-message:
-  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7for &b{TIME} &7on &b{SERVERS}'
+  - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER} &7from &b{SERVER}'
+  - '&8&m-----------------------------------------------------'
+  - '&7Location: &b{LOCATION}'
+  - '&7Length: &b{TIME}'
+  - '&7Reason: &b{REASON}'
+  - '&7Servers: &b{SERVERS}'
+  - '&8&m-----------------------------------------------------'
 
-# Message sent to players with the sf.notify.unfrozen permission upon freezing a player
+# Message sent to players with the sf.notify.unfrozen permission upon unfreezing a player
 unfrozen-notify-message:
   - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{UNFREEZER}'
+
+# Message sent to players with the sf.notify.unfrozen permission upon unfreezing a player that's on another server
+sql-unfrozen-notify-message:
+  - '{PREFIX}&b{PLAYER} &7was unfrozen by &b{UNFREEZER} &7from &b{SERVER}'
 
 # Message sent when a player leave while frozen
 notify-on-leave-message:

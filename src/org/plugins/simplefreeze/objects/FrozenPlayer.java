@@ -11,30 +11,33 @@ public class FrozenPlayer {
     private final Long freezeDate;
     private final UUID freezeeUUID;
     private final UUID freezerUUID;
-    private final boolean sqlFreeze;
+    private final String reason;
+    private final boolean sqlFrozen;
 
     private ItemStack helmet = null;
     private Location originalLoc = null;
     private Location freezeLoc = null;
 
-    public FrozenPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, boolean sqlFreeze, ItemStack helmet) {
+    public FrozenPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, String reason, boolean sqlFrozen, ItemStack helmet) {
         this.freezeDate = freezeDate;
         this.freezeeUUID = freezeeUUID;
         this.freezerUUID = freezerUUID;
         this.originalLoc = originalLoc;
         this.freezeLoc = freezeLoc;
-        this.sqlFreeze = sqlFreeze;
+        this.reason = reason;
+        this.sqlFrozen = sqlFrozen;
         this.helmet = helmet;
 
     }
 
-    public FrozenPlayer(Long date, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, boolean sqlFreeze) {
+    public FrozenPlayer(Long date, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, String reason, boolean sqlFrozen) {
         this.freezeDate = date;
         this.freezeeUUID = freezeeUUID;
         this.freezerUUID = freezerUUID;
         this.originalLoc = originalLoc;
         this.freezeLoc = freezeLoc;
-        this.sqlFreeze = sqlFreeze;
+        this.reason = reason;
+        this.sqlFrozen = sqlFrozen;
     }
 
     public Long getFreezeDate() {
@@ -55,10 +58,6 @@ public class FrozenPlayer {
 
     public String getFreezerName() {
         return freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
-    }
-
-    public boolean isSqlFreeze() {
-        return this.sqlFreeze;
     }
 
     public ItemStack getHelmet() {
@@ -83,6 +82,14 @@ public class FrozenPlayer {
 
     public void setFreezeLoc(Location freezeLoc) {
         this.freezeLoc = freezeLoc;
+    }
+
+    public boolean isSQLFrozen() {
+        return this.sqlFrozen;
+    }
+
+    public String getReason() {
+        return this.reason;
     }
 
 }
