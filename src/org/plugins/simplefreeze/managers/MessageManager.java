@@ -1,6 +1,5 @@
 package org.plugins.simplefreeze.managers;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -63,11 +62,8 @@ public class MessageManager {
         this.tempFreezePlayers.put(p.getUniqueId(), new BukkitRunnable() {
             @Override
             public void run() {
-                Bukkit.broadcastMessage("-------------------broadcasting msgs------------------");
-                Bukkit.broadcastMessage("msg: " + msg);
                 String newMsg = msg.replace("{TIME}", TimeUtil.formatTime((plugin.getPlayerConfig().getConfig().getLong("players." + p.getUniqueId().toString() + ".unfreeze-date") - System.currentTimeMillis())/1000L));
                 p.sendMessage(plugin.placeholders(newMsg));
-                Bukkit.broadcastMessage("msg: " + msg);
             }
         }.runTaskTimer(this.plugin, this.tempFreezeInterval * 20L, this.tempFreezeInterval * 20L));
     }
@@ -120,6 +116,19 @@ public class MessageManager {
             this.freezeAllLocPlayers.remove(p.getUniqueId()).cancel();
 
         }
+    }
+
+    public void clearFreezeAllPlayers() {
+        for (UUID uuid : this.freezeAllLocPlayers.keySet()) {
+            this.freezeAllLocPlayers.get(uuid).cancel();
+        }
+
+        for (UUID uuid : this.freezeAllPlayers.keySet()) {
+            this.freezeAllPlayers.get(uuid).cancel();
+        }
+
+        this.freezeAllLocPlayers.clear();
+        this.freezeAllPlayers.clear();
     }
 
     public int getFreezeInterval() {

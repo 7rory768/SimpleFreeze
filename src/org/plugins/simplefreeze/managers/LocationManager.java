@@ -34,13 +34,15 @@ public class LocationManager {
 
         for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
             World locationWorld = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + locationName + ".worldname"));
-            double locationX = this.plugin.getConfig().getDouble("locations." + locationName + ".x");
-            double locationY = this.plugin.getConfig().getDouble("locations." + locationName + ".y");
-            double locationZ = this.plugin.getConfig().getDouble("locations." + locationName + ".z");
-            float locationYaw = this.plugin.getConfig().isSet("locations." + locationName + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) : yaw;
-            float locationPitch = this.plugin.getConfig().isSet("locations." + locationName + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) : pitch;
-            if (world.getName().equals(locationWorld.getName()) && x == locationX && y == locationY && z == locationZ && yaw == locationYaw && pitch == locationPitch) {
-                return locationName;
+            if (locationWorld != null) {
+                double locationX = this.plugin.getConfig().getDouble("locations." + locationName + ".x");
+                double locationY = this.plugin.getConfig().getDouble("locations." + locationName + ".y");
+                double locationZ = this.plugin.getConfig().getDouble("locations." + locationName + ".z");
+                float locationYaw = this.plugin.getConfig().isSet("locations." + locationName + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) : yaw;
+                float locationPitch = this.plugin.getConfig().isSet("locations." + locationName + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) : pitch;
+                if (world.getName().equals(locationWorld.getName()) && x == locationX && y == locationY && z == locationZ && yaw == locationYaw && pitch == locationPitch) {
+                    return locationName;
+                }
             }
         }
         return null;

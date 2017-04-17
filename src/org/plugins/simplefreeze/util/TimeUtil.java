@@ -1,9 +1,112 @@
 package org.plugins.simplefreeze.util;
 
+import org.bukkit.Bukkit;
+
 /**
  * Created by Rory on 11/21/2016.
  */
 public class TimeUtil {
+
+    public static boolean isInt(String arg) {
+        try {
+            Integer.parseInt(arg);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public static int getUnitCount(String arg) {
+        int count = 0;
+        if (arg.length() > 1) {
+            if (TimeUtil.isInt(arg.substring(0, arg.length() - 1))) {
+                if (arg.endsWith("s")) {
+                    count++;
+                } else if (arg.endsWith("m")) {
+                    count++;
+                } else if (arg.endsWith("h")) {
+                    count++;
+                } else if (arg.endsWith("d")) {
+                    count++;
+                } else if (arg.endsWith("w")) {
+                    count++;
+                } else if (arg.endsWith("y")) {
+                    count++;
+                }
+
+            }
+        } else if (arg.length() > 2) {
+            if (arg.endsWith("mo") && TimeUtil.isInt(arg.substring(0, arg.length() - 2))) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static boolean isUnitOfTime(String arg) {
+        if (arg.length() > 1) {
+            if (TimeUtil.isInt(arg.substring(0, arg.length() - 1))) {
+                if (arg.endsWith("s")) {
+                    return true;
+                } else if (arg.endsWith("m")) {
+                    return true;
+                } else if (arg.endsWith("h")) {
+                    return true;
+                } else if (arg.endsWith("d")) {
+                    return true;
+                } else if (arg.endsWith("w")) {
+                    return true;
+                } else if (arg.endsWith("y")) {
+                    return true;
+                }
+
+            }
+        } else if (arg.length() > 2) {
+            if (arg.endsWith("mo") && TimeUtil.isInt(arg.substring(0, arg.length() - 2))) {
+                return true;
+            }
+        }
+
+        int index = 0;
+        while (!arg.equals("") && index < arg.length()) {
+            char ch = arg.charAt(index);
+            switch (ch) {
+                case 's':
+                    arg = arg.substring(index + 1);
+                    break;
+                case 'm':
+                    if (arg.charAt(index + 1 >= arg.length() ? index : index + 1) == 'o') {
+                        arg = arg.substring(index + 2);
+                    } else {
+                        arg = arg.substring(index + 1);
+                    }
+                    index = 0;
+                    break;
+                case 'h':
+                    arg = arg.substring(index + 1);
+                    index = 0;
+                    break;
+                case 'd':
+                    arg = arg.substring(index + 1);
+                    index = 0;
+                    break;
+                case 'w':
+                    arg = arg.substring(index + 1);
+                    index = 0;
+                    break;
+                case 'y':
+                    arg = arg.substring(index + 1);
+                    index = 0;
+                    break;
+                default:
+                    if (!TimeUtil.isInt("" + ch)) {
+                        return false;
+                    }
+            }
+            index++;
+        }
+        return true;
+    }
 
     public static String formatTime(long seconds) {
         String timeText = "";
@@ -105,7 +208,7 @@ public class TimeUtil {
         time = time.toLowerCase();
         long seconds = 0;
         int index = 0;
-        if (!(time.contains("s") || time.contains("m") || time.contains("h") || time.contains("d") || time.contains("w") || time.contains("y"))) {
+        if (time.equals("") || !((time.contains("s") || time.contains("m") || time.contains("h") || time.contains("d") || time.contains("w") || time.contains("y")))) {
             return -1;
         }
         while (!time.equals("")) {
@@ -125,7 +228,6 @@ public class TimeUtil {
                         seconds += Integer.parseInt(time.substring(0, index)) * 30 * 24 * 60 * 60;
                         if (time.length() > index + 2) {
                             time = time.substring(index + 2);
-                            index = 0;
                         } else {
                             return seconds;
                         }
@@ -133,11 +235,11 @@ public class TimeUtil {
                         seconds += Integer.parseInt(time.substring(0, index)) * 60;
                         if (time.length() > index + 1) {
                             time = time.substring(index + 1);
-                            index = 0;
                         } else {
                             return seconds;
                         }
                     }
+                    index = 0;
                     break;
                 case 'h':
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60;
@@ -156,7 +258,9 @@ public class TimeUtil {
                     } else {
                         return seconds;
                     }
+                    break;
                 case 'w':
+                    Bukkit.broadcastMessage("w");
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60 * 24 * 7;
                     if (time.length() > index + 1) {
                         time = time.substring(index + 1);
@@ -164,6 +268,7 @@ public class TimeUtil {
                     } else {
                         return seconds;
                     }
+                    break;
                 case 'y':
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60 * 24 * 365;
                     if (time.length() > index + 1) {
@@ -172,6 +277,7 @@ public class TimeUtil {
                     } else {
                         return seconds;
                     }
+                    break;
             }
             index++;
         }
