@@ -127,7 +127,9 @@ head-item:
     lore:
       - '&7The server was frozen by &b{FREEZER} &7at &b{LOCATION}'
 
-# Defines what sound will be played upon a freeze/unfreeze (Define them as listed here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html)
+# Defines what sound will be played upon a freeze/unfreeze
+# 1.8 LIST: http://docs.codelanx.com/Bukkit/1.8/org/bukkit/Sound.html
+# 1.9+ LIST: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
 # NOTE: Volume can be any number from 0.0 - 1.0 (1.0 = normal))
 # NOTE: Pitch can be any number from 0.5 to 2.0 and controls how fast the sound is played (1.0 = normal)
 # Both volume and pitch values must have decimals just add .0 if you are providing a whole number (ex. 1 to 1.0)

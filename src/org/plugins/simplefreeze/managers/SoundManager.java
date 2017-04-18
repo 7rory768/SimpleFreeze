@@ -23,16 +23,26 @@ public class SoundManager {
     public SoundManager(SimpleFreezeMain plugin) {
         this.plugin = plugin;
 
+        String freezeString = this.plugin.getConfig().getString("freeze-sound.sound");
         try {
             this.freezeSound = Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
         } catch (IllegalArgumentException e) {
-            Bukkit.getConsoleSender().sendMessage(plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + plugin.getConfig().getString("freeze-sound.sound")));
+            if (freezeString.startsWith("BLOCK_") && freezeString.length() > 6) {
+                this.freezeSound = Sound.valueOf(freezeString.substring(6));
+            } else {
+                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + freezeString));
+            }
         }
 
+        String unfreezeString = this.plugin.getConfig().getString("unfreeze-sound.sound");
         try {
-            this.unfreezeSound = Sound.valueOf(this.plugin.getConfig().getString("unfreeze-sound.sound"));
+            this.unfreezeSound = Sound.valueOf(unfreezeString);
         } catch (IllegalArgumentException e) {
-            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
+            if (unfreezeString.startsWith("BLOCK_") && unfreezeString.length() > 6) {
+                this.unfreezeSound = Sound.valueOf(unfreezeString.substring(6));
+            } else {
+                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + unfreezeString));
+            }
         }
 
         this.freezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
@@ -43,16 +53,26 @@ public class SoundManager {
     }
 
     public void reset() {
+        String freezeString = this.plugin.getConfig().getString("freeze-sound.sound");
         try {
-            Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
+            this.freezeSound = Sound.valueOf(this.plugin.getConfig().getString("freeze-sound.sound"));
         } catch (IllegalArgumentException e) {
-            Bukkit.getConsoleSender().sendMessage(plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + plugin.getConfig().getString("freeze-sound.sound")));
+            if (freezeString.startsWith("BLOCK_") && freezeString.length() > 6) {
+                this.freezeSound = Sound.valueOf(freezeString.substring(6));
+            } else {
+                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid freeze sound: &c" + freezeString));
+            }
         }
 
+        String unfreezeString = this.plugin.getConfig().getString("unfreeze-sound.sound");
         try {
-            this.unfreezeSound = Sound.valueOf(this.plugin.getConfig().getString("unfreeze-sound.sound"));
+            this.unfreezeSound = Sound.valueOf(unfreezeString);
         } catch (IllegalArgumentException e) {
-            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
+            if (unfreezeString.startsWith("BLOCK_") && unfreezeString.length() > 6) {
+                this.unfreezeSound = Sound.valueOf(unfreezeString.substring(6));
+            } else {
+                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("[SimpleFreeze] &c&lERROR: &7Invalid unfreeze sound: &c" + unfreezeString));
+            }
         }
 
         this.freezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
@@ -79,6 +99,9 @@ public class SoundManager {
         try {
             this.freezeSound = Sound.valueOf(soundString);
         } catch (IllegalArgumentException e) {
+            if (soundString.startsWith("BLOCK_") && soundString.length() > 6) {
+                this.freezeSound = Sound.valueOf(soundString.substring(6));
+            }
             return false;
         }
         return true;
@@ -88,6 +111,9 @@ public class SoundManager {
         try {
             this.unfreezeSound = Sound.valueOf(soundString);
         } catch (IllegalArgumentException e) {
+            if (soundString.startsWith("BLOCK_") && soundString.length() > 6) {
+                this.unfreezeSound = Sound.valueOf(soundString.substring(6));
+            }
             return false;
         }
         return true;
