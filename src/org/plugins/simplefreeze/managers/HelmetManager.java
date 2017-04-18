@@ -414,9 +414,10 @@ public class HelmetManager {
         String playerPlaceholder = frozenPlayer.getFreezeeName();
         String freezerPlaceholder = frozenPlayer.getFreezerName();
         String locName = this.locationManager.getLocationName(frozenPlayer.getFreezeLoc());
-        String locationPlaceholder = locName == null ? this.plugin.getConfig().getString("location") : this.plugin.getConfig().getString("locations." + locName + ".placeholder", locName);
+        String locationPlaceholder = this.locationManager.getLocationPlaceholder(locName);
         String timePlaceholder = "";
-        String serversPlaceholder = "";
+        String serversPlaceholder = this.plugin.getConfig().getString("players." + frozenPlayer.getFreezeeUUID() + ".servers", "");
+        String reasonPlaceholder = frozenPlayer.getReason();
 
         ItemStack helmetItem = null;
 
@@ -444,18 +445,19 @@ public class HelmetManager {
             if (helmetMeta.hasDisplayName()) {
                 // More placeholders should be added here (location, freezer, time)
                 // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(helmetMeta.getDisplayName().replace("{FREEZER}", freezerPlaceholder).replace("{PLAYER}", playerPlaceholder).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
+                helmetMeta.setDisplayName(this.plugin.placeholders(helmetMeta.getDisplayName().replace("{FREEZER}", freezerPlaceholder).replace("{PLAYER}", playerPlaceholder).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reasonPlaceholder)));
             }
             if (helmetMeta.hasLore()) {
                 List<String> lore = new ArrayList<String>();
                 for (String loreLine : helmetMeta.getLore()) {
                     lore.add(this.plugin.placeholders(loreLine.replace("{FREEZER}", freezerPlaceholder).replace("{PLAYER}", playerPlaceholder).replace("{TIME}", timePlaceholder)
-                            .replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder)));
+                            .replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reasonPlaceholder)));
                 }
                 helmetMeta.setLore(lore);
             }
             helmetItem.setItemMeta(helmetMeta);
         }
+
         return helmetItem;
     }
 

@@ -30,9 +30,6 @@ import java.util.UUID;
 
 /* 
  * TODO
- *  - MySQL
- *  
- *  TODO: (Hopefully)
  *  - Player history
  *  - Effects on freeze
  *  - GUI for commands
@@ -43,32 +40,6 @@ import java.util.UUID;
  */
 
 /* CHANGES:
- *   - Make time placeholder on head item update every second
- *   - Particles change on /sf reload
- *   - Allow offline freezing/unfreezing
- *   - Players may now edit their inventory while frozen
- *   - SQL freezing
- *   - Temporary freezing
- *   - Head-block has more options, can be any item/block, placeholders, itemflags, enchants, lore, name
- *   - Head-block also will be put on a players head even if they already have a helmet and their inventory is full
- *   - /sf reload updates sounds/particles/helmets
- *   - Customizable /frozenlist format
- *   - Replaced the old .txt format with a new cleaner and faster .yml format
- *       - On join data will convert per play so don't delete until/unless the file is empty
- *   - Distance check now optionally includes y-cord
- *   - Teleport-up replaced with teleport-to-ground
- *   - Blocked nether portal and end portal teleportation while frozen
- *   - Blocked book changing
- *   - Added book editing toggleable
- *   - Enable fly on freeze so players arent kicked for flying
- *   - Properly blocked projectile shooting (ex. bow shooting, eggs, snowballs, fishing rod, splash potions, exp bottles)
- *   - Freeze messages can now be sent on an interval
- *   - Added optional reason parameter to /freeze, /tempfreeze and /freezeall
- *   - Players are unfreezed on ban
- *   - Movement handled more efficiently
- *   - Added freeze reasons
- *   - Frozenlist now has multiple pages
- *   - Helmet item is now fully customizeable
  *
  */
 
@@ -128,18 +99,20 @@ public class SimpleFreezeMain extends JavaPlugin {
         } else {
             Bukkit.getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Vault not found, offline freezing &cdisabled"));
         }
-        if (this.mySQL.getConnection() == null) {
-            this.getServer().getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Unable to connect to MySQL database, sqlfreeze &cdisabled"));
-        } else {
-            this.getServer().getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Successfully connected to MySQL database, &asqlfreeze enabled"));
-            this.usingMySQL = true;
-            this.sqlManager.setupTables();
-            this.sqlManager.setupTasks();
-            List<UUID> frozenList = new ArrayList<UUID>();
-            for (String uuidStr : this.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false)) {
-                frozenList.add(UUID.fromString(uuidStr));
+        if (this.getConfig().getBoolean("mysql.enabled")) {
+            if (this.mySQL.getConnection() == null) {
+                this.getServer().getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Unable to connect to MySQL database, sqlfreeze &cdisabled"));
+            } else {
+                this.getServer().getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Successfully connected to MySQL database, &asqlfreeze enabled"));
+                this.usingMySQL = true;
+                this.sqlManager.setupTables();
+                this.sqlManager.setupTasks();
+                List<UUID> frozenList = new ArrayList<UUID>();
+                for (String uuidStr : this.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false)) {
+                    frozenList.add(UUID.fromString(uuidStr));
+                }
+                this.sqlManager.syncFrozenList(frozenList);
             }
-            this.sqlManager.syncFrozenList(frozenList);
         }
         this.registerCommands();
         this.registerListeners();

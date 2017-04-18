@@ -83,7 +83,7 @@ public class LocationManager {
 
     public String getLocationPlaceholder(String locationName) {
         if (locationName == null) {
-            return this.plugin.getConfig().getString("location");
+            return this.plugin.getConfig().getString("empty-location", "");
         }
         return this.plugin.getConfig().getString("locations." + locationName + ".placeholder", this.plugin.getConfig().getString("location"));
     }

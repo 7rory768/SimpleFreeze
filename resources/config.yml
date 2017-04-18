@@ -1,6 +1,6 @@
 # ||=======================================||
 # ||              Simple Freeze            ||
-# ||              Version 3.0.0            ||
+# ||              Version 3.0.1            ||
 # ||=======================================||
 
 # ||=======================================||
@@ -31,6 +31,7 @@ prefix: '&b&lSimpleFreeze &8\u00BB &7'
 # This sets the message held by the {LOCATION} placeholder when there is no actual freeze location; ('' = nothing)
 empty-location: 'Unknown'
 
+# This sets the reason used if none is given
 default-reason: 'None'
 
 # ||=======================================||
@@ -44,6 +45,8 @@ default-reason: 'None'
 server-id: lobby
 
 mysql:
+  # Should MySQL be enabled?
+  enabled: false
   # Database username
   username: user
   # Database password

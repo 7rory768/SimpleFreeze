@@ -2,6 +2,7 @@ package org.plugins.simplefreeze.util;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.simple.JSONArray;
@@ -181,7 +182,10 @@ public class Metrics {
      */
     private JSONObject getServerData() {
         // Minecraft specific data
-        int playerAmount = Bukkit.getServer().getOnlinePlayers().size();
+        int playerAmount = 0;
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            playerAmount += 1;
+        }
         int onlineMode = Bukkit.getOnlineMode() ? 1 : 0;
         String bukkitVersion = org.bukkit.Bukkit.getVersion();
         bukkitVersion = bukkitVersion.substring(bukkitVersion.indexOf("MC: ") + 4, bukkitVersion.length() - 1);
