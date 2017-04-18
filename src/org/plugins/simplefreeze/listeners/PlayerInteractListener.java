@@ -20,9 +20,11 @@ public class PlayerInteractListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
         if (this.playerManager.isFrozen(e.getPlayer()) && e.getAction() == Action.RIGHT_CLICK_BLOCK && !this.plugin.getConfig().getBoolean("interact")) {
-            e.setCancelled(true);
-            for (String msg : this.plugin.getConfig().getStringList("interact-message")) {
-                e.getPlayer().sendMessage(this.plugin.placeholders(msg));
+            if (!(e.getPlayer().getInventory().getItemInHand().getType().isBlock() && !this.plugin.getConfig().getBoolean("block-place"))) {
+                e.setCancelled(true);
+                for (String msg : this.plugin.getConfig().getStringList("interact-message")) {
+                    e.getPlayer().sendMessage(this.plugin.placeholders(msg));
+                }
             }
         }
     }

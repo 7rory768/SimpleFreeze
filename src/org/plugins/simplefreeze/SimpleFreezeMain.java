@@ -45,29 +45,30 @@ import java.util.UUID;
 /* CHANGES:
  *   - Make time placeholder on head item update every second
  *   - Particles change on /sf reload
- *   - ALLOW OFFLINE FREEZING/UNFREEZING
- *   - PLAYERS MAY NOW EDIT THEIR INVENTORY WHILE FROZEN
- *   - SQL FREEZING
- *   - TEMPORARY FREEZING
- *   - HEAD-BLOCK HAS MORE OPTIONS, CAN BE ANY ITEM/BLOCK, PLACEHOLDERS, ITEMFLAGS, ENCHANTS, LORE, NAME
- *   - HEAD-BLOCK ALSO WILL BE PUT ON A PLAYERS HEAD EVEN IF THEY ALREADY HAVE A HELMET AND THEIR INVENTORY IS FULL
- *   - /SF RELOAD NOW UPDATES HELMETS AND PARTICLES IF THEY ARE CHANGED
- *   - CUSTOMIZABLE /FROZEN FORMAT
- *   - REPLACED THE OLD .TXT FORMAT WITH A NEW CLEANER AND FASTER .YML FORMAT
- *       - ON JOIN DATA WILL CONVERT PER PLAY SO DON'T DELETE UNTIL/UNLESS THE FILE IS EMPTY
- *   - DISTANCE CHECK NOW OPTIONALLY INCLUDES Y-CORD
- *   - TELEPORT-UP REPLACED WITH TELEPORT-TO-GROUND
- *   - BLOCKED NETHER PORTAL AND END PORTAL TELEPORTATION WHILE FROZEN
- *   - BLOCKED BOOK CHANGING
- *   - MADE BLOCKING OF INTERACTION, BLOCK-BREAKING, ITEM DROPPING AND BOOK EDITING TOGGLEABLE
- *   - ENABLE FLY ON FREEZE SO PLAYERS ARENT KICKED FOR FLYING
- *   - PROPERLY BLOCKED PROJECTILE SHOOTING (ex. bow shooting, eggs, snowballs, fishing rod, splash potions, exp bottles)
- *   - FREEZE MESSAGES CAN NOW BE SENT ON AN INTERVAL
- *   - ADDED OPTIONAL REASON PARAMETER TO /freeze, /tempfreeze AND /freezeall
- *   - PLAYERS ARE UNFREEZED ON BAN
- *   - MOVEMENT HANDLED MORE EFFICIENTLY
- *   - ADDED FREEZE REASONS
- *   - PARTICLES UPDATE ON RELOAD
+ *   - Allow offline freezing/unfreezing
+ *   - Players may now edit their inventory while frozen
+ *   - SQL freezing
+ *   - Temporary freezing
+ *   - Head-block has more options, can be any item/block, placeholders, itemflags, enchants, lore, name
+ *   - Head-block also will be put on a players head even if they already have a helmet and their inventory is full
+ *   - /sf reload updates sounds/particles/helmets
+ *   - Customizable /frozenlist format
+ *   - Replaced the old .txt format with a new cleaner and faster .yml format
+ *       - On join data will convert per play so don't delete until/unless the file is empty
+ *   - Distance check now optionally includes y-cord
+ *   - Teleport-up replaced with teleport-to-ground
+ *   - Blocked nether portal and end portal teleportation while frozen
+ *   - Blocked book changing
+ *   - Added book editing toggleable
+ *   - Enable fly on freeze so players arent kicked for flying
+ *   - Properly blocked projectile shooting (ex. bow shooting, eggs, snowballs, fishing rod, splash potions, exp bottles)
+ *   - Freeze messages can now be sent on an interval
+ *   - Added optional reason parameter to /freeze, /tempfreeze and /freezeall
+ *   - Players are unfreezed on ban
+ *   - Movement handled more efficiently
+ *   - Added freeze reasons
+ *   - Frozenlist now has multiple pages
+ *   - Helmet item is now fully customizeable
  *
  */
 
@@ -231,6 +232,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private void registerListeners() {
         PluginManager plManager = this.getServer().getPluginManager();
         plManager.registerEvents(new BlockBreakListener(this, this.playerManager), this);
+        plManager.registerEvents(new BlockPlaceListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityCombustListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageEntityListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageListener(this, this.playerManager), this);
@@ -334,7 +336,7 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     public String getHelpMessage() {
         return this.placeholders("                                           &b&lSimpleFreeze\n" + "&b/sf &8- &7Displays this message\n" + "&b/sf reload &8- &7Reloads configuration file\n" + "&b/frozenlist [page] &8- &7Lists frozen players\n"
-                + "&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player\n" + "&b/tempfreeze <name> <time> [location/servers] &8- &7Temporarily freezes a player\n" + "&b/unfreeze <name> &8- &7Unfreezes a player\n"
+                + "&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player\n" + "&b/tempfreeze <name> <time> [location/servers] [reason] &8- &7Temporarily freezes a player\n" + "&b/unfreeze <name> &8- &7Unfreezes a player\n"
                 + "&b/freezeall [reason] &8- &7Freeze all players\n");
     }
 
