@@ -42,9 +42,7 @@ public class FreezeCommand implements CommandExecutor {
 
             if (!sender.hasPermission("sf.freeze")) {
                 for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
-                    if (!msg.equals("")) {
-                        sender.sendMessage(this.plugin.placeholders(msg));
-                    }
+                    sender.sendMessage(this.plugin.placeholders(msg));
                 }
                 return false;
             }
@@ -88,9 +86,7 @@ public class FreezeCommand implements CommandExecutor {
                     uuid = offlineP.getUniqueId();
                     if (!sender.hasPermission("sf.offline")) {
                         for (String msg : this.plugin.getConfig().getStringList("no-permission-offline-player-message")) {
-                            if (!msg.equals("")) {
-                                sender.sendMessage(this.plugin.placeholders(msg));
-                            }
+                            sender.sendMessage(this.plugin.placeholders(msg));
                         }
                         return true;
                     } else if (this.permissions.playerHas(null, offlineP, "sf.exempt.*") || this.permissions.playerHas(null, offlineP, "sf.exempt.freeze")) {
@@ -111,9 +107,7 @@ public class FreezeCommand implements CommandExecutor {
                     UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid", "null").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid"));
                     String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
                     for (String msg : this.plugin.getConfig().getStringList("already-frozen")) {
-                        if (!msg.equals("")) {
-                            sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", freezerName)));
-                        }
+                        sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", freezerName)));
                     }
                     return true;
                 }
@@ -154,6 +148,10 @@ public class FreezeCommand implements CommandExecutor {
             }
 
             if (!servers.isEmpty()) {
+                if (!sender.hasPermission("sf.mysql")) {
+                    sender.sendMessage(this.plugin.placeholders("{PREFIX}You don't have permission to freeze players on other/multiple servers"));
+                    return false;
+                }
                 this.sqlManager.addFreeze(playerName, uuid, sender.getName(), senderUUID, null, reason, servers);
                 return true;
             }

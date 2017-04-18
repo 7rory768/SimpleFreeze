@@ -171,6 +171,10 @@ public class TempFreezeCommand implements CommandExecutor {
             }
 
             if (!servers.isEmpty()) {
+                if (!sender.hasPermission("sf.mysql")) {
+                    sender.sendMessage(this.plugin.placeholders("{PREFIX}You don't have permission to freeze players on other/multiple servers"));
+                    return false;
+                }
                 this.sqlManager.addFreeze(playerName, uuid, sender.getName(), senderUUID, System.currentTimeMillis() + (time * 1000L), reason, servers);
                 return true;
             }

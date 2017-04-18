@@ -19,7 +19,7 @@ commands:
     description: Unfreezes a player
   frozen:
     description: Lists frozen players
-    aliases: [frozenlist, freezelist, flist]
+    aliases: [frozenlist, freezelist, flist, fl]
 
 permissions:
   sf.*:
@@ -33,6 +33,7 @@ permissions:
       sf.frozen: true
       sf.freezeall: true
       sf.offline: true
+      sf.sql: true
       sf.notify.leave: true
       sf.notify.frozen: true
       sf.notify.unfrozen: true
@@ -91,11 +92,11 @@ permissions:
   sf.freeze:
     description: Freezes a player
     default: op
-  sf.unfreeze:
-    description: Unfreezes a player
-    default: op
   sf.tempfreeze:
     description: Freezes a player temporarily
+    default: op
+  sf.unfreeze:
+    description: Unfreezes a player
     default: op
   sf.freezeall:
     description: Permission to use /freeze (Freezes all players on the server)
@@ -103,3 +104,5 @@ permissions:
   sf.frozen:
     description: List frozen players
     default: op
+  sf.sql:
+    description: Freeze people on other/multiple servers

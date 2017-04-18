@@ -77,11 +77,15 @@ public class UnfreezeCommand implements CommandExecutor {
             }
 
             if (this.plugin.usingMySQL()) {
-                this.sqlManager.addUnfreeze(playerName, uuid, sender.getName());
-            } else {
-                this.freezeManager.notifyOfUnfreeze(sender, uuid, playerName, this.plugin.getServerID());
-                this.freezeManager.unfreeze(uuid);
+                if (sender.hasPermission("sf.mysql")) {
+                    this.sqlManager.addUnfreeze(playerName, uuid, sender.getName());
+                    return true;
+                }
             }
+
+            this.freezeManager.notifyOfUnfreeze(sender, uuid, playerName, this.plugin.getServerID());
+            this.freezeManager.unfreeze(uuid);
+
 
             return true;
         }

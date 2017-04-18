@@ -193,6 +193,9 @@ fire-damage: false
 # Should players be able to move their heads while frozen?
 head-movement: true
 
+# Should players be able to place blocks while frozen?
+block-place: false
+
 # Should players be able to break blocks while frozen?
 block-break: false
 
@@ -365,6 +368,10 @@ book-edit-message:
 # Message sent to a frozen player who tries to type in chat
 block-chat-message:
   - '{PREFIX}You cannot chat while frozen'
+
+# Message sent to a frozen player who tries to place a block
+block-place-message:
+  - '{PREFIX}You cannot place blocks while frozen'
 
 # Message sent to a frozen player who tries to break a block
 block-break-message:
