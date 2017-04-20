@@ -186,6 +186,9 @@ public class PlayerJoinListener implements Listener {
                     } else {
                         String locPlaceholder = plugin.getConfig().getString("location");
                         for (String msg : plugin.getConfig().getStringList("freezeall-message")) {
+                            if (msg.equals("")) {
+                                msg = " ";
+                            }
                             totalMsg += msg + "\n";
                         }
                         if (totalMsg.length() > 0) {
@@ -290,6 +293,9 @@ public class PlayerJoinListener implements Listener {
 
                     String msg = "";
                     for (String line : plugin.getConfig().getStringList(path)) {
+                        if (line.equals("")) {
+                            line = " ";
+                        }
                         msg += line + "\n";
                     }
                     msg = msg.length() > 2 ? msg.substring(0, msg.length() - 1) : "";
