@@ -482,6 +482,9 @@ public class SimpleFreezeMain extends JavaPlugin {
                         if (!(finalFreezeAllPlayer.getFreezeLoc().equals(finalFreezeAllPlayer.getOriginalLoc()))) {
                             String locPlaceholder = locationManager.getLocationPlaceholder(locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc()));
                             for (String msg : getConfig().getStringList("freezeall-location-message")) {
+                                if (msg.equals("")) {
+                                    msg = " ";
+                                }
                                 totalMsg += msg + "\n";
                             }
                             if (totalMsg.length() > 0) {
@@ -504,7 +507,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                             p.sendMessage(totalMsg);
                         }
 
-                        if (messageManager.getFreezeAllLocInterval() > 0) {
+                        if (messageManager.getFreezeAllInterval() > 0) {
                             messageManager.addFreezeAllPlayer(p, totalMsg);
                         } else if (messageManager.getFreezeAllLocInterval() > 0) {
                             messageManager.addFreezeAllLocPlayer(p, totalMsg);

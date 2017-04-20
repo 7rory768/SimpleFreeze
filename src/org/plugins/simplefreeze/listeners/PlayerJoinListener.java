@@ -169,6 +169,9 @@ public class PlayerJoinListener implements Listener {
                     String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
 
                     for (String msg : plugin.getConfig().getStringList("join-on-freezeall-message")) {
+                        if (msg == "") {
+                            msg = " ";
+                        }
                         p.sendMessage(plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
                     }
 
@@ -176,6 +179,9 @@ public class PlayerJoinListener implements Listener {
                     if (!(finalFreezeAllPlayer.getFreezeLoc().equals(finalFreezeAllPlayer.getOriginalLoc()))) {
                         String locPlaceholder = locationManager.getLocationPlaceholder(locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc()));
                         for (String msg : plugin.getConfig().getStringList("freezeall-location-message")) {
+                            if (msg.equals("")) {
+                                msg = " ";
+                            }
                             totalMsg += msg + "\n";
                         }
                         if (totalMsg.length() > 0) {
@@ -196,7 +202,8 @@ public class PlayerJoinListener implements Listener {
                         totalMsg = plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
                     }
 
-                    if (messageManager.getFreezeAllLocInterval() > 0) {
+                    Bukkit.broadcastMessage("adding to message manager");
+                    if (messageManager.getFreezeAllInterval() > 0) {
                         messageManager.addFreezeAllPlayer(p, totalMsg);
                     } else if (messageManager.getFreezeAllLocInterval() > 0) {
                         messageManager.addFreezeAllLocPlayer(p, totalMsg);
