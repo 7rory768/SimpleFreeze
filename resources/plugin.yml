@@ -42,6 +42,8 @@ permissions:
       sf.exempt.tempfreeze: true
       sf.exempt.freezeall: true
       sf.exempt.distance: true
+      sf.locations.set: true
+      sf.locations.remove: true
   sf.exempt.*:
     description: Gives all exempt permissions
     children:
@@ -106,3 +108,7 @@ permissions:
     default: op
   sf.sql:
     description: Freeze people on other/multiple servers
+  sf.locations.set:
+    description: Permission to use /sf locations set (Set locations)
+  sf.locations.remove:
+    description: Permission to use /sf locations remove (Remove locations)
