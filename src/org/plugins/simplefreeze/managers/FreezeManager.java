@@ -112,9 +112,7 @@ public class FreezeManager {
             if (p != null) {
                 if (this.playerManager.isFreezeAllFrozen(uuid)) {
                     FreezeAllPlayer freezeAllPlayer = (FreezeAllPlayer) this.playerManager.getFrozenPlayer(uuid);
-                    if (freezeAllPlayer.getHelmet() != null) {
-                        p.getInventory().setHelmet(freezeAllPlayer.getHelmet());
-                    }
+                    p.getInventory().setHelmet(freezeAllPlayer.getHelmet());
 
                     p.setAllowFlight(false);
                     p.setFlying(false);
