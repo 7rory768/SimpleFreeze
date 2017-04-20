@@ -452,18 +452,21 @@ public class FreezeManager {
         if (onlineFreezee != null) {
             String totalMsg = "";
             for (String msg : this.plugin.getConfig().getStringList(playerPath)) {
+                if (msg.equals("")) {
+                    msg = " ";
+                }
                 totalMsg += msg + "\n";
                 onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason)));
             }
             totalMsg = totalMsg.length() > 2 ? totalMsg.substring(0, totalMsg.length() - 1) : "";
             totalMsg = totalMsg.replace("{PLAYER}", freezeeName).replace("{FREEZER}", freezerName).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason);
-            if (playerPath.equalsIgnoreCase("temp-freeze-message")) {
+            if (playerPath.equalsIgnoreCase("temp-freeze-message") && this.messageManager.getTempFreezeInterval() > 0) {
                 this.messageManager.addTempFreezePlayer(onlineFreezee, totalMsg);
-            } else if (playerPath.equalsIgnoreCase("temp-freeze-location-message")) {
+            } else if (playerPath.equalsIgnoreCase("temp-freeze-location-message") && this.messageManager.getTempFreezeLocInterval() > 0) {
                 this.messageManager.addTempFreezeLocPlayer(onlineFreezee, totalMsg);
-            } else if (playerPath.equalsIgnoreCase("freeze-message")) {
+            } else if (playerPath.equalsIgnoreCase("freeze-message") && this.messageManager.getFreezeInterval() > 0) {
                 this.messageManager.addFreezePlayer(onlineFreezee, totalMsg);
-            } else if (playerPath.equalsIgnoreCase("freeze-location-message")) {
+            } else if (playerPath.equalsIgnoreCase("freeze-location-message") && this.messageManager.getFreezeLocInterval() > 0) {
                 this.messageManager.addFreezeLocPlayer(onlineFreezee, totalMsg);
             }
 
@@ -520,18 +523,21 @@ public class FreezeManager {
         if (onlineFreezee != null) {
             String totalMsg = "";
             for (String msg : this.plugin.getConfig().getStringList(playerPath)) {
+                if (msg.equals("")) {
+                    msg = " ";
+                }
                 totalMsg += msg + "\n";
                 onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason)));
             }
             totalMsg = totalMsg.length() > 2 ? totalMsg.substring(0, totalMsg.length() - 1) : "";
             totalMsg = totalMsg.replace("{PLAYER}", freezeeName).replace("{FREEZER}", freezerName).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason);
-            if (playerPath.equalsIgnoreCase("temp-freeze-message")) {
+            if (playerPath.equalsIgnoreCase("temp-freeze-message") && this.messageManager.getTempFreezeInterval() > 0) {
                 this.messageManager.addTempFreezePlayer(onlineFreezee, totalMsg);
-            } else if (playerPath.equalsIgnoreCase("temp-freeze-location-message")) {
+            } else if (playerPath.equalsIgnoreCase("temp-freeze-location-message") && this.messageManager.getTempFreezeLocInterval() > 0) {
                 this.messageManager.addTempFreezeLocPlayer(onlineFreezee, totalMsg);
-            } else if (playerPath.equalsIgnoreCase("freeze-message")) {
+            } else if (playerPath.equalsIgnoreCase("freeze-message") && this.messageManager.getFreezeInterval() > 0) {
                 this.messageManager.addFreezePlayer(onlineFreezee, totalMsg);
-            } else if (playerPath.equalsIgnoreCase("freeze-location-message")) {
+            } else if (playerPath.equalsIgnoreCase("freeze-location-message") && this.messageManager.getFreezeLocInterval() > 0) {
                 this.messageManager.addFreezeLocPlayer(onlineFreezee, totalMsg);
             }
 
@@ -586,6 +592,9 @@ public class FreezeManager {
         if (onlineFreezee != null) {
             String totalMsg = "";
             for (String msg : this.plugin.getConfig().getStringList(playerPath)) {
+                if (msg.equals("")) {
+                    msg = " ";
+                }
                 totalMsg += msg + "\n";
                 onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", freezeeName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason).replace("{SERVER}", server)));
             }
@@ -685,6 +694,9 @@ public class FreezeManager {
             }
         } else {
             for (String msg : this.plugin.getConfig().getStringList("freezeall-message")) {
+                if (msg.equals("")) {
+                    msg = " ";
+                }
                 Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
                 totalMsg += msg + "\n";
             }
