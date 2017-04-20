@@ -67,6 +67,11 @@ public class FreezeAllCommand implements CommandExecutor {
                 } else {
                     reason = reason.substring(0, reason.length() - 1);
                 }
+
+                if (location == null && this.plugin.getConfig().isSet("default-location")) {
+                    location = this.plugin.getConfig().getString("default-location");
+                }
+
                 this.freezeManager.freezeAll(senderUUID, location, reason);
                 this.freezeManager.notifyOfFreezeAll(senderUUID, location);
             }
