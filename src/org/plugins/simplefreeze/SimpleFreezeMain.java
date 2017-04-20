@@ -68,6 +68,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private FreezeManager freezeManager;
     private PlayersConfig playersConfig;
     private StatsConfig statsConfig;
+    private LocationsConfig locationsConfig;
     private HelmetManager helmetManager;
     private LocationManager locationManager;
     private SQLManager sqlManager;
@@ -117,6 +118,9 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.registerCommands();
         this.registerListeners();
         this.setupMetrics();
+        if (this.dataConverter.hasLocationsToConvert()) {
+            this.dataConverter.convertLocationData();
+        }
         this.refreezePlayers();
 
         new BukkitRunnable() {
@@ -164,8 +168,9 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.serverID = this.getConfig().getString("server-id");
         this.mySQL = new MySQL(this);
         this.playersConfig = new PlayersConfig(this);
-        this.messageManager = new MessageManager(this);
         this.statsConfig = new StatsConfig(this);
+        this.locationsConfig = new LocationsConfig(this);
+        this.messageManager = new MessageManager(this);
         this.locationManager = new LocationManager(this);
         this.dataConverter = new DataConverter(this);
         this.soundManager = new SoundManager(this);
@@ -191,6 +196,10 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.statsConfig.getConfig().options().copyDefaults(true);
         this.statsConfig.saveDefaultConfig();
         this.statsConfig.reloadConfig();
+
+        this.locationsConfig.getConfig().options().copyDefaults(true);
+        this.locationsConfig.saveDefaultConfig();
+        this.locationsConfig.reloadConfig();
     }
 
     private void registerCommands() {
@@ -266,6 +275,10 @@ public class SimpleFreezeMain extends JavaPlugin {
         return this.statsConfig;
     }
 
+    public LocationsConfig getLocationsConfig() {
+        return this.locationsConfig;
+    }
+
     public SQLManager getSQLManager() {
         return this.sqlManager;
     }
@@ -294,23 +307,22 @@ public class SimpleFreezeMain extends JavaPlugin {
         return this.usingMySQL;
     }
 
-//    public boolean isFrozenSomewhere(UUID uuid) {
-//        return this.sqlManager.checkIfFrozen(uuid);
-//    }
-//
-//    public void addToFrozenList(UUID uuid) {
-//        this.sqlManager.addToFrozenList(uuid);
-//    }
-
 
     public String placeholders(String arg) {
         return StringEscapeUtils.unescapeJava(ChatColor.translateAlternateColorCodes('&', arg.replace("{PREFIX}", this.getConfig().getString("prefix")).replace("{PREFIXFORMAT}", this.getFinalPrefixFormatting())));
     }
 
     public String getHelpMessage() {
-        return this.placeholders("                                           &b&lSimpleFreeze\n" + "&b/sf &8- &7Displays this message\n" + "&b/sf reload &8- &7Reloads configuration file\n" + "&b/frozenlist [page] &8- &7Lists frozen players\n"
-                + "&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player\n" + "&b/tempfreeze <name> <time> [location/servers] [reason] &8- &7Temporarily freezes a player\n" + "&b/unfreeze <name> &8- &7Unfreezes a player\n"
-                + "&b/freezeall [reason] &8- &7Freeze all players\n");
+        return this.placeholders("                                           &b&lSimpleFreeze\n" +
+                "&b/sf &8- &7Displays this message\n" +
+                "&b/sf reload &8- &7Reloads configuration file\n" +
+                "&b/sf locations set <location-name> [placeholder] &8- &7Sets a location\n" +
+                "&b/sf locations remove <location-name> &8- &7Removes a location\n" +
+                "&b/frozenlist [page] &8- &7Lists frozen players\n" +
+                "&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player\n" +
+                "&b/tempfreeze <name> <time> [location/servers] [reason] &8- &7Temporarily freezes a player\n" +
+                "&b/unfreeze <name> &8- &7Unfreezes a player\n" +
+                "&b/freezeall [reason] &8- &7Freeze all players\n");
     }
 
     public String getFinalPrefixFormatting() {
@@ -480,6 +492,9 @@ public class SimpleFreezeMain extends JavaPlugin {
                         } else {
                             String locPlaceholder = getConfig().getString("location");
                             for (String msg : getConfig().getStringList("freezeall-message")) {
+                                if (msg.equals("")) {
+                                    msg = " ";
+                                }
                                 totalMsg += msg + "\n";
                             }
                             if (totalMsg.length() > 0) {
@@ -583,6 +598,9 @@ public class SimpleFreezeMain extends JavaPlugin {
 
                         String msg = "";
                         for (String line : getConfig().getStringList(path)) {
+                            if (line.equals("")) {
+                                line = " ";
+                            }
                             msg += line + "\n";
                         }
                         msg = msg.length() > 2 ? msg.substring(0, msg.length() - 1) : "";

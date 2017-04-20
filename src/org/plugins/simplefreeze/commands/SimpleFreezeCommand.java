@@ -1,9 +1,11 @@
 package org.plugins.simplefreeze.commands;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.plugins.simplefreeze.SimpleFreezeMain;
@@ -44,9 +46,7 @@ public class SimpleFreezeCommand implements CommandExecutor {
                 if (args[0].equalsIgnoreCase("reload")) {
                     if (!sender.hasPermission("sf.reload")) {
                         for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
-                            if (!msg.equals("")) {
-                                sender.sendMessage(this.plugin.placeholders(msg));
-                            }
+                            sender.sendMessage(this.plugin.placeholders(msg));
                         }
                         return false;
                     }
@@ -325,22 +325,91 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     this.particleManager.setEffect(this.plugin.getConfig().getString("frozen-particles.particle", "null"));
                     this.particleManager.setRadius(this.plugin.getConfig().getInt("frozen-particles.radius", 10));
 
-
                     sender.sendMessage(this.plugin.placeholders("{PREFIX}Configuration file reloaded successfully"));
                     return true;
                 }
 
-                if (!sender.hasPermission("sf.help")) {
-                    sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
+                if (args[0].equalsIgnoreCase("locations")) {
+
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(this.plugin.placeholders("{PREFIX}You must be in-game to use &b/sf locations <set/remove> <location-name> [placeholder]"));
+                        return false;
+                    }
+
+                    Player p = (Player) sender;
+                    Location loc = p.getLocation();
+
+                    if (args.length > 2) {
+                        if (args[1].equalsIgnoreCase("set")) {
+                            if (!sender.hasPermission("sf.locations.set")) {
+                                for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                                    sender.sendMessage(this.plugin.placeholders(msg));
+                                }
+                                return false;
+                            }
+
+                            String location = args[2].toLowerCase();
+                            String placeholder = args.length > 3 ? args[3] : null;
+                            String path = "location-set";
+                            if (this.plugin.getLocationsConfig().getConfig().isSet("locations." + location)) {
+                                path = "location-updated";
+                            }
+
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".placeholder", placeholder);
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".worldname", loc.getWorld().getName());
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".x", loc.getX());
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".y", loc.getY());
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".z", loc.getZ());
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".yaw", loc.getYaw());
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location + ".pitch", loc.getPitch());
+                            this.plugin.getLocationsConfig().saveConfig();
+                            this.plugin.getLocationsConfig().reloadConfig();
+
+                            for (String line : this.plugin.getConfig().getStringList(path)) {
+                                sender.sendMessage(this.plugin.placeholders(line.replace("{LOCATION}", args[2])));
+                            }
+                            return true;
+                        }
+
+                        if (args[1].equalsIgnoreCase("remove")) {
+                            if (!sender.hasPermission("sf.locations.remove")) {
+                                for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                                    sender.sendMessage(this.plugin.placeholders(msg));
+                                }
+                                return false;
+                            }
+
+                            String location = args[2].toLowerCase();
+                            if (!this.plugin.getLocationsConfig().getConfig().isSet("locations." + location)) {
+                                for (String line : this.plugin.getConfig().getStringList("no-location-set")) {
+                                    sender.sendMessage(this.plugin.placeholders(line.replace("{LOCATION}", args[2])));
+                                }
+                                return false;
+                            }
+
+                            this.plugin.getLocationsConfig().getConfig().set("locations." + location, null);
+                            this.plugin.getLocationsConfig().saveConfig();
+                            this.plugin.getLocationsConfig().reloadConfig();
+
+                            for (String line : this.plugin.getConfig().getStringList("location-removed")) {
+                                sender.sendMessage(this.plugin.placeholders(line.replace("{LOCATION}", args[2])));
+                            }
+                            return true;
+                        }
+
+                        sender.sendMessage(this.plugin.placeholders("{PREFIX}Invalid argument: &b" + args[1] + "&7, try &b/sf locations <set/remove> <location-name> [placeholder]"));
+                        return false;
+                    }
+
+                    sender.sendMessage(this.plugin.placeholders("{PREFIX}Not enough arguments, try &b/sf locations <set/remove> <location-name> [placeholder]"));
                     return false;
                 }
-
-                sender.sendMessage(this.plugin.getHelpMessage());
-                return true;
             }
 
             if (!sender.hasPermission("sf.help")) {
-                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("no-permission-message")));
+                for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                    sender.sendMessage(this.plugin.placeholders(msg));
+                }
                 return false;
             }
 

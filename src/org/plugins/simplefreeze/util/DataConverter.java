@@ -19,6 +19,79 @@ public class DataConverter {
         this.plugin = plugin;
     }
 
+    public boolean hasLocationsToConvert() {
+        return this.plugin.getConfig().isSet("locations");
+    }
+
+    public void convertLocationData() {
+        for (String location : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
+            String lowerCaseLocation = location.toLowerCase();
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".placeholder")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".placeholder", this.plugin.getConfig().getString("locations." + lowerCaseLocation + ".placeholder"));
+            }
+
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".worldname")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".worldname", this.plugin.getConfig().getString("locations." + lowerCaseLocation + ".worldname"));
+            }
+
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".x")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".x", this.plugin.getConfig().getDouble("locations." + lowerCaseLocation + ".x"));
+            }
+
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".y")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".y", this.plugin.getConfig().getDouble("locations." + lowerCaseLocation + ".y"));
+            }
+
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".z")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".z", this.plugin.getConfig().getDouble("locations." + lowerCaseLocation + ".z"));
+            }
+
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".yaw")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".yaw", this.plugin.getConfig().getDouble("locations." + lowerCaseLocation + ".yaw"));
+            }
+
+            if (this.plugin.getConfig().isSet("locations." + lowerCaseLocation + ".pitch")) {
+                this.plugin.getLocationsConfig().getConfig().set("locations." + lowerCaseLocation + ".pitch", this.plugin.getConfig().getDouble("locations." + lowerCaseLocation + ".pitch"));
+            }
+        }
+        this.plugin.getLocationsConfig().saveConfig();
+        this.plugin.getLocationsConfig().reloadConfig();
+
+        File file = new File("plugins" + File.separator + "SimpleFreeze" + File.separator, "config.yml");
+        boolean addingText = true;
+        String totalText = "";
+        if (file.exists()) {
+            try {
+                Scanner scan = new Scanner(file);
+                while (scan.hasNextLine()) {
+                    String text = scan.nextLine();
+                    if (text.equals("# Defines locations that can be called when freezing a player (ex. /freeze <playername> example-location)")) {
+                        addingText = false;
+                    } else if (text.equals("# If no location is given in the freeze command this location will be used, (if you want to use this remove the #)")) {
+                        addingText = true;
+                    }
+
+                    if (addingText) {
+                        totalText += text + "\n";
+                    }
+                }
+                totalText = totalText.substring(0, totalText.length() - 2);
+                scan.close();
+            } catch (FileNotFoundException e) {
+            }
+        }
+        try {
+            FileWriter fileWriter = new FileWriter(file);
+            PrintWriter printWriter = new PrintWriter(fileWriter);
+            printWriter.print(totalText);
+            printWriter.close();
+            fileWriter.close();
+        } catch (IOException e) {
+
+        }
+        this.plugin.reloadConfig();
+    }
+
     public static boolean hasDataToConvert(Player p) {
         if (DataConverter.file.exists()) {
             try {
@@ -32,8 +105,7 @@ public class DataConverter {
                     }
                 }
                 scan.close();
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 return false;
             }
         }
@@ -67,8 +139,7 @@ public class DataConverter {
                     }
                 }
                 scan.close();
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 return null;
             }
         }
@@ -101,8 +172,7 @@ public class DataConverter {
                 PrintWriter pw = new PrintWriter(txtWriter);
                 pw.write(text);
                 pw.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 return;
             }
         }

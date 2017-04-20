@@ -32,15 +32,13 @@ public class LocationManager {
         float yaw = location.getYaw();
         float pitch = location.getPitch();
 
-        for (String locationName : this.plugin.getConfig().getConfigurationSection("locations").getKeys(false)) {
-            World locationWorld = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + locationName + ".worldname"));
+        for (String locationName : this.plugin.getLocationsConfig().getConfig().getConfigurationSection("locations").getKeys(false)) {
+            World locationWorld = Bukkit.getWorld(this.plugin.getLocationsConfig().getConfig().getString("locations." + locationName + ".worldname"));
             if (locationWorld != null) {
-                double locationX = this.plugin.getConfig().getDouble("locations." + locationName + ".x");
-                double locationY = this.plugin.getConfig().getDouble("locations." + locationName + ".y");
-                double locationZ = this.plugin.getConfig().getDouble("locations." + locationName + ".z");
-                float locationYaw = this.plugin.getConfig().isSet("locations." + locationName + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".yaw")) : yaw;
-                float locationPitch = this.plugin.getConfig().isSet("locations." + locationName + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locationName + ".pitch")) : pitch;
-                if (world.getName().equals(locationWorld.getName()) && x == locationX && y == locationY && z == locationZ && yaw == locationYaw && pitch == locationPitch) {
+                double locationX = this.plugin.getLocationsConfig().getConfig().getDouble("locations." + locationName + ".x");
+                double locationY = this.plugin.getLocationsConfig().getConfig().getDouble("locations." + locationName + ".y");
+                double locationZ = this.plugin.getLocationsConfig().getConfig().getDouble("locations." + locationName + ".z");
+                if (world.getName().equals(locationWorld.getName()) && x == locationX && y == locationY && z == locationZ) {
                     return locationName;
                 }
             }
@@ -58,15 +56,19 @@ public class LocationManager {
     }
 
     public Location getLocation(String locName) {
-        if (this.plugin.getConfig().isSet("locations." + locName) && this.plugin.getConfig().isSet("locations." + locName + ".worldname") && this.plugin.getConfig().isSet("locations." + locName + ".x")
-                && this.plugin.getConfig().isSet("locations." + locName + ".y") && this.plugin.getConfig().isSet("locations." + locName + ".z")) {
-            World world = Bukkit.getWorld(this.plugin.getConfig().getString("locations." + locName + ".worldname"));
-            double x = this.plugin.getConfig().getDouble("locations." + locName + ".x");
-            double y = this.plugin.getConfig().getDouble("locations." + locName + ".y");
-            double z = this.plugin.getConfig().getDouble("locations." + locName + ".z");
-            float yaw = this.plugin.getConfig().isSet("locations." + locName + ".yaw") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locName + ".yaw")) : (float) 0.0;
-            float pitch = this.plugin.getConfig().isSet("locations." + locName + ".pitch") ? Float.valueOf(this.plugin.getConfig().getString("locations." + locName + ".pitch")) : (float) 0.0;
-            return new Location(world, x, y, z, yaw, pitch);
+        for (String locationKey : this.plugin.getLocationsConfig().getConfig().getConfigurationSection("locations").getKeys(false)) {
+            if (locationKey.equalsIgnoreCase(locName)) {
+                if (this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey) && this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey + ".worldname") && this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey + ".x")
+                        && this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey + ".y") && this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey + ".z")) {
+                    World world = Bukkit.getWorld(this.plugin.getLocationsConfig().getConfig().getString("locations." + locationKey + ".worldname"));
+                    double x = this.plugin.getLocationsConfig().getConfig().getDouble("locations." + locationKey + ".x");
+                    double y = this.plugin.getLocationsConfig().getConfig().getDouble("locations." + locationKey + ".y");
+                    double z = this.plugin.getLocationsConfig().getConfig().getDouble("locations." + locationKey + ".z");
+                    float yaw = this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey + ".yaw") ? Float.valueOf(this.plugin.getLocationsConfig().getConfig().getString("locations." + locationKey + ".yaw")) : (float) 0.0;
+                    float pitch = this.plugin.getLocationsConfig().getConfig().isSet("locations." + locationKey + ".pitch") ? Float.valueOf(this.plugin.getLocationsConfig().getConfig().getString("locations." + locationKey + ".pitch")) : (float) 0.0;
+                    return new Location(world, x, y, z, yaw, pitch);
+                }
+            }
         }
         return null;
     }
@@ -85,7 +87,7 @@ public class LocationManager {
         if (locationName == null) {
             return this.plugin.getConfig().getString("empty-location", "");
         }
-        return this.plugin.getConfig().getString("locations." + locationName + ".placeholder", this.plugin.getConfig().getString("location"));
+        return this.plugin.getLocationsConfig().getConfig().getString("locations." + locationName.toLowerCase() + ".placeholder", this.plugin.getConfig().getString("empty-location"));
     }
 
     public Location getGroundLocation(Location pLoc) {
@@ -102,4 +104,12 @@ public class LocationManager {
         }
         return pLoc;
     }
+
+/*    public List<String> getLocations() {
+        List<String> locations = new ArrayList<>();
+        for (String location : this.plugin.getLocationsConfig().getConfig().getConfigurationSection("locations").getKeys(false)) {
+            locations.add(location);
+        }
+        return locations;
+    }*/
 }

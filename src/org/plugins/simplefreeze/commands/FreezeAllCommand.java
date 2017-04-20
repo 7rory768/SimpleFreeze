@@ -44,25 +44,28 @@ public class FreezeAllCommand implements CommandExecutor {
                 String reason = null;
                 String location = null;
                 if (args.length > 0) {
-                    if (this.plugin.getConfig().isSet("locations." + args[0])) {
-                        location = args[0];
-                        if (args.length > 1) {
-                            reason = "";
-                            for (int i = 1; i < args.length; i++) {
-                                reason += args[i] + " ";
-                            }
-                            reason = reason.substring(0, reason.length() - 1);
+                    boolean locationSet = false;
+                    if (this.plugin.getLocationsConfig().getConfig().isSet("locations." + args[0].toLowerCase())) {
+                        location = args[0].toLowerCase();
+                        locationSet = true;
+
+                    }
+                    if (locationSet && args.length > 1) {
+                        reason = "";
+                        for (int i = 1; i < args.length; i++) {
+                            reason += args[i] + " ";
                         }
-                    } else {
+                    } else if (!locationSet) {
                         reason = "";
                         for (int i = 0; i < args.length; i++) {
                             reason += args[i] + " ";
                         }
-                        reason = reason.substring(0, reason.length() - 1);
                     }
                 }
                 if (reason == null) {
                     reason = this.plugin.getConfig().getString("default-reason");
+                } else {
+                    reason = reason.substring(0, reason.length() - 1);
                 }
                 this.freezeManager.freezeAll(senderUUID, location, reason);
                 this.freezeManager.notifyOfFreezeAll(senderUUID, location);

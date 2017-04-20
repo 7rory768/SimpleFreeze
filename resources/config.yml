@@ -1,6 +1,6 @@
 # ||=======================================||
 # ||              Simple Freeze            ||
-# ||              Version 3.0.1            ||
+# ||              Version 3.0.2            ||
 # ||=======================================||
 
 # ||=======================================||
@@ -163,24 +163,7 @@ freezeall-logout-commands: false
 logout-commands:
   - '/broadcast &c&l{PLAYER} &cleft while frozen'
 
-
-# Defines locations that can be called when freezing a player (ex. /freeze <playername> example-location)
-# yaw and pitch are optional
-locations:
-  example-location:
-    # What {LOCATION} will be replaced by in messages
-    placeholder: Example SFLocation
-    # Worldname
-    worldname: world
-    # Coordinate info
-    x: 0.5
-    y: 100.0
-    z: 0.5
-    # Direction info
-    yaw: 0.0
-    pitch: 0.0
-
-# If no locaton is given in the freeze command this location will be used, (if you want to use this remove the #)
+# If no location is given in the freeze command this location will be used, (if you want to use this remove the #)
 #default-location: example-location
 
 # ||======================================||
@@ -269,7 +252,9 @@ sql-freeze-message:
 # Message sent to a player when they are frozen at a specific location
 freeze-location-message:
   - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
+  - ''
   - '&aFrozen by: &7{FREEZER}'
+  - ''
   - '&aLength: &7Permanent'
   - '&aLocation: &7{LOCATION}'
   - '&aReason: &7{REASON}'
@@ -462,6 +447,21 @@ exp-bottle-message:
 # AVAIALBLE PLACEHOLDERS: PLAYER, TOTALDISTANCE, MAXDISTANCE, DISTANCEDIFFERENCE
 freeze-distance-fail:
   - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are &b{DISTANCEDIFFERENCE} &7blocks too far from you'
+
+# Message sent when a location is set
+location-set:
+  - '{PREFIX}Set location &b{LOCATION} &7successfully'
+
+# Message sent when a location that is already set is updated (set at a new location)
+location-updated:
+  - '{PREFIX}Location &b{LOCATION} &7updated successfully'
+
+# Message sent when a location is removed
+location-removed:
+  - '{PREFIX}Location &b{LOCATION} &7removed successfully'
+
+no-location-set:
+  - '{PREFIX}Location &b{LOCATION} &7doesn''t exist'
 
 # Message sent to a player upon attempting to freeze a player that is already frozen
 already-frozen:

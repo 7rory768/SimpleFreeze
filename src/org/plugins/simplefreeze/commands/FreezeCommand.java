@@ -118,22 +118,26 @@ public class FreezeCommand implements CommandExecutor {
             String reason = null;
             List<String> serverIDs = this.sqlManager.getServerIDs();
             List<String> servers = new ArrayList<>();
-            boolean reasons = false;
             for (int i = 1; i < args.length; i++) {
-                if (reasons) {
+                if (reason != null) {
                     reason += " " + args[i];
                 } else {
                     boolean addedServer = false;
-                    for (String serverID : serverIDs) {
-                        if (serverID.equalsIgnoreCase(args[i])) {
-                            servers.add(serverID);
-                            addedServer = true;
-                            break;
+                    if (location == null) {
+                        for (String serverID : serverIDs) {
+                            if (serverID.equalsIgnoreCase(args[i])) {
+                                servers.add(serverID);
+                                addedServer = true;
+                                break;
+                            }
                         }
                     }
-                    if (servers.isEmpty() && this.plugin.getConfig().isSet("locations." + args[i])) {
-                        location = args[i];
-                    } else if (!addedServer) {
+                    boolean addedLocation = false;
+                    if (servers.isEmpty() && this.plugin.getLocationsConfig().getConfig().isSet("locations." + args[i].toLowerCase())) {
+                        location = args[i].toLowerCase();
+                        addedLocation = true;
+                    }
+                    if (!addedServer && !addedLocation) {
                         reason = args[i];
                     }
                 }
