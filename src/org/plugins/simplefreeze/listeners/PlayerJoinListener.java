@@ -169,7 +169,7 @@ public class PlayerJoinListener implements Listener {
                     String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
 
                     for (String msg : plugin.getConfig().getStringList("join-on-freezeall-message")) {
-                        p.sendMessage(plugin.placeholders(msg.replace("{FREEZER}", freezerName)));
+                        p.sendMessage(plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
                     }
 
                     String totalMsg = "";
@@ -182,7 +182,6 @@ public class PlayerJoinListener implements Listener {
                             totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
                         }
                         totalMsg = plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
-                        p.sendMessage(totalMsg);
                     } else {
                         String locPlaceholder = plugin.getConfig().getString("location");
                         for (String msg : plugin.getConfig().getStringList("freezeall-message")) {
@@ -195,7 +194,6 @@ public class PlayerJoinListener implements Listener {
                             totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
                         }
                         totalMsg = plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
-                        p.sendMessage(totalMsg);
                     }
 
                     if (messageManager.getFreezeAllLocInterval() > 0) {
