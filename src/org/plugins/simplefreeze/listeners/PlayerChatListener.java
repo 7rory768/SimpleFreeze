@@ -18,7 +18,7 @@ public class PlayerChatListener implements Listener {
 	
 	@EventHandler
 	public void onChat(AsyncPlayerChatEvent e) {
-		if (this.playerManager.isFrozen(e.getPlayer()) && !this.plugin.getConfig().getBoolean("block-chat")) {
+		if (this.playerManager.isFrozen(e.getPlayer()) && this.plugin.getConfig().getBoolean("block-chat")) {
 			e.setCancelled(true);
 			for (String msg : this.plugin.getConfig().getStringList("block-chat-message")) {
 				e.getPlayer().sendMessage(this.plugin.placeholders(msg));
