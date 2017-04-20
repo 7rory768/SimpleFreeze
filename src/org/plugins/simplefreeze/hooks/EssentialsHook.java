@@ -62,7 +62,7 @@ public class EssentialsHook implements Listener {
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    if (isBanned(finalUUID) && playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID)) {
+                                    if (playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID) && isBanned(finalUUID)) {
                                         freezeManager.unfreeze(finalUUID);
                                     }
                                 }
@@ -72,7 +72,7 @@ public class EssentialsHook implements Listener {
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
-                                    if (isBanned(finalUUID) && playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID)) {
+                                    if (playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID) && isBanned(finalUUID)) {
                                         freezeManager.unfreeze(finalUUID);
                                     }
                                 }
