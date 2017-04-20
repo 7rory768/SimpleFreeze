@@ -18,6 +18,8 @@ import org.plugins.simplefreeze.managers.FreezeManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
 
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class EssentialsHook implements Listener {
@@ -36,68 +38,71 @@ public class EssentialsHook implements Listener {
     public void onBan(PlayerCommandPreprocessEvent e) {
         if (this.plugin.usingEssentials() && !e.isCancelled()) {
             String cmd = e.getMessage();
-            String[] args = cmd.split("\\s+");
-            if (args.length > 1) {
-                final String arg2 = args[1];
+            String lowerCaseCmd = e.getMessage().toLowerCase();
+            if (lowerCaseCmd.startsWith("/ban") || lowerCaseCmd.startsWith("/tempban") || lowerCaseCmd.startsWith("/banip")) {
+                String[] args = cmd.split("\\s+");
+                if (args.length > 1) {
+                    final String arg2 = args[1];
 
-                UUID uuid = null;
-                Player p = Bukkit.getPlayer(arg2);
-                OfflinePlayer offlineP = Bukkit.getOfflinePlayer(arg2);
+                    UUID uuid = null;
+                    Player p = Bukkit.getPlayer(arg2);
+                    OfflinePlayer offlineP = Bukkit.getOfflinePlayer(arg2);
 
-                if (p != null) {
-                    uuid = p.getUniqueId();
-                } else if (offlineP != null) {
-                    if (offlineP.hasPlayedBefore()) {
-                        uuid = offlineP.getUniqueId();
-                    }
-                }
-
-                if (uuid != null) {
-                    if (args[0].equalsIgnoreCase("/ban")) {
-                        final UUID finalUUID = uuid;
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                if (isBanned(finalUUID) && playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID)) {
-                                    freezeManager.unfreeze(finalUUID);
-                                }
-                            }
-                        }.runTaskLater(this.plugin, 1L);
-                    } else if (args[0].equalsIgnoreCase("/tempban")) {
-                        final UUID finalUUID = uuid;
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                if (isBanned(finalUUID) && playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID)) {
-                                    freezeManager.unfreeze(finalUUID);
-                                }
-                            }
-                        }.runTaskLater(this.plugin, 1L);
-                    }
-                }
-
-/*                if (args[0].equalsIgnoreCase("/banip")) {
-                    List<UUID> potentionalPlayers = new ArrayList<UUID>();
-                    for (Player p1 : Bukkit.getOnlinePlayers()) {
-                        if (p1.getAddress().getHostName().equals(arg2)) {
-                            potentionalPlayers.add(p1.getUniqueId());
+                    if (p != null) {
+                        uuid = p.getUniqueId();
+                    } else if (offlineP != null) {
+                        if (offlineP.hasPlayedBefore()) {
+                            uuid = offlineP.getUniqueId();
                         }
                     }
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            if (isBanned(arg2)) {
-                                for (UUID uuid : potentionalPlayers) {
-                                    if (playerManager.isFrozen(uuid) && !playerManager.isFreezeAllFrozen(uuid)) {
-                                        freezeManager.unfreeze(uuid);
+
+                    if (uuid != null) {
+                        if (args[0].equalsIgnoreCase("/ban")) {
+                            final UUID finalUUID = uuid;
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    if (isBanned(finalUUID) && playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID)) {
+                                        freezeManager.unfreeze(finalUUID);
                                     }
                                 }
-                            }
-
-
+                            }.runTaskLater(this.plugin, 1L);
+                        } else if (args[0].equalsIgnoreCase("/tempban")) {
+                            final UUID finalUUID = uuid;
+                            new BukkitRunnable() {
+                                @Override
+                                public void run() {
+                                    if (isBanned(finalUUID) && playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID)) {
+                                        freezeManager.unfreeze(finalUUID);
+                                    }
+                                }
+                            }.runTaskLater(this.plugin, 1L);
                         }
-                    }.runTaskLater(this.plugin, 1L);
-                }*/
+                    }
+
+                    if (args[0].equalsIgnoreCase("/banip")) {
+                        List<UUID> potentionalPlayers = new ArrayList<>();
+                        for (Player p1 : Bukkit.getOnlinePlayers()) {
+                            if (p1.getAddress().getHostName().equals(arg2)) {
+                                potentionalPlayers.add(p1.getUniqueId());
+                            }
+                        }
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (isBanned(arg2)) {
+                                    for (UUID uuid : potentionalPlayers) {
+                                        if (playerManager.isFrozen(uuid) && !playerManager.isFreezeAllFrozen(uuid)) {
+                                            freezeManager.unfreeze(uuid);
+                                        }
+                                    }
+                                }
+
+
+                            }
+                        }.runTaskLater(this.plugin, 1L);
+                    }
+                }
             }
         }
     }
