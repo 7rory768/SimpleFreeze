@@ -1,6 +1,6 @@
 main: org.plugins.simplefreeze.SimpleFreezeMain
 name: SimpleFreeze
-version: 3.0.0
+version: 3.0.2
 author: 7rory768
 description: This plugin allows you to freeze players or everyone at once
 softdepend: [Vault, EssentialsX, Essentials, LiteBans, BanManager]
