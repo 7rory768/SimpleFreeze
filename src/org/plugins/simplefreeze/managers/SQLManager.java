@@ -362,9 +362,19 @@ public class SQLManager {
 
             for (String server : this.getServerIDs()) {
                 try {
-                    String update = "INSERT INTO sf_" + server.toLowerCase() + "_unfreezes " + valuesString + ";";
-                    ps = connection.prepareStatement(update);
-                    ps.execute();
+                    String request = "SELECT * FROM sf_" + server.toLowerCase() + "_frozenlist WHERE player_uuid = '" + unfreezeeUUID.toString() + "';";
+                    ps = connection.prepareStatement(request);
+                    ResultSet rs = ps.executeQuery();
+                    boolean frozen = false;
+                    if (rs.next()) {
+                        frozen = true;
+                    }
+
+                    if (frozen) {
+                        String update = "INSERT INTO sf_" + server.toLowerCase() + "_unfreezes " + valuesString + ";";
+                        ps = connection.prepareStatement(update);
+                        ps.execute();
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 } finally {
