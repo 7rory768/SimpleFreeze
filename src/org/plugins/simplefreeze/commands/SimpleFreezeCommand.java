@@ -331,14 +331,6 @@ public class SimpleFreezeCommand implements CommandExecutor {
 
                 if (args[0].equalsIgnoreCase("locations")) {
 
-                    if (!(sender instanceof Player)) {
-                        sender.sendMessage(this.plugin.placeholders("{PREFIX}You must be in-game to use &b/sf locations <set/remove> <location-name> [placeholder]"));
-                        return false;
-                    }
-
-                    Player p = (Player) sender;
-                    Location loc = p.getLocation();
-
                     if (args.length > 2) {
                         if (args[1].equalsIgnoreCase("set")) {
                             if (!sender.hasPermission("sf.locations.set")) {
@@ -347,6 +339,14 @@ public class SimpleFreezeCommand implements CommandExecutor {
                                 }
                                 return false;
                             }
+
+                            if (!(sender instanceof Player)) {
+                                sender.sendMessage(this.plugin.placeholders("{PREFIX}You must be in-game to use &b/sf locations <set/remove> <location-name> [placeholder]"));
+                                return false;
+                            }
+
+                            Player p = (Player) sender;
+                            Location loc = p.getLocation();
 
                             String location = args[2].toLowerCase();
                             String placeholder = args.length > 3 ? args[3] : null;
