@@ -57,17 +57,7 @@ public class EssentialsHook implements Listener {
                     }
 
                     if (uuid != null) {
-                        if (args[0].equalsIgnoreCase("/ban")) {
-                            final UUID finalUUID = uuid;
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    if (playerManager.isFrozen(finalUUID) && !playerManager.isFreezeAllFrozen(finalUUID) && isBanned(finalUUID)) {
-                                        freezeManager.unfreeze(finalUUID);
-                                    }
-                                }
-                            }.runTaskLater(this.plugin, 1L);
-                        } else if (args[0].equalsIgnoreCase("/tempban")) {
+                        if (args[0].equalsIgnoreCase("/ban") || args[0].equalsIgnoreCase("/tempban")) {
                             final UUID finalUUID = uuid;
                             new BukkitRunnable() {
                                 @Override
@@ -109,34 +99,26 @@ public class EssentialsHook implements Listener {
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent e) {
+        UUID uuid = e.getPlayer().getUniqueId();
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (isBanned(e.getPlayer().getAddress().getHostName())) {
-                    UUID uuid = e.getPlayer().getUniqueId();
-                    if (playerManager.isFrozen(uuid) && !playerManager.isFreezeAllFrozen(uuid)) {
-                        freezeManager.unfreeze(uuid);
-                    }
+                if (playerManager.isFrozen(uuid) && !playerManager.isFreezeAllFrozen(uuid) && isBanned(e.getPlayer().getAddress().getHostName())) {
+                    freezeManager.unfreeze(uuid);
                 }
-
-
             }
         }.runTaskLater(this.plugin, 1L);
     }
 
     @EventHandler
     public void onPlayerKick(PlayerKickEvent e) {
+        UUID uuid = e.getPlayer().getUniqueId();
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (isBanned(e.getPlayer().getAddress().getHostName())) {
-                    UUID uuid = e.getPlayer().getUniqueId();
-                    if (playerManager.isFrozen(uuid) && !playerManager.isFreezeAllFrozen(uuid)) {
-                        freezeManager.unfreeze(uuid);
-                    }
+                if (playerManager.isFrozen(uuid) && !playerManager.isFreezeAllFrozen(uuid) && isBanned(e.getPlayer().getAddress().getHostName())) {
+                    freezeManager.unfreeze(uuid);
                 }
-
-
             }
         }.runTaskLater(this.plugin, 1L);
     }
@@ -152,10 +134,13 @@ public class EssentialsHook implements Listener {
                 if (((String) jsonObj.get("uuid")).equalsIgnoreCase(uuidStr)) {
                     return true;
                 }
+
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        parser.reset();
         return false;
     }
 
@@ -173,6 +158,7 @@ public class EssentialsHook implements Listener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        parser.reset();
         return false;
     }
 
