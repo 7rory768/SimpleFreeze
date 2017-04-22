@@ -125,8 +125,10 @@ public class PlayerManager {
         List<String> fallingList = this.plugin.getPlayerConfig().getConfig().getStringList("falling-players");
         if (fallingList.contains(uuid.toString())) {
             fallingList.remove(uuid.toString());
-
         }
+        this.plugin.getPlayerConfig().getConfig().set("falling-players", fallingList);
+        this.plugin.getPlayerConfig().saveConfig();
+        this.plugin.getPlayerConfig().reloadConfig();
     }
 
 }
