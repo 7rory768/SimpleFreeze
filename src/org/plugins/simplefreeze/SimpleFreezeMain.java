@@ -23,16 +23,13 @@ import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /* 
  * TODO
+ *  - Freeze GUI
  *  - Player history
  *  - Effects on freeze
- *  - GUI for commands
  *  - Hologram above players head on freeze option
  *  - Titles
  *  - Actionbar
@@ -80,6 +77,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     private MovementManager movementManager;
 
     private String serverID;
+    private static String consoleName;
 
     private boolean setupPermissions() {
         RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
@@ -94,6 +92,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.initializeVariables();
         this.loadConfigs();
         this.soundManager.reset();
+        this.updateConsoleName();
         if (this.vaultEnabled()) {
             this.setupPermissions();
             Bukkit.getConsoleSender().sendMessage(this.placeholders("[SimpleFreeze] Vault found, offline freezing &aenabled"));
@@ -112,6 +111,11 @@ public class SimpleFreezeMain extends JavaPlugin {
                 for (String uuidStr : this.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false)) {
                     frozenList.add(UUID.fromString(uuidStr));
                 }
+                if (this.freezeManager.freezeAllActive()) {
+                    for (String uuidStr : this.getPlayerConfig().getConfig().getConfigurationSection("freezeall-info.players").getKeys(false)) {
+                        frozenList.add(UUID.fromString(uuidStr));
+                    }
+                }
                 this.sqlManager.syncFrozenList(frozenList);
             }
         }
@@ -120,6 +124,9 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.setupMetrics();
         if (this.dataConverter.hasLocationsToConvert()) {
             this.dataConverter.convertLocationData();
+        }
+        for (String uuidStr : this.getConfig().getStringList("falling-players")) {
+            this.playerManager.addFallingPlayer(UUID.fromString(uuidStr));
         }
         this.refreezePlayers();
 
@@ -134,21 +141,46 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-            if (this.playerManager.isFrozen(p)) {
-                FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(p);
-                if (frozenPlayer.getOriginalLoc() != null) {
-                    p.teleport(frozenPlayer.getOriginalLoc());
+        if (this.getConfig().getBoolean("clear-playerdata")) {
+            Set<String> uuids = this.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false);
+            if (this.getConfig().getBoolean("clear-playerdata")) {
+                for (String uuidStr : uuids) {
+                    UUID uuid = UUID.fromString(uuidStr);
+                    if (this.usingMySQL()) {
+                        this.freezeManager.unfreeze(uuid);
+                        this.getSQLManager().removeFromFrozenList(uuid);
+                        Player onlineFreezee = Bukkit.getPlayer(uuid);
+
+                        if (onlineFreezee != null) {
+                            for (String msg : this.getConfig().getStringList("unfreeze-message")) {
+                                onlineFreezee.sendMessage(this.placeholders(msg.replace("{UNFREEZER}", Bukkit.getConsoleSender().getName()).replace("{PLAYER}", onlineFreezee.getName())));
+                            }
+                        }
+                    }
                 }
-                if (p.isFlying()) {
-                    p.setFlying(false);
-                    p.setAllowFlight(false);
-                    p.teleport(this.locationManager.getGroundLocation(p.getLocation()));
+                for (String line : this.getConfig().getStringList("clear-playerdata-message")) {
+                    Bukkit.getConsoleSender().sendMessage(this.placeholders(line));
                 }
-                p.getInventory().setHelmet(frozenPlayer.getHelmet());
-                p.sendMessage(this.placeholders("{PREFIX}SimpleFreeze has been disabled, you will remain unfrozen until it is re-enabled"));
-                if (frozenPlayer instanceof TempFrozenPlayer) {
-                    ((TempFrozenPlayer) frozenPlayer).cancelTask();
+            }
+        } else {
+            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                if (this.playerManager.isFrozen(p)) {
+                    FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(p);
+                    if (frozenPlayer.getOriginalLoc() != null) {
+                        p.teleport(frozenPlayer.getOriginalLoc());
+                    }
+                    if (p.isFlying()) {
+                        p.setFlying(false);
+                        p.setAllowFlight(false);
+                        p.teleport(this.locationManager.getGroundLocation(p.getLocation()));
+                    }
+                    p.getInventory().setHelmet(frozenPlayer.getHelmet());
+                    for (String line : this.getConfig().getStringList("plugin-disabled")) {
+                        p.sendMessage(this.placeholders(line));
+                    }
+                    if (frozenPlayer instanceof TempFrozenPlayer) {
+                        ((TempFrozenPlayer) frozenPlayer).cancelTask();
+                    }
                 }
             }
         }
@@ -203,7 +235,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager));
+        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager, this.playerManager, this.freezeManager));
         this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.sqlManager, this.permission));
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.sqlManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager, this.sqlManager));
@@ -287,6 +319,14 @@ public class SimpleFreezeMain extends JavaPlugin {
         return this.serverID;
     }
 
+    public void updateConsoleName() {
+        SimpleFreezeMain.consoleName = this.getConfig().getString("console-name");
+    }
+
+    public static String getConsoleName() {
+        return consoleName;
+    }
+
     public boolean vaultEnabled() {
         return Bukkit.getPluginManager().getPlugin("Vault") != null;
     }
@@ -307,22 +347,22 @@ public class SimpleFreezeMain extends JavaPlugin {
         return this.usingMySQL;
     }
 
-
     public String placeholders(String arg) {
         return StringEscapeUtils.unescapeJava(ChatColor.translateAlternateColorCodes('&', arg.replace("{PREFIX}", this.getConfig().getString("prefix")).replace("{PREFIXFORMAT}", this.getFinalPrefixFormatting())));
     }
 
     public String getHelpMessage() {
-        return this.placeholders("                                           &b&lSimpleFreeze\n" +
-                "&b/sf &8- &7Displays this message\n" +
-                "&b/sf reload &8- &7Reloads configuration file\n" +
-                "&b/sf locations set <location-name> [placeholder] &8- &7Sets a location\n" +
-                "&b/sf locations remove <location-name> &8- &7Removes a location\n" +
-                "&b/frozenlist [page] &8- &7Lists frozen players\n" +
-                "&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player\n" +
-                "&b/tempfreeze <name> <time> [location/servers] [reason] &8- &7Temporarily freezes a player\n" +
-                "&b/unfreeze <name> &8- &7Unfreezes a player\n" +
-                "&b/freezeall [reason] &8- &7Freeze all players\n");
+        String helpMessage = "";
+        for (String line : this.getConfig().getStringList("help-message")) {
+            if (line.equals("")) {
+                line = " ";
+            }
+            helpMessage += line + "\n";
+        }
+        if (helpMessage.length() > 0) {
+            helpMessage = helpMessage.substring(0, helpMessage.length() - 2);
+        }
+        return this.placeholders(helpMessage);
     }
 
     public String getFinalPrefixFormatting() {
@@ -476,11 +516,14 @@ public class SimpleFreezeMain extends JavaPlugin {
 
                         soundManager.playFreezeSound(p);
 
-                        p.sendMessage(placeholders("{PREFIX}SimpleFreeze was re-enabled so you are now frozen again"));
+                        for (String line : getConfig().getStringList("plugin-re-enabled")) {
+                            p.sendMessage(placeholders(line));
+                        }
 
                         String totalMsg = "";
-                        if (!(finalFreezeAllPlayer.getFreezeLoc().equals(finalFreezeAllPlayer.getOriginalLoc()))) {
-                            String locPlaceholder = locationManager.getLocationPlaceholder(locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc()));
+                        String location = locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc());
+                        String locPlaceholder = locationManager.getLocationPlaceholder(location);
+                        if (location != null) {
                             for (String msg : getConfig().getStringList("freezeall-location-message")) {
                                 if (msg.equals("")) {
                                     msg = " ";
@@ -492,8 +535,10 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                             totalMsg = placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
                             p.sendMessage(totalMsg);
+                            if (messageManager.getFreezeAllLocInterval() > 0) {
+                                messageManager.addFreezeAllLocPlayer(p, totalMsg);
+                            }
                         } else {
-                            String locPlaceholder = getConfig().getString("location");
                             for (String msg : getConfig().getStringList("freezeall-message")) {
                                 if (msg.equals("")) {
                                     msg = " ";
@@ -505,12 +550,10 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                             totalMsg = placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
                             p.sendMessage(totalMsg);
-                        }
 
-                        if (messageManager.getFreezeAllInterval() > 0) {
-                            messageManager.addFreezeAllPlayer(p, totalMsg);
-                        } else if (messageManager.getFreezeAllLocInterval() > 0) {
-                            messageManager.addFreezeAllLocPlayer(p, totalMsg);
+                            if (messageManager.getFreezeAllInterval() > 0) {
+                                messageManager.addFreezeAllPlayer(p, totalMsg);
+                            }
                         }
                     }
                 }.runTaskLater(this, 10L);
@@ -521,7 +564,6 @@ public class SimpleFreezeMain extends JavaPlugin {
 
                     @Override
                     public void run() {
-                        String reason = finalFrozenPlayer.getReason() == null ? finalFrozenPlayer.getReason() : getConfig().getString("default-reason");
                         finalFrozenPlayer.setHelmet(p.getInventory().getHelmet());
                         p.getInventory().setHelmet(helmetManager.getPersonalHelmetItem(finalFrozenPlayer));
 
@@ -553,12 +595,13 @@ public class SimpleFreezeMain extends JavaPlugin {
 
                         soundManager.playFreezeSound(p);
 
+                        String freezerName = finalFrozenPlayer.getFreezerName();
+                        String timePlaceholder = "Permanent";
+                        String serversPlaceholder = "";
+                        String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
+                        String locationPlaceholder = locationManager.getLocationPlaceholder(location);
+                        String reason = finalFrozenPlayer.getReason() == null ? finalFrozenPlayer.getReason() : getConfig().getString("default-reason");
                         if (getPlayerConfig().getConfig().getBoolean("players. " + uuidStr + ".message", false)) {
-                            String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
-                            String freezerName = finalFrozenPlayer.getFreezerName();
-                            String timePlaceholder = "";
-                            String serversPlaceholder = "";
-                            String locationPlaceholder = location == null ? getConfig().getString("location") : getConfig().getString("locations." + location + ".placeholder", location);
                             String path;
                             if (finalFrozenPlayer instanceof TempFrozenPlayer) {
                                 timePlaceholder = TimeUtil.formatTime((((TempFrozenPlayer) finalFrozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L);
@@ -570,18 +613,16 @@ public class SimpleFreezeMain extends JavaPlugin {
                             if (location != null) {
                                 path += "-location";
                             }
-                            p.sendMessage(placeholders(getConfig().getString(path).replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder)));
+                            p.sendMessage(placeholders(getConfig().getString(path).replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason)));
                             getPlayerConfig().getConfig().set("players." + uuidStr + ".message", null);
                             getPlayerConfig().saveConfig();
                             getPlayerConfig().reloadConfig();
                         } else {
-                            p.sendMessage(placeholders("{PREFIX}SimpleFreeze was re-enabled so you are now frozen again"));
+                            for (String line : getConfig().getStringList("plugin-re-enabled")) {
+                                p.sendMessage(placeholders(line));
+                            }
                         }
 
-
-                        String servers = getPlayerConfig().getConfig().getString("players." + uuidStr + ".servers", "");
-                        String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
-                        String locationPlaceholder = locationManager.getLocationPlaceholder(location);
                         String path = "";
                         if (finalFrozenPlayer instanceof TempFrozenPlayer) {
                             path = "temp-freeze-message";
@@ -595,7 +636,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                         }
 
-                        if (!servers.equals("")) {
+                        if (!serversPlaceholder.equals("")) {
                             path = "sql-" + path;
                         }
 
@@ -607,7 +648,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                             msg += line + "\n";
                         }
                         msg = msg.length() > 2 ? msg.substring(0, msg.length() - 1) : "";
-                        msg = msg.replace("{PLAYER}", p.getName()).replace("{FREEZER}", finalFrozenPlayer.getFreezerName()).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", servers).replace("{REASON}", reason);
+                        msg = msg.replace("{PLAYER}", p.getName()).replace("{FREEZER}", finalFrozenPlayer.getFreezerName()).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{TIME}", timePlaceholder).replace("{REASON}", reason);
 
                         if (finalFrozenPlayer instanceof TempFrozenPlayer) {
                             if (location == null && messageManager.getTempFreezeInterval() > 0) {

@@ -102,7 +102,7 @@ public class PlayerJoinListener implements Listener {
         // if freezeall and player isnt already frozen
         if (frozenPlayer == null && this.freezeManager.freezeAllActive() && !(p.hasPermission("sf.exempt.*") || p.hasPermission("sf.exempt.freezeall"))) {
             final UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.freezer").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.freezer"));
-            
+
             SFLocation freezeLocation = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.location").equals("null") ? null : SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.location"));
             if (freezeLocation == null && this.plugin.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuidStr + ".freeze-location")) {
                 freezeLocation = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null") ? null : SFLocation.fromString(this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location"));
@@ -176,8 +176,9 @@ public class PlayerJoinListener implements Listener {
                     }
 
                     String totalMsg = "";
-                    if (!(finalFreezeAllPlayer.getFreezeLoc().equals(finalFreezeAllPlayer.getOriginalLoc()))) {
-                        String locPlaceholder = locationManager.getLocationPlaceholder(locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc()));
+                    String location = locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc());
+                    String locPlaceholder = locationManager.getLocationPlaceholder(location);
+                    if (location != null) {
                         for (String msg : plugin.getConfig().getStringList("freezeall-location-message")) {
                             if (msg.equals("")) {
                                 msg = " ";
@@ -188,8 +189,11 @@ public class PlayerJoinListener implements Listener {
                             totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
                         }
                         totalMsg = plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
+
+                        if (messageManager.getFreezeAllLocInterval() > 0) {
+                            messageManager.addFreezeAllLocPlayer(p, totalMsg);
+                        }
                     } else {
-                        String locPlaceholder = plugin.getConfig().getString("location");
                         for (String msg : plugin.getConfig().getStringList("freezeall-message")) {
                             if (msg.equals("")) {
                                 msg = " ";
@@ -200,13 +204,10 @@ public class PlayerJoinListener implements Listener {
                             totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
                         }
                         totalMsg = plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
-                    }
 
-                    Bukkit.broadcastMessage("adding to message manager");
-                    if (messageManager.getFreezeAllInterval() > 0) {
-                        messageManager.addFreezeAllPlayer(p, totalMsg);
-                    } else if (messageManager.getFreezeAllLocInterval() > 0) {
-                        messageManager.addFreezeAllLocPlayer(p, totalMsg);
+                        if (messageManager.getFreezeAllInterval() > 0) {
+                            messageManager.addFreezeAllPlayer(p, totalMsg);
+                        }
                     }
 
                     soundManager.playFreezeSound(p);
@@ -219,7 +220,6 @@ public class PlayerJoinListener implements Listener {
 
                 @Override
                 public void run() {
-                    String reason = finalFrozenPlayer.getReason() == null ? finalFrozenPlayer.getReason() : plugin.getConfig().getString("default-reason");
                     finalFrozenPlayer.setHelmet(p.getInventory().getHelmet());
                     p.getInventory().setHelmet(helmetManager.getPersonalHelmetItem(finalFrozenPlayer));
 
@@ -251,12 +251,13 @@ public class PlayerJoinListener implements Listener {
 
                     soundManager.playFreezeSound(p);
 
+                    String locationName = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
+                    String freezerName = finalFrozenPlayer.getFreezerName();
+                    String timePlaceholder = "Permanent";
+                    String serversPlaceholder = plugin.getPlayerConfig().getConfig().getString("players." + uuidStr + ".servers", "");
+                    String locationPlaceholder = locationManager.getLocationPlaceholder(locationName);
+                    String reason = finalFrozenPlayer.getReason() == null ? plugin.getConfig().getString("default-reason") : finalFrozenPlayer.getReason();
                     if (plugin.getPlayerConfig().getConfig().getBoolean("players." + uuidStr + ".message", false)) {
-                        String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
-                        String freezerName = finalFrozenPlayer.getFreezerName();
-                        String timePlaceholder = "";
-                        String serversPlaceholder = "";
-                        String locationPlaceholder = location == null ? plugin.getConfig().getString("location") : plugin.getConfig().getString("locations." + location + ".placeholder", location);
                         String path;
                         if (finalFrozenPlayer instanceof TempFrozenPlayer) {
                             timePlaceholder = TimeUtil.formatTime((((TempFrozenPlayer) finalFrozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L);
@@ -265,34 +266,33 @@ public class PlayerJoinListener implements Listener {
                             path = "first-join.frozen";
                         }
 
-                        if (location != null) {
+                        if (locationName != null) {
                             path += "-location";
                         }
-                        p.sendMessage(plugin.placeholders(plugin.getConfig().getString(path).replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder)));
+                        p.sendMessage(plugin.placeholders(plugin.getConfig().getString(path).replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{REASON}", reason)));
                         plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".message", null);
                         plugin.getPlayerConfig().saveConfig();
                         plugin.getPlayerConfig().reloadConfig();
                     } else {
-                        p.sendMessage(plugin.placeholders("{PREFIX}You are still frozen"));
+                        for (String line : plugin.getConfig().getStringList("still-frozen-join")) {
+                            p.sendMessage(plugin.placeholders(line.replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{REASON}", reason).replace("{SERVERS}", serversPlaceholder)));
+                        }
                     }
 
-                    String servers = plugin.getPlayerConfig().getConfig().getString("players." + uuidStr + ".servers", "");
-                    String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
-                    String locationPlaceholder = locationManager.getLocationPlaceholder(location);
                     String path = "";
                     if (finalFrozenPlayer instanceof TempFrozenPlayer) {
                         path = "temp-freeze-message";
-                        if (location != null) {
+                        if (locationName != null) {
                             path = "temp-freeze-location-message";
                         }
                     } else {
                         path = "freeze-message";
-                        if (location != null) {
+                        if (locationName != null) {
                             path = "freeze-location-message";
                         }
                     }
 
-                    if (!servers.equals("")) {
+                    if (!serversPlaceholder.equals("")) {
                         path = "sql-" + path;
                     }
 
@@ -304,16 +304,16 @@ public class PlayerJoinListener implements Listener {
                         msg += line + "\n";
                     }
                     msg = msg.length() > 2 ? msg.substring(0, msg.length() - 1) : "";
-                    msg = msg.replace("{PLAYER}", p.getName()).replace("{FREEZER}", finalFrozenPlayer.getFreezerName()).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", servers).replace("{REASON}", reason);
+                    msg = msg.replace("{PLAYER}", p.getName()).replace("{TIME}", timePlaceholder).replace("{FREEZER}", finalFrozenPlayer.getFreezerName()).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason);
 
                     if (finalFrozenPlayer instanceof TempFrozenPlayer) {
-                        if (location == null && messageManager.getTempFreezeInterval() > 0) {
+                        if (locationName == null && messageManager.getTempFreezeInterval() > 0) {
                             messageManager.addTempFreezePlayer(p, msg);
                         } else if (messageManager.getTempFreezeLocInterval() > 0) {
                             messageManager.addTempFreezeLocPlayer(p, msg);
                         }
                     } else {
-                        if (location == null && messageManager.getFreezeInterval() > 0) {
+                        if (locationName == null && messageManager.getFreezeInterval() > 0) {
                             messageManager.addFreezePlayer(p, msg);
                         } else if (messageManager.getFreezeLocInterval() > 0) {
                             messageManager.addFreezeLocPlayer(p, msg);
