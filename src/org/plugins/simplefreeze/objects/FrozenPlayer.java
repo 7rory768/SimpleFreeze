@@ -3,6 +3,7 @@ package org.plugins.simplefreeze.objects;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
+import org.plugins.simplefreeze.SimpleFreezeMain;
 
 import java.util.UUID;
 
@@ -57,7 +58,7 @@ public class FrozenPlayer {
     }
 
     public String getFreezerName() {
-        return freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+        return freezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
     }
 
     public ItemStack getHelmet() {
@@ -82,10 +83,6 @@ public class FrozenPlayer {
 
     public void setFreezeLoc(Location freezeLoc) {
         this.freezeLoc = freezeLoc;
-    }
-
-    public boolean isSQLFrozen() {
-        return this.sqlFrozen;
     }
 
     public String getReason() {
