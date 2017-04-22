@@ -369,6 +369,8 @@ public class SQLManager {
                     if (rs.next()) {
                         frozen = true;
                     }
+                    rs.close();
+                    ps.close();
 
                     if (frozen) {
                         String update = "INSERT INTO sf_" + server.toLowerCase() + "_unfreezes " + valuesString + ";";
@@ -481,7 +483,7 @@ public class SQLManager {
         try {
             connection = this.mySQL.getConnection();
 
-            request = "SELECT * FROM sf_" + this.plugin.getServerID() + "_frozenlist;";
+            request = "SELECT * FROM `sf_" + this.plugin.getServerID().toLowerCase() + "_frozenlist`;";
             ps = connection.prepareStatement(request);
             res = ps.executeQuery();
 
@@ -499,6 +501,7 @@ public class SQLManager {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
+            } else {
             }
 
             if (ps != null) {
@@ -510,7 +513,7 @@ public class SQLManager {
             }
 
             for (UUID uuid : frozenList) {
-                String update = "INSERT INTO sf_" + this.plugin.getServerID() + "_frozenlist (player_uuid) VALUES ('" + uuid.toString() + "');";
+                String update = "INSERT INTO sf_" + this.plugin.getServerID().toLowerCase() + "_frozenlist (player_uuid) VALUES ('" + uuid.toString() + "');";
                 try {
                     ps = connection.prepareStatement(update);
                     if (ps != null) {
@@ -523,7 +526,7 @@ public class SQLManager {
             }
 
             for (UUID uuid : removeList) {
-                String update = "DELETE FROM sf_" + this.plugin.getServerID() + "_frozenlist WHERE player_uuid = '" + uuid.toString() + "';";
+                String update = "DELETE FROM sf_" + this.plugin.getServerID().toLowerCase() + "_frozenlist WHERE player_uuid = '" + uuid.toString() + "';";
                 try {
                     ps = connection.prepareStatement(update);
                     if (ps != null) {
