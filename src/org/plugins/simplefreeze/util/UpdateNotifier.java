@@ -9,7 +9,7 @@ import java.net.URL;
 
 public class UpdateNotifier {
 
-    public final static String VERSION = "3.0.3";
+    public final static String VERSION = "3.0.4";
 
     public static String getLatestVersion() {
         try {
