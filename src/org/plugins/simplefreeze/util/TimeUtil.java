@@ -1,7 +1,5 @@
 package org.plugins.simplefreeze.util;
 
-import org.bukkit.Bukkit;
-
 /**
  * Created by Rory on 11/21/2016.
  */
@@ -215,6 +213,9 @@ public class TimeUtil {
             char ch = time.charAt(index);
             switch (ch) {
                 case 's':
+                    if (!TimeUtil.isInt(time.substring(0, index))) {
+                        return -1;
+                    }
                     seconds += Integer.parseInt(time.substring(0, index));
                     if (time.length() > index + 1) {
                         time = time.substring(index + 1);
@@ -224,6 +225,9 @@ public class TimeUtil {
                     }
                     break;
                 case 'm':
+                    if (!TimeUtil.isInt(time.substring(0, index))) {
+                        return -1;
+                    }
                     if (time.charAt(index + 1 >= time.length() ? index : index + 1) == 'o') {
                         seconds += Integer.parseInt(time.substring(0, index)) * 30 * 24 * 60 * 60;
                         if (time.length() > index + 2) {
@@ -242,6 +246,9 @@ public class TimeUtil {
                     index = 0;
                     break;
                 case 'h':
+                    if (!TimeUtil.isInt(time.substring(0, index))) {
+                        return -1;
+                    }
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60;
                     if (time.length() > index + 1) {
                         time = time.substring(index + 1);
@@ -251,6 +258,9 @@ public class TimeUtil {
                     }
                     break;
                 case 'd':
+                    if (!TimeUtil.isInt(time.substring(0, index))) {
+                        return -1;
+                    }
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60 * 24;
                     if (time.length() > index + 1) {
                         time = time.substring(index + 1);
@@ -260,7 +270,9 @@ public class TimeUtil {
                     }
                     break;
                 case 'w':
-                    Bukkit.broadcastMessage("w");
+                    if (!TimeUtil.isInt(time.substring(0, index))) {
+                        return -1;
+                    }
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60 * 24 * 7;
                     if (time.length() > index + 1) {
                         time = time.substring(index + 1);
@@ -270,6 +282,9 @@ public class TimeUtil {
                     }
                     break;
                 case 'y':
+                    if (!TimeUtil.isInt(time.substring(0, index))) {
+                        return -1;
+                    }
                     seconds += Integer.parseInt(time.substring(0, index)) * 60 * 60 * 24 * 365;
                     if (time.length() > index + 1) {
                         time = time.substring(index + 1);
