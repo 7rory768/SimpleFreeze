@@ -684,41 +684,58 @@ public class FreezeManager {
         String locPlaceholder = this.locationManager.getLocationPlaceholder(location);
         String reason = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.reason", this.plugin.getConfig().getString("default-reason"));
 
-        String totalMsg = "";
-        if (location != null) {
-            for (String msg : this.plugin.getConfig().getStringList("freezeall-location-message")) {
-                Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
-                totalMsg += msg + "\n";
-            }
-        } else {
-            for (String msg : this.plugin.getConfig().getStringList("freezeall-message")) {
-                if (msg.equals("")) {
-                    msg = " ";
-                }
-                Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
-                totalMsg += msg + "\n";
-            }
-        }
-        if (totalMsg.length() > 0) {
-            totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
-
-        }
-        totalMsg = this.plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason));
-
         for (Player p : Bukkit.getOnlinePlayers()) {
+            String totalMsg = "";
+            if (location != null) {
+                for (String msg : this.plugin.getConfig().getStringList("freezeall-location-message")) {
+                    if (msg.equals("")) {
+                        msg = " ";
+                    }
+                    p.sendMessage(this.plugin.placeholders(msg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
+                    totalMsg += msg + "\n";
+                }
+            } else {
+                for (String msg : this.plugin.getConfig().getStringList("freezeall-message")) {
+                    if (msg.equals("")) {
+                        msg = " ";
+                    }
+                    p.sendMessage(this.plugin.placeholders(msg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason)));
+                    totalMsg += msg + "\n";
+                }
+            }
+            if (totalMsg.length() > 0) {
+                totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
+
+            }
+            totalMsg = this.plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason));
+
             if (this.messageManager.getFreezeAllLocInterval() > 0) {
                 this.messageManager.addFreezeAllPlayer(p, totalMsg);
             } else if (this.messageManager.getFreezeAllLocInterval() > 0) {
                 this.messageManager.addFreezeAllLocPlayer(p, totalMsg);
             }
+
+        }
+
+        if (freezerUUID == null) {
+            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
         }
     }
 
     public void notifyOfUnfreezeAll(UUID unfreezerUUID) {
         String unfreezerName = unfreezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(unfreezerUUID) == null ? Bukkit.getOfflinePlayer(unfreezerUUID).getName() : Bukkit.getPlayer(unfreezerUUID).getName();
-        for (String msg : this.plugin.getConfig().getStringList("unfreezeall-message")) {
-            Bukkit.broadcastMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName)));
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            for (String msg : this.plugin.getConfig().getStringList("unfreezeall-message")) {
+                if (msg.equals("")) {
+                    msg = " ";
+                }
+                p.sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName)));
+            }
         }
-    }
 
+        if (unfreezerUUID == null) {
+            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("{PREFIX}Server unfrozen successfully"));
+        }
+
+    }
 }
