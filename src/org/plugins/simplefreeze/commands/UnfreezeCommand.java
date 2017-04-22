@@ -42,7 +42,7 @@ public class UnfreezeCommand implements CommandExecutor {
             }
 
             if (args.length < 1) {
-                sender.sendMessage(this.plugin.placeholders("{PREFIX}" + "Not enough arguments, try &b/unfreeze <name>"));
+                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("not-enough-arguments.unfreeze")));
                 return true;
             }
 
@@ -59,11 +59,15 @@ public class UnfreezeCommand implements CommandExecutor {
                     playerName = offlineP.getName();
                     uuid = offlineP.getUniqueId();
                 } else {
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}&b{PLAYER} " + this.plugin.getFinalPrefixFormatting() + "has never played this server before").replace("{PLAYER}", args[0]));
+                    for (String line : this.plugin.getConfig().getStringList("never-played-before")) {
+                        sender.sendMessage(this.plugin.placeholders(line).replace("{PLAYER}", args[0]));
+                    }
                     return true;
                 }
             } else {
-                sender.sendMessage(this.plugin.placeholders("{PREFIX}&b{PLAYER} " + this.plugin.getFinalPrefixFormatting() + "has never played this server before").replace("{PLAYER}", args[0]));
+                for (String line : this.plugin.getConfig().getStringList("never-played-before")) {
+                    sender.sendMessage(this.plugin.placeholders(line).replace("{PLAYER}", args[0]));
+                }
                 return true;
             }
 

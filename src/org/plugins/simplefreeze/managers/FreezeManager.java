@@ -236,8 +236,7 @@ public class FreezeManager {
             SFLocation originalLoc = null;
             SFLocation freezeLoc = null;
             Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
-            String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer
-                    (freezerUUID).getName();
+            String freezerName = freezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
 
             if (location != null) {
                 freezeLoc = this.locationManager.getSFLocation(location);
@@ -274,7 +273,7 @@ public class FreezeManager {
 
             long freezeDate = System.currentTimeMillis();
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freeze-date", freezeDate);
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freezer-uuid", freezerName.equals("CONSOLE") ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
+            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freezer-uuid", freezerUUID == null ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".original-location", originalLoc == null ? "null" : originalLoc.toString());
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freeze-location", freezeLoc == null ? "null" : freezeLoc.toString());
             if (reason != null) {
@@ -322,7 +321,7 @@ public class FreezeManager {
             SFLocation originalLoc = null;
             SFLocation freezeLoc = null;
             final Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
-            String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer
+            String freezerName = freezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer
                     (freezerUUID).getName();
 
             if (location != null) {
@@ -364,7 +363,7 @@ public class FreezeManager {
             long unfreezeDate = freezeDate + (time * 1000L);
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freeze-date", freezeDate);
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".unfreeze-date", unfreezeDate);
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freezer-uuid", freezerName.equals("CONSOLE") ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
+            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freezer-uuid", freezerUUID == null ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".original-location", originalLoc == null ? "null" : originalLoc.toString());
             this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freeze-location", freezeLoc == null ? "null" : freezeLoc.toString());
             if (reason != null) {
@@ -423,7 +422,7 @@ public class FreezeManager {
         }
         Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
         String freezeeName = Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
-        String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+        String freezerName = freezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
         String timePlaceholder = "Permanent";
         String serversPlaceholder = "";
         String locationPlaceholder = this.locationManager.getLocationPlaceholder(location);
@@ -570,7 +569,7 @@ public class FreezeManager {
         }
         Player onlineFreezee = Bukkit.getPlayer(freezeeUUID);
         String freezeeName = Bukkit.getPlayer(freezeeUUID) == null ? Bukkit.getOfflinePlayer(freezeeUUID).getName() : Bukkit.getPlayer(freezeeUUID).getName();
-        String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+        String freezerName = freezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
         String timePlaceholder = "Permanent";
         String locationPlaceholder = this.plugin.getConfig().getString("location");
         String reason = this.plugin.getPlayerConfig().getConfig().getString("players." + freezeeUUID.toString() + ".reason", "");
@@ -630,6 +629,9 @@ public class FreezeManager {
     public void notifyOfUnfreeze(CommandSender sender, UUID uuid, String freezeeName, String server) {
         Player onlineFreezee = Bukkit.getPlayer(uuid);
         String unfreezerName = sender.getName();
+        if (unfreezerName.equals("CONSOLE")) {
+            unfreezerName = SimpleFreezeMain.getConsoleName();
+        }
 
         String playerPath = server == null ? "unfreeze-message" : server.equals(this.plugin.getServerID()) ? "unfreeze-message" : "sql-unfreeze-message";
         String notifyPath = server == null ? "unfrozen-notify-message" : server.equals(this.plugin.getServerID()) ? "unfrozen-notify-message" : "sql-unfrozen-notify-message";
@@ -643,6 +645,7 @@ public class FreezeManager {
         for (String msg : this.plugin.getConfig().getStringList(notifyPath)) {
             sender.sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName).replace("{PLAYER}", freezeeName)));
         }
+
         Player senderP = sender instanceof Player ? (Player) sender : null;
         for (Player p : Bukkit.getServer().getOnlinePlayers()) {
             if (p.hasPermission("sf.notify.unfreeze") && p != senderP) {
@@ -655,12 +658,21 @@ public class FreezeManager {
 
     public void notifyOfUnfreeze(UUID uuid, String freezeeName, String unfreezerName, String server) {
         Player onlineFreezee = Bukkit.getPlayer(uuid);
+        if (unfreezerName.equals("CONSOLE")) {
+            unfreezerName = SimpleFreezeMain.getConsoleName();
+        }
         String playerPath = server == null ? "unfreeze-message" : server.equals(this.plugin.getServerID()) ? "unfreeze-message" : "sql-unfreeze-message";
         String notifyPath = server == null ? "unfrozen-notify-message" : server.equals(this.plugin.getServerID()) ? "unfrozen-notify-message" : "sql-unfrozen-notify-message";
 
         if (onlineFreezee != null) {
             for (String msg : this.plugin.getConfig().getStringList(playerPath)) {
                 onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName).replace("{PLAYER}", freezeeName).replace("{SERVER}", server)));
+            }
+        }
+
+        if (unfreezerName.equals(SimpleFreezeMain.getConsoleName())) {
+            for (String msg : this.plugin.getConfig().getStringList(notifyPath)) {
+                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName).replace("{PLAYER}", freezeeName)));
             }
         }
 
@@ -671,16 +683,10 @@ public class FreezeManager {
                 }
             }
         }
-
-        if (unfreezerName.equals("CONSOLE")) {
-            for (String msg : this.plugin.getConfig().getStringList(notifyPath)) {
-                Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", unfreezerName).replace("{PLAYER}", freezeeName).replace("{SERVER}", server)));
-            }
-        }
     }
 
     public void notifyOfFreezeAll(UUID freezerUUID, String location) {
-        String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+        String freezerName = freezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
         String locPlaceholder = this.locationManager.getLocationPlaceholder(location);
         String reason = this.plugin.getPlayerConfig().getConfig().getString("freezeall-info.reason", this.plugin.getConfig().getString("default-reason"));
 
@@ -709,9 +715,9 @@ public class FreezeManager {
             }
             totalMsg = this.plugin.placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", freezerName).replace("{REASON}", reason));
 
-            if (this.messageManager.getFreezeAllLocInterval() > 0) {
+            if (location == null && this.messageManager.getFreezeAllInterval() > 0) {
                 this.messageManager.addFreezeAllPlayer(p, totalMsg);
-            } else if (this.messageManager.getFreezeAllLocInterval() > 0) {
+            } else if (location != null && this.messageManager.getFreezeAllLocInterval() > 0) {
                 this.messageManager.addFreezeAllLocPlayer(p, totalMsg);
             }
 
@@ -719,11 +725,13 @@ public class FreezeManager {
 
         if (freezerUUID == null) {
             Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
+        } else {
+            Bukkit.getPlayer(freezerUUID).sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
         }
     }
 
     public void notifyOfUnfreezeAll(UUID unfreezerUUID) {
-        String unfreezerName = unfreezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(unfreezerUUID) == null ? Bukkit.getOfflinePlayer(unfreezerUUID).getName() : Bukkit.getPlayer(unfreezerUUID).getName();
+        String unfreezerName = unfreezerUUID == null ? SimpleFreezeMain.getConsoleName() : Bukkit.getPlayer(unfreezerUUID) == null ? Bukkit.getOfflinePlayer(unfreezerUUID).getName() : Bukkit.getPlayer(unfreezerUUID).getName();
         for (Player p : Bukkit.getOnlinePlayers()) {
             for (String msg : this.plugin.getConfig().getStringList("unfreezeall-message")) {
                 if (msg.equals("")) {
@@ -735,6 +743,8 @@ public class FreezeManager {
 
         if (unfreezerUUID == null) {
             Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("{PREFIX}Server unfrozen successfully"));
+        } else {
+            Bukkit.getPlayer(unfreezerUUID).sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
         }
 
     }

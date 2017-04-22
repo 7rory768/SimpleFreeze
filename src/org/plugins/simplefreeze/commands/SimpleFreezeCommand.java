@@ -1,5 +1,6 @@
 package org.plugins.simplefreeze.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -12,9 +13,7 @@ import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
 import org.plugins.simplefreeze.managers.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class SimpleFreezeCommand implements CommandExecutor {
 
@@ -25,8 +24,10 @@ public class SimpleFreezeCommand implements CommandExecutor {
     private final SoundManager soundManager;
     private final MessageManager messageManager;
     private final MovementManager movementManager;
+    private final PlayerManager playerManager;
+    private final FreezeManager freezeManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager, PlayerManager playerManager, FreezeManager freezeManager) {
         this.plugin = plugin;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
@@ -34,6 +35,8 @@ public class SimpleFreezeCommand implements CommandExecutor {
         this.soundManager = soundManager;
         this.messageManager = messageManager;
         this.movementManager = movementManager;
+        this.playerManager = playerManager;
+        this.freezeManager = freezeManager;
     }
 
     @Override
@@ -70,6 +73,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     this.plugin.reloadConfig();
                     this.plugin.updateFinalPrefixFormatting();
 
+                    // UPDATE CONSOLE NAME
+                    this.plugin.updateConsoleName();
+
                     // CHECK IF SOUND VALUES CHANGED
                     String newFreezeSound = this.plugin.getConfig().getString("freeze-sound.sound");
                     float newFreezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound-volume");
@@ -87,21 +93,10 @@ public class SimpleFreezeCommand implements CommandExecutor {
                         sender.sendMessage(this.plugin.placeholders("&c&lERROR: &7Invalid unfreeze sound: &c" + this.plugin.getConfig().getString("unfreeze-sound.sound")));
                     }
 
-                    if (freezeVolume != newFreezeVolume) {
-                        this.soundManager.setFreezeVolume(newFreezeVolume);
-                    }
-
-                    if (unfreezeVolume != newUnfreezeVolume) {
-                        this.soundManager.setUnfreezeVolume(newUnfreezeVolume);
-                    }
-
-                    if (freezePitch != newFreezePitch) {
-                        this.soundManager.setFreezePitch(newFreezePitch);
-                    }
-
-                    if (unfreezePitch != newUnfreezePitch) {
-                        this.soundManager.setUnfreezePitch(newUnfreezePitch);
-                    }
+                    this.soundManager.setFreezeVolume(newFreezeVolume);
+                    this.soundManager.setUnfreezeVolume(newUnfreezeVolume);
+                    this.soundManager.setFreezePitch(newFreezePitch);
+                    this.soundManager.setUnfreezePitch(newUnfreezePitch);
 
                     // CHANGE MESSAGE-INTERVALS
                     this.messageManager.setFreezeInterval(this.plugin.getConfig().getInt("message-intervals.freeze"));
@@ -325,11 +320,40 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     this.particleManager.setEffect(this.plugin.getConfig().getString("frozen-particles.particle", "null"));
                     this.particleManager.setRadius(this.plugin.getConfig().getInt("frozen-particles.radius", 10));
 
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}Configuration file reloaded successfully"));
+                    Set<String> uuids = this.plugin.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false);
+                    if (this.plugin.getConfig().getBoolean("clear-playerdata")) {
+                        for (String uuidStr : uuids) {
+                            UUID uuid = UUID.fromString(uuidStr);
+                            if (this.plugin.usingMySQL()) {
+                                this.freezeManager.unfreeze(uuid);
+                                this.plugin.getSQLManager().removeFromFrozenList(uuid);
+                                Player onlineFreezee = Bukkit.getPlayer(uuid);
+
+                                if (onlineFreezee != null) {
+                                    for (String msg : this.plugin.getConfig().getStringList("unfreeze-message")) {
+                                        onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", sender.getName()).replace("{PLAYER}", onlineFreezee.getName())));
+                                    }
+                                }
+                            }
+                        }
+                        for (String line : this.plugin.getConfig().getStringList("clear-playerdata-message")) {
+                            sender.sendMessage(this.plugin.placeholders(line));
+                        }
+                    }
+
+                    for(String line : this.plugin.getConfig().getStringList("config-reloaded")) {
+                        sender.sendMessage(this.plugin.placeholders(line));
+                    }
                     return true;
                 }
 
                 if (args[0].equalsIgnoreCase("locations")) {
+                    if (!(sender.hasPermission("sf.locations.set") || sender.hasPermission("sf.locations.remove"))) {
+                        for (String msg : this.plugin.getConfig().getStringList("no-permission-message")) {
+                            sender.sendMessage(this.plugin.placeholders(msg));
+                        }
+                        return false;
+                    }
 
                     if (args.length > 2) {
                         if (args[1].equalsIgnoreCase("set")) {
@@ -341,7 +365,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
                             }
 
                             if (!(sender instanceof Player)) {
-                                sender.sendMessage(this.plugin.placeholders("{PREFIX}You must be in-game to use &b/sf locations <set/remove> <location-name> [placeholder]"));
+                                for (String line : this.plugin.getConfig().getStringList("not-in-game")) {
+                                    sender.sendMessage(this.plugin.placeholders(line));
+                                }
                                 return false;
                             }
 
@@ -397,11 +423,11 @@ public class SimpleFreezeCommand implements CommandExecutor {
                             return true;
                         }
 
-                        sender.sendMessage(this.plugin.placeholders("{PREFIX}Invalid argument: &b" + args[1] + "&7, try &b/sf locations <set/remove> <location-name> [placeholder]"));
+                        sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("invalid-arguments.sf-locations").replace("{ARG}", args[1])));
                         return false;
                     }
 
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}Not enough arguments, try &b/sf locations <set/remove> <location-name> [placeholder]"));
+                    sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("not-enough-arguments.sf-locations")));
                     return false;
                 }
             }

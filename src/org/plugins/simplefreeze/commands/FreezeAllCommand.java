@@ -63,6 +63,12 @@ public class FreezeAllCommand implements CommandExecutor {
                     }
                 }
                 if (reason == null) {
+                    if (this.plugin.getConfig().getBoolean("force-reason")) {
+                        for (String line : this.plugin.getConfig().getStringList("missing-reason")) {
+                            sender.sendMessage(this.plugin.placeholders(line));
+                        }
+                        return false;
+                    }
                     reason = this.plugin.getConfig().getString("default-reason");
                 } else {
                     reason = reason.substring(0, reason.length() - 1);

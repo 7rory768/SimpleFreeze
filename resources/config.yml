@@ -1,6 +1,6 @@
 # ||=======================================||
 # ||              Simple Freeze            ||
-# ||              Version 3.0.3            ||
+# ||              Version 3.0.4            ||
 # ||=======================================||
 
 # ||=======================================||
@@ -33,6 +33,9 @@ empty-location: 'Unknown'
 
 # This sets the reason used if none is given
 default-reason: 'None'
+
+# Name of freezer/unfreezer if ran through console
+console-name: 'CONSOLE'
 
 # ||=======================================||
 # ||                 MySQL                 ||
@@ -166,6 +169,12 @@ logout-commands:
 # If no location is given in the freeze command this location will be used, (if you want to use this remove the #)
 #default-location: example-location
 
+# If true, you must provide a reason when freezing a player
+force-reason: false
+
+# Unfreeze all players on /sf reload or server restart? (DONT TOUCH IF YOU DON'T KNOW WHAT THIS IS)
+clear-playerdata: false
+
 # ||======================================||
 # ||               Blocking               ||
 # ||======================================||
@@ -230,8 +239,6 @@ blocked-commands:
 # ||               Messages               ||
 # ||======================================||
 
-# NOTE: If you don't want any messages to be sent change it to - '';
-
 # Message sent to a player when they are frozen
 freeze-message:
   - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
@@ -252,9 +259,7 @@ sql-freeze-message:
 # Message sent to a player when they are frozen at a specific location
 freeze-location-message:
   - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
-  - ''
   - '&aFrozen by: &7{FREEZER}'
-  - ''
   - '&aLength: &7Permanent'
   - '&aLocation: &7{LOCATION}'
   - '&aReason: &7{REASON}'
@@ -325,50 +330,6 @@ join-on-freezeall-message:
   - '&7Reason: &a{REASON}'
   - '&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*&b&m----------&7*'
 
-# Message sent to a player that tries to attack a frozen player
-frozen-attacked-message:
-  - '{PREFIX}You can''t attack &b{PLAYER} &7because they''re frozen'
-  
-# Message sent to a frozen player that tries to attack another entity
-frozen-attack-message:
-    - '{PREFIX}You can''t attack while frozen'
-
-# Message sent to a player when they try to use an enderpearl
-enderpearl-message:
-    - '{PREFIX}You can''t use enderpearls while frozen'
-
-# Message sent to a frozen player that tries to interact with, place, or break blocks
-interact-message:
-  - '{PREFIX}You can''t interact while frozen'
-
-# Message sent to a frozen player that tries to move their helmet while frozen
-inventory-message:
-  - '{PREFIX}You may not move your helmet while frozen'
-
-# Message sent to a frozen player that tries to drop an item
-item-drop-message:
-  - '{PREFIX}You can''t drop items while frozen'
-
-# Message sent to a frozen player who tries to edit a book
-book-edit-message:
-  - '{PREFIX}You cannot edit a book while frozen'
-
-# Message sent to a frozen player who tries to type in chat
-block-chat-message:
-  - '{PREFIX}You cannot chat while frozen'
-
-# Message sent to a frozen player who tries to place a block
-block-place-message:
-  - '{PREFIX}You cannot place blocks while frozen'
-
-# Message sent to a frozen player who tries to break a block
-block-break-message:
-  - '{PREFIX}You cannot break blocks while frozen'
-
-# Message sent to players upon using a blocked command
-blocked-command-message:
-  - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
-
 # Messages sent to players with the sf.notify.frozen permission upon freezing a player
 frozen-notify-message:
   - '{PREFIX}&b{PLAYER} &7was frozen by &b{FREEZER}'
@@ -419,76 +380,10 @@ sql-unfrozen-notify-message:
 notify-on-leave-message:
   - '{PREFIX}&b{PLAYER} &7left the game while frozen'
 
-# Message sent to a players upon using a fishing rod while frozen
-fishing-rod-message:
-  - '{PREFIX}You can''t fish while frozen'
-
-# Message sent to a players upon shooting a bow while frozen
-bow-shoot-message:
-  - '{PREFIX}You can''t shoot a bow while frozen'
-
-# Message sent to a players upon throwing a splash potion while frozen
-splash-potion-message:
-  - '{PREFIX}You can''t throw potions while frozen'
-
-# Message sent to a players upon throwing a snowball while frozen
-snowball-message:
-  - '{PREFIX}You can''t throw snowballs while frozen'
-
-# Message sent to a players upon throwing an egg while frozen
-egg-message:
-  - '{PREFIX}You can''t throw eggs while frozen'
-
-# Message sent to a players upon throwing an exp bottle while frozen
-exp-bottle-message:
-  - '{PREFIX}You can''t throw xp bottles while frozen'
-
 # Message sent to a player when they attempt to freeze a player but they are not within freeze-radius
 # AVAIALBLE PLACEHOLDERS: PLAYER, TOTALDISTANCE, MAXDISTANCE, DISTANCEDIFFERENCE
 freeze-distance-fail:
   - '{PREFIX}You can''t freeze &b{PLAYER} &7because they are &b{DISTANCEDIFFERENCE} &7blocks too far from you'
-
-# Message sent when a location is set
-location-set:
-  - '{PREFIX}Set location &b{LOCATION} &7successfully'
-
-# Message sent when a location that is already set is updated (set at a new location)
-location-updated:
-  - '{PREFIX}Location &b{LOCATION} &7updated successfully'
-
-# Message sent when a location is removed
-location-removed:
-  - '{PREFIX}Location &b{LOCATION} &7removed successfully'
-
-no-location-set:
-  - '{PREFIX}Location &b{LOCATION} &7doesn''t exist'
-
-# Message sent to a player upon attempting to freeze a player that is already frozen
-already-frozen:
-  - '{PREFIX}&b{PLAYER} &7is already frozen by &b{FREEZER}'
-
-# Message sent when attempting to unfreeze a player that isn't frozen
-not-frozen:
-  - '{PREFIX}&b{PLAYER} &7is not frozen'
-
-# Message sent when the frozen list is empty
-nobody-frozen:
-  - '{PREFIX}&7Nobody is frozen'
-
-# Message sent when a non valid integer is given
-not-an-int:
-  - '{PREFIX}&b{INTEGER} &7is not a valid integer'
-
-# Message sent when a pl;yer tries to view a page that doesnt exist
-page-doesnt-exist:
-  - '{PREFIX}&bPage {PAGENUM} &7does not exist'
-
-# Message sent to a player tries to freeze an offline player without the sf.offline permission
-no-permission-offline-player-message: '{PREFIX}You don''t have permission to freeze offline players'
-
-# Message sent to players upon using a command they don't have permission for
-no-permission-message:
-  - '&cYou don''t have permission for that'
 
 # Message sent to players upon attempting to freeze a player that is exempt
 exempt-messages:
@@ -519,3 +414,179 @@ frozen-list-format:
   footer: '&8&m---------------------&8{&7{PAGENUM}&8/&7{MAXPAGENUM}&8}&m-------------------------'
   # Amount of players that will display per page
   players-per-page: 5
+
+# Message sent when a pl;yer tries to view a page that doesnt exist
+page-doesnt-exist:
+  - '{PREFIX}&bPage {PAGENUM} &7does not exist'
+
+# Message sent when the frozen list is empty
+nobody-frozen:
+  - '{PREFIX}&7Nobody is frozen'
+
+# Message sent to a player that tries to attack a frozen player
+frozen-attacked-message:
+  - '{PREFIX}You can''t attack &b{PLAYER} &7because they''re frozen'
+  
+# Message sent to a frozen player that tries to attack another entity
+frozen-attack-message:
+    - '{PREFIX}You can''t attack while frozen'
+
+# Message sent to a player when they try to use an enderpearl
+enderpearl-message:
+    - '{PREFIX}You can''t use enderpearls while frozen'
+
+# Message sent to a frozen player that tries to interact with, place, or break blocks
+interact-message:
+  - '{PREFIX}You can''t interact while frozen'
+
+# Message sent to a frozen player that tries to move their helmet while frozen
+inventory-message:
+  - '{PREFIX}You may not move your helmet while frozen'
+
+# Message sent to a frozen player that tries to drop an item
+item-drop-message:
+  - '{PREFIX}You can''t drop items while frozen'
+
+# Message sent to a frozen player who tries to edit a book
+book-edit-message:
+  - '{PREFIX}You cannot edit a book while frozen'
+
+# Message sent to a frozen player who tries to type in chat
+block-chat-message:
+  - '{PREFIX}You cannot chat while frozen'
+
+# Message sent to a frozen player who tries to place a block
+block-place-message:
+  - '{PREFIX}You cannot place blocks while frozen'
+
+# Message sent to a frozen player who tries to break a block
+block-break-message:
+  - '{PREFIX}You cannot break blocks while frozen'
+
+# Message sent to players upon using a blocked command
+blocked-command-message:
+  - '{PREFIX}You cannot use &b{COMMAND} &7while frozen'
+
+# Message sent to a players upon using a fishing rod while frozen
+fishing-rod-message:
+  - '{PREFIX}You can''t fish while frozen'
+
+# Message sent to a players upon shooting a bow while frozen
+bow-shoot-message:
+  - '{PREFIX}You can''t shoot a bow while frozen'
+
+# Message sent to a players upon throwing a splash potion while frozen
+splash-potion-message:
+  - '{PREFIX}You can''t throw potions while frozen'
+
+# Message sent to a players upon throwing a snowball while frozen
+snowball-message:
+  - '{PREFIX}You can''t throw snowballs while frozen'
+
+# Message sent to a players upon throwing an egg while frozen
+egg-message:
+  - '{PREFIX}You can''t throw eggs while frozen'
+
+# Message sent to a players upon throwing an exp bottle while frozen
+exp-bottle-message:
+  - '{PREFIX}You can''t throw xp bottles while frozen'
+
+# Message sent when a location is set
+location-set:
+  - '{PREFIX}Set location &b{LOCATION} &7successfully'
+
+# Message sent when a location that is already set is updated (set at a new location)
+location-updated:
+  - '{PREFIX}Location &b{LOCATION} &7updated successfully'
+
+# Message sent when a location is removed
+location-removed:
+  - '{PREFIX}Location &b{LOCATION} &7removed successfully'
+
+# Message sent when a location can't be removed because it doesn't exist
+no-location-set:
+  - '{PREFIX}Location &b{LOCATION} &7doesn''t exist'
+
+# Message sent when /locations set is run out of the game (from Console)
+not-in-game:
+  - '{PREFIX}You must be in-game to use &b/sf locations <set/remove> <location-name> [placeholder]'
+
+# Messages sent when not enough arguments are given
+not-enough-arguments:
+  sf-locations: '{PREFIX}Not enough arguments, try &b/sf locations <set/remove> <location-name> [placeholder]'
+  freeze: '{PREFIX}Not enough arguments, try &b/freeze <name> [location/servers] [reason]'
+  temp-freeze: '{PREFIX}Not enough arguments, try &b/tempfreeze <name> <time> [location/servers] [reason]'
+  unfreeze: '{PREFIX}Not enough arguments, try &b/unfreeze <name>'
+
+# Messages sent when an invalid argument is used
+invalid-arguments:
+  sf-locations: '{PREFIX}Invalid argument: &b{ARG} &7, try &b/sf locations <set/remove> <location-name> [placeholder]'
+  temp-freeze: '{PREFIX}&b{ARG} &7is not a valid unit of time, try &bs&7, &bm&7, &bh&7, &bd&7, &bw&7, &bmo&7 or &by&7'
+
+# Message sent to a player who joins and is still frozen since they were last on the server
+still-frozen-join:
+  - '{PREFIX}You are still frozen'
+
+# Message sent if a reason isn't given with force-reason enabled
+missing-reason:
+  - '{PREFIX}You must provide a reason!'
+
+# Message sent to frozen players when they are frozen again best the plugin has been re-enabled
+plugin-re-enabled:
+  - '{PREFIX}SimpleFreeze was re-enabled so you are now frozen again'
+
+# Message sent to frozen players upon SF disable
+plugin-disabled:
+  - '{PREFIX}SimpleFreeze has been disabled, you will remain unfrozen until it is re-enabled'
+
+# Message sent after playerdata is cleared on /sf reload
+clear-playerdata-message:
+  - '{PREFIX}Playerdata cleared successfully'
+
+# Message sent upon trying to freeze a player who has never joined the server before
+never-played-before:
+  - '{PREFIX}&b{PLAYER} &7has never played this server before'
+
+# Message sent upon attempting to freeze an offline player without Vault enabled
+no-vault:
+  - '{PREFIX}You can''t freeze offline players without &bVault &7enabled'
+
+# Message sent to a player upon attempting to freeze a player that is already frozen
+already-frozen:
+  - '{PREFIX}&b{PLAYER} &7is already frozen by &b{FREEZER}'
+
+# Message sent when attempting to unfreeze a player that isn't frozen
+not-frozen:
+  - '{PREFIX}&b{PLAYER} &7is not frozen'
+
+# Message sent when a non valid integer is given
+not-an-int:
+  - '{PREFIX}&b{INTEGER} &7is not a valid integer'
+
+# Message sent upon a successful /sf reload
+config-reloaded:
+  - '{PREFIX}Configuration file reloaded successfully'
+
+# Message sent to a player tries to freeze an offline player without the sf.offline permission
+no-permission-offline-player-message: '{PREFIX}You don''t have permission to freeze offline players'
+
+# Message sent to a player upon freezing a player on another/multiple server(s) without the sf.sql permission
+no-permission-mysql:
+  - '{PREFIX}You don''t have permission to freeze players on multiple/other servers'
+
+# Message sent to players upon using a command they don't have permission for
+no-permission-message:
+  - '&cYou don''t have permission for that'
+
+# Message sent upon /sf or an unknown sub-command
+help-message:
+  - '                                           &b&lSimpleFreeze'
+  - '&b/sf &8- &7Displays this message'
+  - '&b/sf reload &8- &7Reloads configuration file'
+  - '&b/sf locations set <location-name> [placeholder] &8- &7Sets a location'
+  - '&b/sf locations remove <location-name> &8- &7Removes a location'
+  - '&b/frozenlist [page] &8- &7Lists frozen players'
+  - '&b/freeze <name> [location/servers] [reason] &8- &7Freezes a player'
+  - '&b/tempfreeze <name> <time> [location/servers] [reason] &8- &7Temporarily freezes a player'
+  - '&b/unfreeze <name> &8- &7Unfreezes a player'
+  - '&b/freezeall [reason] &8- &7Freeze all players'

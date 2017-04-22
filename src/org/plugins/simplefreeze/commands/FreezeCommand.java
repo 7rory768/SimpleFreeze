@@ -48,7 +48,7 @@ public class FreezeCommand implements CommandExecutor {
             }
 
             if (args.length < 1) {
-                sender.sendMessage(this.plugin.placeholders("{PREFIX}" + "Not enough arguments, try &b/freeze <name> [location/servers]"));
+                sender.sendMessage(this.plugin.placeholders(this.plugin.getConfig().getString("not-enough-arguments.freeze")));
                 return true;
             }
 
@@ -79,7 +79,8 @@ public class FreezeCommand implements CommandExecutor {
             } else if (offlineP != null) {
                 if (offlineP.hasPlayedBefore()) {
                     if (this.permissions == null) {
-                        sender.sendMessage(this.plugin.placeholders("{PREFIX}You can't freeze offline players without &bVault {PREFIXFORMAT}enabled"));
+                        for (String line : this.plugin.getConfig().getStringList("no-vault")) {
+                        sender.sendMessage(this.plugin.placeholders(line));}
                         return false;
                     }
                     playerName = offlineP.getName();
@@ -94,11 +95,15 @@ public class FreezeCommand implements CommandExecutor {
                         return true;
                     }
                 } else {
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}&b{PLAYER} " + this.plugin.getFinalPrefixFormatting() + "has never played this server before").replace("{PLAYER}", args[0]));
+                    for (String line : this.plugin.getConfig().getStringList("never-played-before")) {
+                        sender.sendMessage(this.plugin.placeholders(line).replace("{PLAYER}", args[0]));
+                    }
                     return true;
                 }
             } else {
-                sender.sendMessage(this.plugin.placeholders("{PREFIX}&b{PLAYER} " + this.plugin.getFinalPrefixFormatting() + "has never played this server before").replace("{PLAYER}", args[0]));
+                for (String line : this.plugin.getConfig().getStringList("never-played-before")) {
+                    sender.sendMessage(this.plugin.placeholders(line).replace("{PLAYER}", args[0]));
+                }
                 return true;
             }
 
@@ -148,12 +153,20 @@ public class FreezeCommand implements CommandExecutor {
             }
 
             if (reason == null) {
+                if (this.plugin.getConfig().getBoolean("force-reason")) {
+                    for (String line : this.plugin.getConfig().getStringList("missing-reason")) {
+                        sender.sendMessage(this.plugin.placeholders(line));
+                    }
+                    return false;
+                }
                 reason = this.plugin.getConfig().getString("default-reason");
             }
 
             if (!servers.isEmpty()) {
                 if (!sender.hasPermission("sf.mysql")) {
-                    sender.sendMessage(this.plugin.placeholders("{PREFIX}You don't have permission to freeze players on other/multiple servers"));
+                    for (String line : this.plugin.getConfig().getStringList("no-permission-mysql")) {
+                        sender.sendMessage(this.plugin.placeholders(line));
+                    }
                     return false;
                 }
                 this.sqlManager.addFreeze(playerName, uuid, sender.getName(), senderUUID, null, reason, servers);
