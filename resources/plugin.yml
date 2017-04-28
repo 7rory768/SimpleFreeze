@@ -1,8 +1,8 @@
 main: org.plugins.simplefreeze.SimpleFreezeMain
 name: SimpleFreeze
-version: 3.0.4
+version: 3.1.0
 author: 7rory768
-description: This plugin allows you to freeze players or everyone at once
+description: Allows you to freeze players or everyone at once
 softdepend: [Vault, EssentialsX, Essentials, LiteBans, BanManager]
 
 commands:
@@ -108,7 +108,10 @@ permissions:
     default: op
   sf.sql:
     description: Freeze people on other/multiple servers
+    default: op
   sf.locations.set:
     description: Permission to use /sf locations set (Set locations)
+    default: op
   sf.locations.remove:
     description: Permission to use /sf locations remove (Remove locations)
+    default: op
