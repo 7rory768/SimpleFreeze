@@ -723,10 +723,9 @@ public class FreezeManager {
 
         }
 
-        if (freezerUUID == null) {
-            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
-        } else {
-            Bukkit.getPlayer(freezerUUID).sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
+        CommandSender sender = freezerUUID == null ? Bukkit.getConsoleSender() : Bukkit.getPlayer(freezerUUID) ;
+        for (String line : this.plugin.getConfig().getStringList("freezeall-success")) {
+            sender.sendMessage(this.plugin.placeholders(line));
         }
     }
 
@@ -741,11 +740,9 @@ public class FreezeManager {
             }
         }
 
-        if (unfreezerUUID == null) {
-            Bukkit.getConsoleSender().sendMessage(this.plugin.placeholders("{PREFIX}Server unfrozen successfully"));
-        } else {
-            Bukkit.getPlayer(unfreezerUUID).sendMessage(this.plugin.placeholders("{PREFIX}Server frozen successfully"));
+        CommandSender sender = unfreezerUUID == null ? Bukkit.getConsoleSender() : Bukkit.getPlayer(unfreezerUUID) ;
+        for (String line : this.plugin.getConfig().getStringList("unfreezeall-success")) {
+            sender.sendMessage(this.plugin.placeholders(line));
         }
-
     }
 }

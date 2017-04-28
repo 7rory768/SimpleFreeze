@@ -1,6 +1,6 @@
 # ||=======================================||
 # ||              Simple Freeze            ||
-# ||              Version 3.0.4            ||
+# ||              Version 3.1.0            ||
 # ||=======================================||
 
 # ||=======================================||
@@ -379,6 +379,14 @@ sql-unfrozen-notify-message:
 # Message sent when a player leave while frozen
 notify-on-leave-message:
   - '{PREFIX}&b{PLAYER} &7left the game while frozen'
+
+# Message sent to command sender of /freezeall
+freezeall-success:
+  - '{PREFIX}Server frozen successfully'
+
+# Message sent to command sender of /freezeall
+unfreezeall-success:
+  - '{PREFIX}Server unfrozen successfully'
 
 # Message sent to a player when they attempt to freeze a player but they are not within freeze-radius
 # AVAIALBLE PLACEHOLDERS: PLAYER, TOTALDISTANCE, MAXDISTANCE, DISTANCEDIFFERENCE
