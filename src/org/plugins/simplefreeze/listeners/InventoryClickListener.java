@@ -21,6 +21,9 @@ public class InventoryClickListener implements Listener {
 		if (this.playerManager.isFrozen(e.getWhoClicked().getUniqueId()) && this.plugin.getConfig().isSet("head-item")) {
 			if (e.getClickedInventory() != null && e.getSlot() == 39 && e.getCurrentItem() != null) {
 				if (e.getClickedInventory().equals(e.getWhoClicked().getOpenInventory().getBottomInventory())) {
+					for (String line : this.plugin.getConfig().getStringList("inventory-message")) {
+						e.getWhoClicked().sendMessage(this.plugin.placeholders(line));
+					}
 					e.setCancelled(true);
 				}
 			}
