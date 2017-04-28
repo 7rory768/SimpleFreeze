@@ -80,7 +80,7 @@ public class UnfreezeCommand implements CommandExecutor {
                 return true;
             }
 
-            if (this.plugin.usingMySQL()) {
+            if (!this.playerManager.isFreezeAllFrozen(uuid) && this.plugin.usingMySQL()) {
                 if (sender.hasPermission("sf.mysql")) {
                     this.sqlManager.addUnfreeze(playerName, uuid, sender.getName());
                     return true;
