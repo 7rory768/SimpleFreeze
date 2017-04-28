@@ -78,12 +78,12 @@ public class SimpleFreezeCommand implements CommandExecutor {
 
                     // CHECK IF SOUND VALUES CHANGED
                     String newFreezeSound = this.plugin.getConfig().getString("freeze-sound.sound");
-                    float newFreezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound-volume");
-                    float newFreezePitch = (float) this.plugin.getConfig().getDouble("freeze-sound-pitch");
+                    float newFreezeVolume = (float) this.plugin.getConfig().getDouble("freeze-sound.volume");
+                    float newFreezePitch = (float) this.plugin.getConfig().getDouble("freeze-sound.pitch");
 
                     String newUnfreezeSound = this.plugin.getConfig().getString("unfreeze-sound.sound");
-                    float newUnfreezeVolume = (float) this.plugin.getConfig().getDouble("unfreeze-sound-volume");
-                    float newUnfreezePitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound-pitch");
+                    float newUnfreezeVolume = (float) this.plugin.getConfig().getDouble("unfreeze-sound.volume");
+                    float newUnfreezePitch = (float) this.plugin.getConfig().getDouble("unfreeze-sound.pitch");
 
                     if (!this.soundManager.setFreezeSound(newFreezeSound)) {
                         sender.sendMessage(this.plugin.placeholders("&c&lERROR: &7Invalid freeze sound: &c" + this.plugin.getConfig().getString("freeze-sound.sound")));
