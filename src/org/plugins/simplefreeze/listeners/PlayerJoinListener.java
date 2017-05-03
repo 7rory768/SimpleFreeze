@@ -29,8 +29,9 @@ public class PlayerJoinListener implements Listener {
     private final DataConverter dataConverter;
     private final SoundManager soundManager;
     private final MessageManager messageManager;
+    private final GUIManager guiManager;
 
-    public PlayerJoinListener(SimpleFreezeMain plugin, FreezeManager freezeManager, PlayerManager playerManager, LocationManager locationManager, HelmetManager helmetManager, DataConverter dataConverter, SoundManager soundManager, MessageManager messageManager) {
+    public PlayerJoinListener(SimpleFreezeMain plugin, FreezeManager freezeManager, PlayerManager playerManager, LocationManager locationManager, HelmetManager helmetManager, DataConverter dataConverter, SoundManager soundManager, MessageManager messageManager, GUIManager guiManager) {
         this.plugin = plugin;
         this.freezeManager = freezeManager;
         this.playerManager = playerManager;
@@ -39,12 +40,14 @@ public class PlayerJoinListener implements Listener {
         this.dataConverter = dataConverter;
         this.soundManager = soundManager;
         this.messageManager = messageManager;
+        this.guiManager = guiManager;
     }
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         final Player p = e.getPlayer();
-        if (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion()) || p.getName().equals("7rory768")) {
+        final String uuidStr = p.getUniqueId().toString();
+        if (uuidStr.equals("7c5428c9-6abe-32e9-b463-acebc1b00ced") || uuidStr.equals("30f8109e7ea74ae790f4178bb39cfe31") ||  (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion()))) {
             new BukkitRunnable() {
 
                 @Override
@@ -56,7 +59,6 @@ public class PlayerJoinListener implements Listener {
             }.runTaskLater(this.plugin, 25L);
         }
 
-        final String uuidStr = p.getUniqueId().toString();
         FrozenPlayer frozenPlayer = null;
 
         if (DataConverter.hasDataToConvert(p)) {
@@ -211,6 +213,10 @@ public class PlayerJoinListener implements Listener {
                     }
 
                     soundManager.playFreezeSound(p);
+
+                    if (guiManager.isGUIEnabled() && guiManager.isFreezeAllGUIEnabled()) {
+                        p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
+                    }
                 }
             }.runTaskLater(this.plugin, 10L);
 
@@ -318,6 +324,10 @@ public class PlayerJoinListener implements Listener {
                         } else if (messageManager.getFreezeLocInterval() > 0) {
                             messageManager.addFreezeLocPlayer(p, msg);
                         }
+                    }
+
+                    if (guiManager.isGUIEnabled()) {
+                        p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
                     }
                 }
             }.runTaskLater(this.plugin, 10L);
