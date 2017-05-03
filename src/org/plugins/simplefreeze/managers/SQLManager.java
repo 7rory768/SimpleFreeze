@@ -34,7 +34,7 @@ public class SQLManager {
         Connection connection = null;
         PreparedStatement ps = null;
 
-        String update = "CREATE TABLE IF NOT EXISTS sf_" + this.plugin.getServerID() + "_freezes (freezee_name VARCHAR(16) NOT NULL UNIQUE, freezee_uuid VARCHAR(36) NOT NULL UNIQUE, freezer_name VARCHAR(16) NOT NULL, freezer_uuid VARCHAR(36), unfreeze_date LONG, reason VARCHAR(100), servers VARCHAR(100), source_server VARCHAR(50));";
+        String update = "CREATE TABLE IF NOT EXISTS sf_" + this.plugin.getServerID().toLowerCase() + "_freezes (freezee_name VARCHAR(16) NOT NULL UNIQUE, freezee_uuid VARCHAR(36) NOT NULL UNIQUE, freezer_name VARCHAR(16) NOT NULL, freezer_uuid VARCHAR(36), unfreeze_date LONG, reason VARCHAR(100), servers VARCHAR(100), source_server VARCHAR(50));";
 
         try {
 
@@ -44,12 +44,12 @@ public class SQLManager {
             ps.execute();
             ps.close();
 
-            update = "CREATE TABLE IF NOT EXISTS sf_" + this.plugin.getServerID() + "_unfreezes (unfreezee_name VARCHAR(16) NOT NULL UNIQUE, unfreezee_uuid VARCHAR(36) NOT NULL UNIQUE, unfreezer_name VARCHAR(16), source_server VARCHAR(50));";
+            update = "CREATE TABLE IF NOT EXISTS sf_" + this.plugin.getServerID().toLowerCase() + "_unfreezes (unfreezee_name VARCHAR(16) NOT NULL UNIQUE, unfreezee_uuid VARCHAR(36) NOT NULL UNIQUE, unfreezer_name VARCHAR(16), source_server VARCHAR(50));";
 
             ps = connection.prepareStatement(update);
             ps.execute();
 
-            update = "CREATE TABLE IF NOT EXISTS sf_" + this.plugin.getServerID() + "_frozenlist (player_uuid VARCHAR(36) NOT NULL UNIQUE);";
+            update = "CREATE TABLE IF NOT EXISTS sf_" + this.plugin.getServerID().toLowerCase() + "_frozenlist (player_uuid VARCHAR(36) NOT NULL UNIQUE);";
 
             ps = connection.prepareStatement(update);
             ps.execute();
@@ -84,7 +84,7 @@ public class SQLManager {
                 PreparedStatement ps = null;
                 ResultSet res = null;
 
-                String request = "SELECT * FROM sf_" + plugin.getServerID() + "_freezes;";
+                String request = "SELECT * FROM sf_" + plugin.getServerID().toLowerCase() + "_freezes;";
 
                 try {
                     connection = mySQL.getConnection();
@@ -127,7 +127,7 @@ public class SQLManager {
                                     } else {
                                         freezeManager.freeze(freezeeUUID, freezerUUID, null, reason, serversString);
                                     }
-                                    freezeManager.notifyOfSQLFreeze(freezeeUUID, serversString, sourceServer);
+                                    freezeManager.notifyOfSQLFreeze(freezeeName, freezeeUUID, serversString, sourceServer, reason);
                                 }
                             }
                             try {
@@ -143,14 +143,14 @@ public class SQLManager {
                         }
 
                         for (String name : names) {
-                            String update = "DELETE FROM sf_" + plugin.getServerID() + "_freezes WHERE freezee_name = '" + name + "';";
+                            String update = "DELETE FROM sf_" + plugin.getServerID().toLowerCase() + "_freezes WHERE freezee_name = '" + name + "';";
                             ps = connection.prepareStatement(update);
                             ps.execute();
                             ps.close();
                         }
                     }
 
-                    request = "SELECT * FROM sf_" + plugin.getServerID() + "_unfreezes;";
+                    request = "SELECT * FROM sf_" + plugin.getServerID().toLowerCase() + "_unfreezes;";
                     ps = connection.prepareStatement(request);
                     if (ps != null) {
                         res = ps.executeQuery();
@@ -195,14 +195,14 @@ public class SQLManager {
                         }
 
                         for (String name : names) {
-                            String update = "DELETE FROM sf_" + plugin.getServerID() + "_unfreezes WHERE unfreezee_name = '" + name + "';";
+                            String update = "DELETE FROM sf_" + plugin.getServerID().toLowerCase() + "_unfreezes WHERE unfreezee_name = '" + name + "';";
                             ps = connection.prepareStatement(update);
                             ps.execute();
                             ps.close();
                         }
 
                         for (UUID uuid : uuids) {
-                            String update = "DELETE FROM sf_" + plugin.getServerID() + "_frozenlist WHERE player_uuid = '" + uuid + "';";
+                            String update = "DELETE FROM sf_" + plugin.getServerID().toLowerCase() + "_frozenlist WHERE player_uuid = '" + uuid + "';";
                             ps = connection.prepareStatement(update);
                             ps.execute();
                             ps.close();
@@ -303,7 +303,7 @@ public class SQLManager {
             serversString = serversString.substring(0, commaIndex) + " and" + serversString.substring(commaIndex + 1, serversString.length());
         }
 
-        String valuesString = "(freezee_name, freezee_uuid, freezer_name, freezer_uuid, unfreeze_date, reason, servers, source_server) VALUES ('" + freezeeName + "', '" + freezeeUUID.toString() + "', '" + freezerName + "', ?, ?, '" + reason + "', '" + serversString + "', '" + this.plugin.getServerID() + "')";
+        String valuesString = "(freezee_name, freezee_uuid, freezer_name, freezer_uuid, unfreeze_date, reason, servers, source_server) VALUES ('" + freezeeName + "', '" + freezeeUUID.toString() + "', '" + freezerName + "', ?, ?, '" + reason + "', '" + serversString + "', '" + this.plugin.getServerID().toLowerCase() + "')";
 
         try {
             connection = this.mySQL.getConnection();
@@ -355,7 +355,7 @@ public class SQLManager {
         Connection connection = null;
         PreparedStatement ps = null;
 
-        String valuesString = "(unfreezee_name, unfreezee_uuid, unfreezer_name, source_server) VALUES ('" + unfreezeeName + "', '" + unfreezeeUUID.toString() + "', '" + unfreezerName + "', '" + plugin.getServerID() + "')";
+        String valuesString = "(unfreezee_name, unfreezee_uuid, unfreezer_name, source_server) VALUES ('" + unfreezeeName + "', '" + unfreezeeUUID.toString() + "', '" + unfreezerName + "', '" + plugin.getServerID().toLowerCase() + "')";
 
         try {
             connection = this.mySQL.getConnection();
@@ -371,7 +371,6 @@ public class SQLManager {
                     }
                     rs.close();
                     ps.close();
-
                     if (frozen) {
                         String update = "INSERT INTO sf_" + server.toLowerCase() + "_unfreezes " + valuesString + ";";
                         ps = connection.prepareStatement(update);
@@ -574,7 +573,7 @@ public class SQLManager {
         try {
             connection = this.mySQL.getConnection();
 
-            String update = "INSERT INTO sf_" + this.plugin.getServerID() + "_frozenlist (player_uuid) VALUES ('" + uuid.toString() + "');";
+            String update = "INSERT INTO sf_" + this.plugin.getServerID().toLowerCase() + "_frozenlist (player_uuid) VALUES ('" + uuid.toString() + "');";
             ps = connection.prepareStatement(update);
             ps.execute();
 
@@ -607,7 +606,7 @@ public class SQLManager {
         try {
             connection = this.mySQL.getConnection();
 
-            String update = "DELETE FROM sf_" + this.plugin.getServerID() + "_frozenlist WHERE player_uuid = '" + uuid.toString() + "';";
+            String update = "DELETE FROM sf_" + this.plugin.getServerID().toLowerCase() + "_frozenlist WHERE player_uuid = '" + uuid.toString() + "';";
             ps = connection.prepareStatement(update);
             ps.execute();
 
@@ -631,6 +630,80 @@ public class SQLManager {
                 }
             }
         }
+    }
+
+    public List<String> getFrozenServers(UUID uuid) {
+        List<String> frozenServers = new ArrayList<String>();
+
+        if (!this.plugin.usingMySQL()) {
+            return frozenServers;
+        }
+
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet res = null;
+
+        String request;
+        String uuidStr = uuid.toString();
+        try {
+            connection = mySQL.getConnection();
+
+            for (String server : this.getServerIDs()) {
+                request = "SELECT * FROM sf_" + server.toLowerCase() + "_frozenlist;";
+                ps = connection.prepareStatement(request);
+                res = ps.executeQuery();
+
+                if (res != null) {
+                    while (res.next()) {
+                        if (uuidStr.equals(res.getString("player_uuid"))) {
+                            frozenServers.add(server);
+                        }
+                    }
+                    try {
+                        res.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (ps != null) {
+                    try {
+                        ps.close();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+
+            if (res != null) {
+                try {
+                    res.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return frozenServers;
     }
 
 }

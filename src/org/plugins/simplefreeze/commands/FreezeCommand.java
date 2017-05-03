@@ -12,6 +12,7 @@ import org.plugins.simplefreeze.managers.FreezeManager;
 import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
 import org.plugins.simplefreeze.managers.SQLManager;
+import org.plugins.simplefreeze.util.TimeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +81,8 @@ public class FreezeCommand implements CommandExecutor {
                 if (offlineP.hasPlayedBefore()) {
                     if (this.permissions == null) {
                         for (String line : this.plugin.getConfig().getStringList("no-vault")) {
-                        sender.sendMessage(this.plugin.placeholders(line));}
+                            sender.sendMessage(this.plugin.placeholders(line));
+                        }
                         return false;
                     }
                     playerName = offlineP.getName();
@@ -107,6 +109,7 @@ public class FreezeCommand implements CommandExecutor {
                 return true;
             }
 
+
             if (this.playerManager.isFrozen(uuid)) {
                 if (!this.playerManager.isFreezeAllFrozen(uuid)) {
                     UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid", "null").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid"));
@@ -123,12 +126,18 @@ public class FreezeCommand implements CommandExecutor {
             String reason = null;
             List<String> serverIDs = this.sqlManager.getServerIDs();
             List<String> servers = new ArrayList<>();
+            boolean star = false;
             for (int i = 1; i < args.length; i++) {
                 if (reason != null) {
                     reason += " " + args[i];
                 } else {
                     boolean addedServer = false;
-                    if (location == null) {
+                    if (location == null && !star) {
+                        if (args[i].equals("*")) {
+                            servers = serverIDs;
+                            addedServer = true;
+                            star = true;
+                        }
                         for (String serverID : serverIDs) {
                             if (serverID.equalsIgnoreCase(args[i])) {
                                 servers.add(serverID);
@@ -138,7 +147,7 @@ public class FreezeCommand implements CommandExecutor {
                         }
                     }
                     boolean addedLocation = false;
-                    if (servers.isEmpty() && this.plugin.getLocationsConfig().getConfig().isSet("locations." + args[i].toLowerCase())) {
+                    if (servers.isEmpty() && this.plugin.getConfig().getStringList("default-servers").isEmpty() && this.plugin.getLocationsConfig().getConfig().isSet("locations." + args[i].toLowerCase())) {
                         location = args[i].toLowerCase();
                         addedLocation = true;
                     }
@@ -162,7 +171,32 @@ public class FreezeCommand implements CommandExecutor {
                 reason = this.plugin.getConfig().getString("default-reason");
             }
 
+            if (servers.isEmpty()) {
+                for (String serverID : serverIDs) {
+                    for (String defaultServer : this.plugin.getConfig().getStringList("default-servers")) {
+                        if (serverID.equalsIgnoreCase(defaultServer)) {
+                            servers.add(serverID);
+                            break;
+                        }
+                    }
+                }
+            }
+
             if (!servers.isEmpty()) {
+                List<String> frozenList = this.sqlManager.getFrozenServers(uuid);
+                for (int i = servers.size() - 1; i >= 0; i--) {
+                    if (frozenList.contains(servers.get(i))) {
+                        servers.remove(i);
+                    }
+                }
+                if (servers.isEmpty()) {
+                    UUID freezerUUID = this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid", "null").equals("null") ? null : UUID.fromString(this.plugin.getPlayerConfig().getConfig().getString("players." + uuid.toString() + ".freezer-uuid"));
+                    String freezerName = freezerUUID == null ? "CONSOLE" : Bukkit.getPlayer(freezerUUID) == null ? Bukkit.getOfflinePlayer(freezerUUID).getName() : Bukkit.getPlayer(freezerUUID).getName();
+                    for (String msg : this.plugin.getConfig().getStringList("already-frozen")) {
+                        sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName).replace("{FREEZER}", freezerName)));
+                    }
+                    return true;
+                }
                 if (!sender.hasPermission("sf.mysql")) {
                     for (String line : this.plugin.getConfig().getStringList("no-permission-mysql")) {
                         sender.sendMessage(this.plugin.placeholders(line));
@@ -170,6 +204,45 @@ public class FreezeCommand implements CommandExecutor {
                     return false;
                 }
                 this.sqlManager.addFreeze(playerName, uuid, sender.getName(), senderUUID, null, reason, servers);
+
+                if (!servers.contains(this.plugin.getServerID().toLowerCase())) {
+                    String serversString = "";
+                    for (String server : servers) {
+                        serversString += server + ", ";
+                    }
+                    serversString = serversString.length() > 1 ? serversString.substring(0, serversString.length() - 2) : serversString;
+                    int commaIndex = serversString.indexOf(",");
+                    if (commaIndex > 0) {
+                        serversString = serversString.substring(0, commaIndex) + " and" + serversString.substring(commaIndex + 1, serversString.length());
+                    }
+                    String notifyPath;
+                    String freezerName = senderUUID == null ? SimpleFreezeMain.getConsoleName() : playerName;
+                    String timePlaceholder = "Permanent";
+                    String locationPlaceholder = this.plugin.getConfig().getString("empty-location");
+
+                    if (this.plugin.getPlayerConfig().getConfig().isSet("players." + uuid.toString() + ".unfreeze-date")) {
+                        timePlaceholder = TimeUtil.formatTime((this.plugin.getPlayerConfig().getConfig().getLong("players." + uuid.toString() + ".unfreeze-date") - System.currentTimeMillis()) / 1000L);
+                        notifyPath = "sql-temp-frozen-notify-message";
+                    } else {
+                        notifyPath = "sql-frozen-notify-message";
+                    }
+
+                    for (String msg : this.plugin.getConfig().getStringList(notifyPath)) {
+                        if (sender != null) {
+                            sender.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", playerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversString).replace("{REASON}", reason).replace("{SERVER}", this.plugin.getServerID())));
+                        }
+                    }
+
+                    for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                        if (p.hasPermission("sf.notify.freeze") && !p.equals(sender)) {
+                            for (String msg : this.plugin.getConfig().getStringList(notifyPath)) {
+                                p.sendMessage(this.plugin.placeholders(msg.replace("{FREEZER}", freezerName).replace("{PLAYER}", playerName).replace("{TIME}",
+                                        timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversString).replace("{REASON}", reason).replace("{SERVER}", this.plugin.getServerID())));
+
+                            }
+                        }
+                    }
+                }
                 return true;
             }
 
