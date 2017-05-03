@@ -104,6 +104,10 @@ public class FreezeManager {
             this.plugin.getStatsConfig().getConfig().set("unfreeze-count", this.plugin.getStatsConfig().getConfig().getInt("unfreeze-count", 0) + 1);
             this.plugin.getStatsConfig().saveConfig();
             this.plugin.getStatsConfig().reloadConfig();
+
+            if (this.plugin.usingMySQL()) {
+                this.plugin.getSQLManager().removeFromFrozenList(uuid);
+            }
         }
     }
 
