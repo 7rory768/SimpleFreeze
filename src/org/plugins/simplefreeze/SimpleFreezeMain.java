@@ -27,7 +27,6 @@ import java.util.*;
 
 /* 
  * TODO
- *  - Freeze GUI
  *  - Player history
  *  - Effects on freeze
  *  - Hologram above players head on freeze option
@@ -53,6 +52,7 @@ import java.util.*;
 public class SimpleFreezeMain extends JavaPlugin {
 
     private String finalPrefixFormatting = this.updateFinalPrefixFormatting();
+    private String serverID;
 
     private Permission permission = null;
     private boolean usingLiteBans = false;
@@ -75,8 +75,9 @@ public class SimpleFreezeMain extends JavaPlugin {
     private SoundManager soundManager;
     private MessageManager messageManager;
     private MovementManager movementManager;
+    private GUIManager guiManager;
 
-    private String serverID;
+    private static SimpleFreezeMain plugin;
     private static String consoleName;
 
     private boolean setupPermissions() {
@@ -89,6 +90,7 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        SimpleFreezeMain.plugin = this;
         this.initializeVariables();
         this.loadConfigs();
         this.soundManager.reset();
@@ -166,6 +168,7 @@ public class SimpleFreezeMain extends JavaPlugin {
             for (Player p : Bukkit.getServer().getOnlinePlayers()) {
                 if (this.playerManager.isFrozen(p)) {
                     FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(p);
+                    FrozenType type = frozenPlayer.getType();
                     if (frozenPlayer.getOriginalLoc() != null) {
                         p.teleport(frozenPlayer.getOriginalLoc());
                     }
@@ -178,8 +181,12 @@ public class SimpleFreezeMain extends JavaPlugin {
                     for (String line : this.getConfig().getStringList("plugin-disabled")) {
                         p.sendMessage(this.placeholders(line));
                     }
-                    if (frozenPlayer instanceof TempFrozenPlayer) {
+                    if (type == FrozenType.TEMP_FROZEN) {
                         ((TempFrozenPlayer) frozenPlayer).cancelTask();
+                    }
+
+                    if (this.guiManager.isGUIEnabled() && (type != FrozenType.FREEZEALL_FROZEN || (this.guiManager.isFreezeAllGUIEnabled() && type == FrozenType.FREEZEALL_FROZEN))) {
+                        this.guiManager.removePlayer(p.getUniqueId());
                     }
                 }
             }
@@ -211,7 +218,8 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.particleManager = new ParticleManager(this, this.playerManager);
         this.movementManager = new MovementManager(this, this.playerManager);
         this.helmetManager = new HelmetManager(this, this.playerManager, this.locationManager);
-        this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.frozenPages, this.soundManager, this.messageManager);
+        this.guiManager = new GUIManager(this, this.playerManager, this.locationManager);
+        this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.frozenPages, this.soundManager, this.messageManager, this.guiManager);
         this.sqlManager = new SQLManager(this, this.mySQL, this.freezeManager, this.playerManager);
         this.setupHookBooleans();
     }
@@ -235,7 +243,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager, this.playerManager, this.freezeManager));
+        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager, this.freezeManager, this.guiManager));
         this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.sqlManager, this.permission));
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.sqlManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager, this.sqlManager));
@@ -250,15 +258,17 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new EntityCombustListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageEntityListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageListener(this, this.playerManager), this);
-        plManager.registerEvents(new InventoryClickListener(this, this.playerManager), this);
+        plManager.registerEvents(new InventoryClickListener(this, this.playerManager, this.guiManager), this);
+        plManager.registerEvents(new InventoryCloseListener(this, this.guiManager), this);
+        plManager.registerEvents(new InventoryDragListener(this.guiManager), this);
         plManager.registerEvents(new PlayerChatListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerCommandListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerDropListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerEditBookListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerTeleportListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerInteractListener(this, this.playerManager), this);
-        plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager, this.messageManager), this);
-        plManager.registerEvents(new PlayerQuitListener(this, this.playerManager, this.messageManager), this);
+        plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager, this.messageManager, this.guiManager), this);
+        plManager.registerEvents(new PlayerQuitListener(this, this.playerManager, this.messageManager, this.locationManager, this.guiManager), this);
         plManager.registerEvents(new PlayerToggleFlightListener(this, this.playerManager), this);
         plManager.registerEvents(new ProjectileLaunchListener(this, this.playerManager), this);
         if (this.usingLiteBans()) {
@@ -275,7 +285,6 @@ public class SimpleFreezeMain extends JavaPlugin {
     public void setupMetrics() {
         Metrics metrics = new Metrics(this);
         metrics.addCustomChart(new Metrics.AdvancedPie("freeze_counts") {
-
             @Override
             public HashMap<String, Integer> getValues(HashMap<String, Integer> valueMap) {
                 valueMap.put("Freeze", statsConfig.getConfig().getInt("freeze-count"));
@@ -285,6 +294,17 @@ public class SimpleFreezeMain extends JavaPlugin {
                 return valueMap;
             }
         });
+
+        metrics.addCustomChart(new Metrics.SimplePie("mysql") {
+            @Override
+            public String getValue() {
+                return getConfig().getBoolean("mysql.enabled") ? "Enabled" : "Disabled";
+            }
+        });
+    }
+
+    public static SimpleFreezeMain getPlugin() {
+        return SimpleFreezeMain.plugin;
     }
 
     public PlayerManager getPlayerManager() {
@@ -555,6 +575,10 @@ public class SimpleFreezeMain extends JavaPlugin {
                                 messageManager.addFreezeAllPlayer(p, totalMsg);
                             }
                         }
+
+                        if (guiManager.isGUIEnabled() && guiManager.isFreezeAllGUIEnabled()) {
+                            p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
+                        }
                     }
                 }.runTaskLater(this, 10L);
 
@@ -662,6 +686,10 @@ public class SimpleFreezeMain extends JavaPlugin {
                             } else if (messageManager.getFreezeLocInterval() > 0) {
                                 messageManager.addFreezeLocPlayer(p, msg);
                             }
+                        }
+
+                        if (guiManager.isGUIEnabled()) {
+                            p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
                         }
                     }
                 }.runTaskLater(this, 10L);

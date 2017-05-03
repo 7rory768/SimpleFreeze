@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.plugins.simplefreeze.SimpleFreezeMain;
+import org.plugins.simplefreeze.util.FrozenType;
 
 import java.util.UUID;
 
@@ -28,7 +29,6 @@ public class FrozenPlayer {
         this.reason = reason;
         this.sqlFrozen = sqlFrozen;
         this.helmet = helmet;
-
     }
 
     public FrozenPlayer(Long date, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, String reason, boolean sqlFrozen) {
@@ -87,6 +87,10 @@ public class FrozenPlayer {
 
     public String getReason() {
         return this.reason;
+    }
+
+    public FrozenType getType() {
+        return FrozenType.FROZEN;
     }
 
 }

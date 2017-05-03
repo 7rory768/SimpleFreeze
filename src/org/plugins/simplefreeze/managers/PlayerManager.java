@@ -4,9 +4,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
-import org.plugins.simplefreeze.objects.FreezeAllPlayer;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.SFLocation;
+import org.plugins.simplefreeze.util.FrozenType;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,7 +32,7 @@ public class PlayerManager {
 
     public void addFrozenPlayer(UUID uuid, FrozenPlayer frozenPlayer) {
         this.frozenPlayers.put(uuid, frozenPlayer);
-        if (!(frozenPlayer instanceof FreezeAllPlayer)) {
+        if (frozenPlayer.getType() != FrozenType.FREEZEALL_FROZEN) {
             this.frozenPages.refreshString(uuid);
         }
     }
@@ -43,7 +43,7 @@ public class PlayerManager {
 
     public void removeFrozenPlayer(UUID uuid) {
         if (this.frozenPlayers.containsKey(uuid)) {
-            if (!(this.frozenPlayers.get(uuid) instanceof FreezeAllPlayer)) {
+            if (!(this.frozenPlayers.get(uuid).getType() == FrozenType.FREEZEALL_FROZEN)) {
                 this.frozenPages.removePlayer(uuid);
             }
             this.frozenPlayers.remove(uuid);
@@ -64,8 +64,6 @@ public class PlayerManager {
                 }
             }
             return true;
-        } else if (this.plugin.usingMySQL()) {
-            return this.plugin.getSQLManager().checkIfFrozen(uuid);
         }
         return false;
     }
@@ -76,7 +74,7 @@ public class PlayerManager {
 
     public boolean isFreezeAllFrozen(UUID uuid) {
         if (this.frozenPlayers.containsKey(uuid)) {
-            if (this.frozenPlayers.get(uuid) instanceof FreezeAllPlayer) {
+            if (this.frozenPlayers.get(uuid).getType() == FrozenType.FREEZEALL_FROZEN) {
                 return true;
             }
         } else if (this.plugin.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuid.toString())) {

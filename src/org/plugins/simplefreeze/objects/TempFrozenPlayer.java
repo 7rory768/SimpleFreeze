@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
+import org.plugins.simplefreeze.util.FrozenType;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,7 +17,6 @@ import java.util.UUID;
 public class TempFrozenPlayer extends FrozenPlayer {
 
     private final Long unfreezeDate;
-
     private BukkitTask task = null;
 
     public TempFrozenPlayer(Long date, Long unfreezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, String reason, boolean sqlFreeze, ItemStack helmet) {
@@ -91,12 +91,16 @@ public class TempFrozenPlayer extends FrozenPlayer {
 
     }
 
-
     public void cancelTask() {
         if (this.task != null) {
             this.task.cancel();
             this.task = null;
         }
+    }
+
+    @Override
+    public FrozenType getType() {
+        return FrozenType.TEMP_FROZEN;
     }
 
 }
