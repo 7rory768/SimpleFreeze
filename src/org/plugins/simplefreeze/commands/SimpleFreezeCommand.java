@@ -24,10 +24,10 @@ public class SimpleFreezeCommand implements CommandExecutor {
     private final SoundManager soundManager;
     private final MessageManager messageManager;
     private final MovementManager movementManager;
-    private final PlayerManager playerManager;
     private final FreezeManager freezeManager;
+    private final GUIManager guiManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager, PlayerManager playerManager, FreezeManager freezeManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager, FreezeManager freezeManager, GUIManager guiManager) {
         this.plugin = plugin;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
@@ -35,8 +35,8 @@ public class SimpleFreezeCommand implements CommandExecutor {
         this.soundManager = soundManager;
         this.messageManager = messageManager;
         this.movementManager = movementManager;
-        this.playerManager = playerManager;
         this.freezeManager = freezeManager;
+        this.guiManager = guiManager;
     }
 
     @Override
@@ -72,6 +72,12 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     // RELOAD CONFIG
                     this.plugin.reloadConfig();
                     this.plugin.updateFinalPrefixFormatting();
+
+                    // UPDATE GUI
+                    this.guiManager.setGUIEnabled(this.plugin.getConfig().getBoolean("freeze-gui.enabled"));
+                    this.guiManager.setFreezeAllGUIEnabled(this.plugin.getConfig().getBoolean("freeze-gui.enabled-on-freezeall"));
+                    this.guiManager.setAllowedToClose(this.plugin.getConfig().getBoolean("freeze-gui.allow-close"));
+                    // check if item(s) changed if so update everyones guis?
 
                     // UPDATE CONSOLE NAME
                     this.plugin.updateConsoleName();

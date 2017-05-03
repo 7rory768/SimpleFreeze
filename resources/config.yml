@@ -63,6 +63,47 @@ mysql:
 # ||              Preferences              ||
 # ||=======================================||
 
+freeze-gui:
+  enabled: true
+  # Should the gui be enabled on freezeall?
+  enabled-on-freezeall: false
+  title: '&b&lYou''re frozen'
+  rows: 3
+  # Should players be able to close the GUI?
+  # WARNING: If allow-close is false players will not be able to disconnect from the server, instead they'll have to close their client
+  allow-close: true
+  items:
+    ts-item:
+      material: BEDROCK
+      # Data is optional in this case (By default data is 0)
+      #data: 0
+      # Amount is also optional (By default amount is 1)
+      #amount: 1
+      name: '&cYou''re frozen'
+      lore:
+        - '&7You''ve been frozen for hacking'
+        - '&7Join our teamspeak server and you will talk to a staff'
+        - '&7IP: ts.teamspeak.com'
+      x-cord: 4
+      y-cord: 2
+    freeze-info-item:
+      material: WOOL
+      data: 14
+      amount: 1
+      name: '&bFreeze Info'
+      lore:
+        - '&aFrozen by: &7{FREEZER}'
+        - '&aLength: &7{TIME}'
+        - '&aLocation: &7{LOCATION}'
+        - '&aReason: &7{REASON}'
+      x-cord: 6
+      y-cord: 2
+
+# If no servers are provided these servers will be used (location can never be used)
+# Remember you can always use /freeze <player> * to freeze them on ALL servers using SimpleFreeze
+# If you don't want any default servers set this to [] (ex. default-servers: [])
+default-servers: []
+
 # Defines if a player should be teleported to the the ground at their location when frozen (prevents glitches when a player is floating while frozen (Kicked: Flying is not enabled on this server))
 # teleport-to-ground will not run if a location is specified (ex. /freeze <playername> example-location)
 teleport-to-ground: true
@@ -159,12 +200,14 @@ frozen-particles:
 # Notify staff if a player leaves during freezeall?
 leave-message-during-freezeall: false
 
-# Should logout commands be ran if somebody leaves during freezeall?
-freezeall-logout-commands: false
-
 # Commands ran when a player that is frozen leaves (If you don't want any logout-command change the below to logout-commands: [])
 logout-commands:
-  - '/broadcast &c&l{PLAYER} &cleft while frozen'
+  freeze:
+    - '/broadcast &b{PLAYER} &7left while frozen'
+  tempfreeze:
+    - '/broadcast &b{PLAYER} &7left while frozen with &b{TIME} &7left in their freeze'
+  # Don't want any commands to run? Instead of putting a list of commands put []
+  freezeall: []
 
 # If no location is given in the freeze command this location will be used, (if you want to use this remove the #)
 #default-location: example-location
