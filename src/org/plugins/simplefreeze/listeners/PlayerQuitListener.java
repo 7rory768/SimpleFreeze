@@ -35,6 +35,7 @@ public class PlayerQuitListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         Player p = e.getPlayer();
+        String uuidStr = p.getUniqueId().toString();
         if (this.playerManager.isFrozen(p)) {
 
             Location originalLocation = this.playerManager.getOriginalLocation(p.getUniqueId());
@@ -54,6 +55,11 @@ public class PlayerQuitListener implements Listener {
                 TempFrozenPlayer tempFrozenPlayer = (TempFrozenPlayer) frozenPlayer;
                 tempFrozenPlayer.cancelTask();
                 time = TimeUtil.formatTime((tempFrozenPlayer.getUnfreezeDate() - System.currentTimeMillis())/1000L);
+                if (!this.plugin.getConfig().getBoolean("count-time-offline")) {
+                    this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".last-online-time", System.currentTimeMillis());
+                    this.plugin.getPlayerConfig().saveConfig();
+                    this.plugin.getPlayerConfig().reloadConfig();
+                }
             }
 
             if (this.guiManager.isGUIEnabled() && (type != FrozenType.FREEZEALL_FROZEN || (this.guiManager.isFreezeAllGUIEnabled() && type == FrozenType.FREEZEALL_FROZEN))) {

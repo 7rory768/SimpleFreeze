@@ -218,6 +218,26 @@ force-reason: false
 # Unfreeze all players on /sf reload or server restart? (DONT TOUCH IF YOU DON'T KNOW WHAT THIS IS)
 clear-playerdata: false
 
+# Should temp-freeze time be counted when player is offline?
+count-time-offline: true
+
+# Change the words for each unit of time
+time-formats:
+  second: 'second'
+  seconds: 'seconds'
+  minute: 'minute'
+  minutes: 'minutes'
+  hour: 'hour'
+  hours: 'hours'
+  day: 'day'
+  days: 'days'
+  week: 'week'
+  weeks: 'weeks'
+  month: 'month'
+  months: 'months'
+  year: 'year'
+  years: 'years'
+
 # ||======================================||
 # ||               Blocking               ||
 # ||======================================||

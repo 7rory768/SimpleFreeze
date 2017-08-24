@@ -63,8 +63,11 @@ public class FreezeManager {
                     p.getInventory().setHelmet(null);
                 }
 
-                p.setAllowFlight(false);
-                p.setFlying(false);
+                if (this.plugin.getConfig().getBoolean("enable-fly") && !p.isOp()) {
+                    p.setAllowFlight(false);
+                    p.setFlying(false);
+                }
+
                 if (frozenPlayer.getOriginalLoc() != null && this.plugin.getConfig().getBoolean("tp-back")) {
                     p.teleport(frozenPlayer.getOriginalLoc());
                 }
@@ -80,8 +83,8 @@ public class FreezeManager {
                 this.messageManager.removePlayer(p);
 
                 if (this.guiManager.isGUIEnabled() && (type != FrozenType.FREEZEALL_FROZEN || (this.guiManager.isFreezeAllGUIEnabled() && type == FrozenType.FREEZEALL_FROZEN))) {
-                    p.closeInventory();
                     this.guiManager.removePlayer(p.getUniqueId());
+                    p.closeInventory();
                 }
 
             } else {
@@ -239,7 +242,7 @@ public class FreezeManager {
                 }
             }
 
-            if (this.guiManager.isGUIEnabled()) {
+            if (this.guiManager.isGUIEnabled() && this.guiManager.isFreezeAllGUIEnabled()) {
                 p.openInventory(this.guiManager.createPersonalGUI(p.getUniqueId()));
             }
         }
@@ -304,14 +307,13 @@ public class FreezeManager {
             if (onlineFreezee == null) {
                 this.plugin.getPlayerConfig().getConfig().set(path + "message", true);
             }
-            this.plugin.getPlayerConfig().saveConfig();
-            this.plugin.getPlayerConfig().reloadConfig();
 
             if (this.freezeAll == true) {
-                this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID, null);
-                this.plugin.getPlayerConfig().saveConfig();
-                this.plugin.getPlayerConfig().reloadConfig();
+                this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID.toString(), null);
             }
+
+            this.plugin.getPlayerConfig().saveConfig();
+            this.plugin.getPlayerConfig().reloadConfig();
 
             if (onlineFreezee != null) {
                 FrozenPlayer frozenPlayer = new FrozenPlayer(freezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, reason, serversString != null, helmet);
@@ -384,29 +386,30 @@ public class FreezeManager {
 
             long freezeDate = System.currentTimeMillis();
             long unfreezeDate = freezeDate + (time * 1000L);
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freeze-date", freezeDate);
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".unfreeze-date", unfreezeDate);
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freezer-uuid", freezerUUID == null ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".original-location", originalLoc == null ? "null" : originalLoc.toString());
-            this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".freeze-location", freezeLoc == null ? "null" : freezeLoc.toString());
+            String freezeeUUIDStr = freezeeUUID.toString();
+            String path = "players." + freezeeUUIDStr + ".";
+            this.plugin.getPlayerConfig().getConfig().set(path + "freeze-date", freezeDate);
+            this.plugin.getPlayerConfig().getConfig().set(path + "unfreeze-date", unfreezeDate);
+            this.plugin.getPlayerConfig().getConfig().set(path + "freezer-uuid", freezerUUID == null ? "null" : Bukkit.getPlayerExact(freezerName).getUniqueId().toString());
+            this.plugin.getPlayerConfig().getConfig().set(path + "original-location", originalLoc == null ? "null" : originalLoc.toString());
+            this.plugin.getPlayerConfig().getConfig().set(path + "freeze-location", freezeLoc == null ? "null" : freezeLoc.toString());
             if (reason != null) {
-                this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".reason", reason);
+                this.plugin.getPlayerConfig().getConfig().set(path + "reason", reason);
             }
             if (serversString != null) {
-                this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".servers", serversString);
+                this.plugin.getPlayerConfig().getConfig().set(path + "servers", serversString);
             }
             if (onlineFreezee == null) {
-                this.plugin.getPlayerConfig().getConfig().set("players." + freezeeUUID.toString() + ".message", true);
+                this.plugin.getPlayerConfig().getConfig().set(path + "message", true);
             }
-            this.plugin.getPlayerConfig().saveConfig();
-            this.plugin.getPlayerConfig().reloadConfig();
             final TempFrozenPlayer tempFrozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, freezeeUUID, freezerUUID, originalLoc, freezeLoc, reason, serversString != null, helmet);
 
             if (this.freezeAll == true) {
-                this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUID, null);
-                this.plugin.getPlayerConfig().saveConfig();
-                this.plugin.getPlayerConfig().reloadConfig();
+                this.plugin.getPlayerConfig().getConfig().set("freezeall-players." + freezeeUUIDStr, null);
             }
+
+            this.plugin.getPlayerConfig().saveConfig();
+            this.plugin.getPlayerConfig().reloadConfig();
 
             this.plugin.getStatsConfig().getConfig().set("temp-freeze-count", this.plugin.getStatsConfig().getConfig().getInt("temp-freeze-count", 0) + 1);
             this.plugin.getStatsConfig().saveConfig();
@@ -422,6 +425,11 @@ public class FreezeManager {
                 }
             } else {
                 this.frozenPages.refreshString(freezeeUUID);
+                if (!this.plugin.getConfig().getBoolean("count-time-offline")) {
+                    this.plugin.getPlayerConfig().getConfig().set(path + "last-online-time", freezeDate);
+                    this.plugin.getPlayerConfig().saveConfig();
+                    this.plugin.getPlayerConfig().reloadConfig();
+                }
             }
 
             new BukkitRunnable() {

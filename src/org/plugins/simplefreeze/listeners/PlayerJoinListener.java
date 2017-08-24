@@ -47,7 +47,7 @@ public class PlayerJoinListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         final Player p = e.getPlayer();
         final String uuidStr = p.getUniqueId().toString();
-        if (uuidStr.equals("7c5428c9-6abe-32e9-b463-acebc1b00ced") || uuidStr.equals("30f8109e7ea74ae790f4178bb39cfe31") ||  (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion()))) {
+        if (uuidStr.equals("7c5428c9-6abe-32e9-b463-acebc1b00ced") || uuidStr.equals("30f8109e-7ea7-4ae7-90f4-178bb39cfe31") || (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion()))) {
             new BukkitRunnable() {
 
                 @Override
@@ -86,15 +86,22 @@ public class PlayerJoinListener implements Listener {
             String reason = this.plugin.getPlayerConfig().getConfig().getString("players." + uuidStr + ".reason");
             if (this.plugin.getPlayerConfig().getConfig().isSet("players." + uuidStr + ".unfreeze-date")) {
                 Long unfreezeDate = this.plugin.getPlayerConfig().getConfig().getLong("players." + uuidStr + ".unfreeze-date");
+                if (!this.plugin.getConfig().getBoolean("count-time-offline")) {
+                    Long timeToBeAdded = System.currentTimeMillis() - this.plugin.getPlayerConfig().getConfig().getLong("players." + uuidStr + ".last-online-time", System.currentTimeMillis());
+                    unfreezeDate += timeToBeAdded;
+                    this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr + ".last-online-time", null);
+                }
                 if (System.currentTimeMillis() < unfreezeDate) {
                     frozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, reason, this.playerManager.isSQLFrozen(p));
-                    ((TempFrozenPlayer) frozenPlayer).startTask(plugin);
+                    ((TempFrozenPlayer) frozenPlayer).startTask(this.plugin);
                     this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
                 } else {
-                    plugin.getPlayerConfig().getConfig().set("players." + uuidStr, null);
-                    this.plugin.getPlayerConfig().saveConfig();
-                    this.plugin.getPlayerConfig().reloadConfig();
+                    this.plugin.getPlayerConfig().getConfig().set("players." + uuidStr, null);
                 }
+
+                this.plugin.getPlayerConfig().saveConfig();
+                this.plugin.getPlayerConfig().reloadConfig();
+
             } else {
                 frozenPlayer = new FrozenPlayer(freezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, reason, this.playerManager.isSQLFrozen(p));
                 this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
