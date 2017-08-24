@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -145,24 +146,22 @@ public class SimpleFreezeMain extends JavaPlugin {
     public void onDisable() {
         if (this.getConfig().getBoolean("clear-playerdata")) {
             Set<String> uuids = this.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false);
-            if (this.getConfig().getBoolean("clear-playerdata")) {
-                for (String uuidStr : uuids) {
-                    UUID uuid = UUID.fromString(uuidStr);
-                    if (this.usingMySQL()) {
-                        this.freezeManager.unfreeze(uuid);
-                        this.getSQLManager().removeFromFrozenList(uuid);
-                        Player onlineFreezee = Bukkit.getPlayer(uuid);
+            for (String uuidStr : uuids) {
+                UUID uuid = UUID.fromString(uuidStr);
+                this.freezeManager.unfreeze(uuid);
+                if (this.usingMySQL()) {
+                    this.sqlManager.removeFromFrozenList(uuid);
+                }
+                Player onlineFreezee = Bukkit.getPlayer(uuid);
 
-                        if (onlineFreezee != null) {
-                            for (String msg : this.getConfig().getStringList("unfreeze-message")) {
-                                onlineFreezee.sendMessage(this.placeholders(msg.replace("{UNFREEZER}", Bukkit.getConsoleSender().getName()).replace("{PLAYER}", onlineFreezee.getName())));
-                            }
-                        }
+                if (onlineFreezee != null) {
+                    for (String msg : this.getConfig().getStringList("unfreeze-message")) {
+                        onlineFreezee.sendMessage(this.placeholders(msg.replace("{UNFREEZER}", Bukkit.getConsoleSender().getName()).replace("{PLAYER}", onlineFreezee.getName())));
                     }
                 }
-                for (String line : this.getConfig().getStringList("clear-playerdata-message")) {
-                    Bukkit.getConsoleSender().sendMessage(this.placeholders(line));
-                }
+            }
+            for (String line : this.getConfig().getStringList("clear-playerdata-message")) {
+                Bukkit.getConsoleSender().sendMessage(this.placeholders(line));
             }
         } else {
             for (Player p : Bukkit.getServer().getOnlinePlayers()) {
@@ -172,21 +171,26 @@ public class SimpleFreezeMain extends JavaPlugin {
                     if (frozenPlayer.getOriginalLoc() != null) {
                         p.teleport(frozenPlayer.getOriginalLoc());
                     }
-                    if (p.isFlying()) {
+
+                    if (p.isFlying() && this.getConfig().getBoolean("enable-fly")) {
                         p.setFlying(false);
                         p.setAllowFlight(false);
                         p.teleport(this.locationManager.getGroundLocation(p.getLocation()));
                     }
+
                     p.getInventory().setHelmet(frozenPlayer.getHelmet());
+
                     for (String line : this.getConfig().getStringList("plugin-disabled")) {
                         p.sendMessage(this.placeholders(line));
                     }
+
                     if (type == FrozenType.TEMP_FROZEN) {
                         ((TempFrozenPlayer) frozenPlayer).cancelTask();
                     }
 
                     if (this.guiManager.isGUIEnabled() && (type != FrozenType.FREEZEALL_FROZEN || (this.guiManager.isFreezeAllGUIEnabled() && type == FrozenType.FREEZEALL_FROZEN))) {
                         this.guiManager.removePlayer(p.getUniqueId());
+                        p.closeInventory();
                     }
                 }
             }
@@ -298,7 +302,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         metrics.addCustomChart(new Metrics.SimplePie("mysql") {
             @Override
             public String getValue() {
-                return getConfig().getBoolean("mysql.enabled") ? "Enabled" : "Disabled";
+                return usingMySQL() ? "Enabled" : "Disabled";
             }
         });
     }
@@ -337,6 +341,10 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     public String getServerID() {
         return this.serverID;
+    }
+
+    public static FileConfiguration getStaticConfig() {
+        return SimpleFreezeMain.plugin.getConfig();
     }
 
     public void updateConsoleName() {
@@ -627,7 +635,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                         String reason = finalFrozenPlayer.getReason() == null ? finalFrozenPlayer.getReason() : getConfig().getString("default-reason");
                         if (getPlayerConfig().getConfig().getBoolean("players. " + uuidStr + ".message", false)) {
                             String path;
-                            if (finalFrozenPlayer instanceof TempFrozenPlayer) {
+                            if (finalFrozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
                                 timePlaceholder = TimeUtil.formatTime((((TempFrozenPlayer) finalFrozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L);
                                 path = "first-join.temp-frozen";
                             } else {
@@ -639,8 +647,6 @@ public class SimpleFreezeMain extends JavaPlugin {
                             }
                             p.sendMessage(placeholders(getConfig().getString(path).replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason)));
                             getPlayerConfig().getConfig().set("players." + uuidStr + ".message", null);
-                            getPlayerConfig().saveConfig();
-                            getPlayerConfig().reloadConfig();
                         } else {
                             for (String line : getConfig().getStringList("plugin-re-enabled")) {
                                 p.sendMessage(placeholders(line));
@@ -648,7 +654,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                         }
 
                         String path = "";
-                        if (finalFrozenPlayer instanceof TempFrozenPlayer) {
+                        if (finalFrozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
                             path = "temp-freeze-message";
                             if (location != null) {
                                 path = "temp-freeze-location-message";
@@ -674,7 +680,7 @@ public class SimpleFreezeMain extends JavaPlugin {
                         msg = msg.length() > 2 ? msg.substring(0, msg.length() - 1) : "";
                         msg = msg.replace("{PLAYER}", p.getName()).replace("{FREEZER}", finalFrozenPlayer.getFreezerName()).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{TIME}", timePlaceholder).replace("{REASON}", reason);
 
-                        if (finalFrozenPlayer instanceof TempFrozenPlayer) {
+                        if (finalFrozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
                             if (location == null && messageManager.getTempFreezeInterval() > 0) {
                                 messageManager.addTempFreezePlayer(p, msg);
                             } else if (messageManager.getTempFreezeLocInterval() > 0) {
@@ -691,6 +697,9 @@ public class SimpleFreezeMain extends JavaPlugin {
                         if (guiManager.isGUIEnabled()) {
                             p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
                         }
+
+                        getPlayerConfig().saveConfig();
+                        getPlayerConfig().reloadConfig();
                     }
                 }.runTaskLater(this, 10L);
             }

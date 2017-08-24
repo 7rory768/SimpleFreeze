@@ -326,19 +326,19 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     this.particleManager.setEffect(this.plugin.getConfig().getString("frozen-particles.particle", "null"));
                     this.particleManager.setRadius(this.plugin.getConfig().getInt("frozen-particles.radius", 10));
 
-                    Set<String> uuids = this.plugin.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false);
                     if (this.plugin.getConfig().getBoolean("clear-playerdata")) {
+                        Set<String> uuids = this.plugin.getPlayerConfig().getConfig().getConfigurationSection("players").getKeys(false);
                         for (String uuidStr : uuids) {
                             UUID uuid = UUID.fromString(uuidStr);
+                            this.freezeManager.unfreeze(uuid);
                             if (this.plugin.usingMySQL()) {
-                                this.freezeManager.unfreeze(uuid);
                                 this.plugin.getSQLManager().removeFromFrozenList(uuid);
-                                Player onlineFreezee = Bukkit.getPlayer(uuid);
+                            }
+                            Player onlineFreezee = Bukkit.getPlayer(uuid);
 
-                                if (onlineFreezee != null) {
-                                    for (String msg : this.plugin.getConfig().getStringList("unfreeze-message")) {
-                                        onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", sender.getName()).replace("{PLAYER}", onlineFreezee.getName())));
-                                    }
+                            if (onlineFreezee != null) {
+                                for (String msg : this.plugin.getConfig().getStringList("unfreeze-message")) {
+                                    onlineFreezee.sendMessage(this.plugin.placeholders(msg.replace("{UNFREEZER}", sender.getName()).replace("{PLAYER}", onlineFreezee.getName())));
                                 }
                             }
                         }
@@ -347,7 +347,7 @@ public class SimpleFreezeCommand implements CommandExecutor {
                         }
                     }
 
-                    for(String line : this.plugin.getConfig().getStringList("config-reloaded")) {
+                    for (String line : this.plugin.getConfig().getStringList("config-reloaded")) {
                         sender.sendMessage(this.plugin.placeholders(line));
                     }
                     return true;
