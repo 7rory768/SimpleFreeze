@@ -1,5 +1,9 @@
 package org.plugins.simplefreeze.util;
 
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.plugins.simplefreeze.SimpleFreezeMain;
+
 /**
  * Created by Rory on 11/21/2016.
  */
@@ -107,6 +111,23 @@ public class TimeUtil {
     }
 
     public static String formatTime(long seconds) {
+
+        FileConfiguration fileConfiguration = SimpleFreezeMain.getStaticConfig();
+        String yearStr = fileConfiguration.getString("time-formats.year", "year");
+        String yearsStr = fileConfiguration.getString("time-formats.years", "years");
+        String monthStr = fileConfiguration.getString("time-formats.month", "month");
+        String monthsStr = fileConfiguration.getString("time-formats.months", "months");
+        String weekStr = fileConfiguration.getString("time-formats.week", "week");
+        String weeksStr = fileConfiguration.getString("time-formats.weeks", "weeks");
+        String dayStr = fileConfiguration.getString("time-formats.day", "day");
+        String daysStr = fileConfiguration.getString("time-formats.days", "days");
+        String hourStr = fileConfiguration.getString("time-formats.hour", "hour");
+        String hoursStr = fileConfiguration.getString("time-formats.hours", "hours");
+        String minuteStr = fileConfiguration.getString("time-formats.minute", "minute");
+        String minutesStr = fileConfiguration.getString("time-formats.minutes", "minutes");
+        String secondStr = fileConfiguration.getString("time-formats.second", "second");
+        String secondsStr = fileConfiguration.getString("time-formats.seconds", "seconds");
+
         String timeText = "";
         seconds += 1L;
         if (seconds % (60 * 60 * 24 * 365) >= 0) {
@@ -114,9 +135,9 @@ public class TimeUtil {
             seconds = seconds % (60 * 60 * 24 * 365);
             if (timecalc != 0) {
                 if (timecalc == 1) {
-                    timeText += timecalc + " year,";
+                    timeText += timecalc + " " + yearStr + ", ";
                 } else {
-                    timeText += timecalc + " years,";
+                    timeText += timecalc + " " + yearsStr + ", ";
                 }
             }
         }
@@ -126,9 +147,9 @@ public class TimeUtil {
             seconds = seconds % (30 * 24 * 60 * 60);
             if (timecalc != 0) {
                 if (timecalc == 1) {
-                    timeText += " " + timecalc + " month,";
+                    timeText += timecalc + " " + monthStr + ", ";
                 } else {
-                    timeText += " " + timecalc + " months,";
+                    timeText += timecalc + " " + monthsStr + ", ";
                 }
             }
         }
@@ -138,9 +159,9 @@ public class TimeUtil {
             seconds = seconds % (60 * 60 * 24 * 7);
             if (timecalc != 0) {
                 if (timecalc == 1) {
-                    timeText += " " + timecalc + " week,";
+                    timeText += timecalc + " " + weekStr + ", ";
                 } else {
-                    timeText += " " + timecalc + " weeks,";
+                    timeText += timecalc + " " + weeksStr + ", ";
                 }
             }
         }
@@ -150,9 +171,9 @@ public class TimeUtil {
             seconds = seconds % (60 * 60 * 24);
             if (timecalc != 0) {
                 if (timecalc == 1) {
-                    timeText += " " + timecalc + " day,";
+                    timeText += timecalc + " " + dayStr + ", ";
                 } else {
-                    timeText += " " + timecalc + " days,";
+                    timeText += timecalc + " " + daysStr + ", ";
                 }
             }
         }
@@ -162,9 +183,9 @@ public class TimeUtil {
             seconds = seconds % (60 * 60);
             if (timecalc != 0) {
                 if (timecalc == 1) {
-                    timeText += " " + timecalc + " hour,";
+                    timeText += timecalc + " " + hourStr + ", ";
                 } else {
-                    timeText += " " + timecalc + " hours,";
+                    timeText += timecalc + " " + hoursStr + ", ";
                 }
             }
         }
@@ -174,31 +195,33 @@ public class TimeUtil {
             seconds = seconds % (60);
             if (timecalc != 0) {
                 if (timecalc == 1) {
-                    timeText += " " + timecalc + " minute,";
+                    timeText += timecalc + " " + minuteStr + ", ";
                 } else {
-                    timeText += " " + timecalc + " minutes,";
+                    timeText += timecalc + " " + minutesStr + ", ";
                 }
             }
         }
 
         if (seconds > 0) {
             if (seconds == 1) {
-                timeText += " " + seconds + " second,";
+                timeText += seconds + " " + secondStr + ", ";
             } else {
-                timeText += " " + seconds + " seconds,";
+                timeText += seconds + " " + secondsStr + ", ";
             }
         }
+
         if (timeText.length() > 0) {
-            timeText = timeText.substring(0, timeText.length() - 1);
+            timeText = timeText.substring(0, timeText.length() - 2);
             int lastComma = timeText.lastIndexOf(",");
             if (lastComma != -1) {
-                timeText = timeText.substring(1, lastComma) + " and " + timeText.substring(lastComma + 2, timeText.length());
+                timeText = timeText.substring(0, lastComma) + " and " + timeText.substring(lastComma + 2, timeText.length());
             } else {
-                timeText = timeText.substring(1);
+                timeText = timeText.substring(0);
             }
         } else {
-            timeText = "0 seconds";
+            timeText = "0 " + secondsStr;
         }
+        Bukkit.broadcastMessage("\"" + timeText + "\"");
         return timeText;
     }
 
