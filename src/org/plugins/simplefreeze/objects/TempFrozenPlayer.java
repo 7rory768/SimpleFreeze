@@ -31,7 +31,7 @@ public class TempFrozenPlayer extends FrozenPlayer {
     }
 
     public Long getUnfreezeDate() {
-        return unfreezeDate;
+        return this.unfreezeDate;
     }
 
     public void startTask(final SimpleFreezeMain plugin) {
