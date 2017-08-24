@@ -147,8 +147,8 @@ public class FreezeManager {
                 this.soundManager.playUnfreezeSound(p);
 
                 if (this.guiManager.isGUIEnabled() && this.guiManager.isFreezeAllGUIEnabled()) {
-                    p.closeInventory();
                     this.guiManager.removePlayer(p.getUniqueId());
+                    p.closeInventory();
                 }
 
             } else {
@@ -243,7 +243,12 @@ public class FreezeManager {
             }
 
             if (this.guiManager.isGUIEnabled() && this.guiManager.isFreezeAllGUIEnabled()) {
-                p.openInventory(this.guiManager.createPersonalGUI(p.getUniqueId()));
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
+                    }
+                }.runTaskLater(this.plugin, 5L);
             }
         }
 
@@ -324,7 +329,12 @@ public class FreezeManager {
                 }
 
                 if (this.guiManager.isGUIEnabled()) {
-                    onlineFreezee.openInventory(this.guiManager.createPersonalGUI(freezeeUUID));
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            onlineFreezee.openInventory(guiManager.createPersonalGUI(freezeeUUID));
+                        }
+                    }.runTaskLater(this.plugin, 5L);
                 }
             } else {
                 this.frozenPages.refreshString(freezeeUUID);
@@ -421,7 +431,12 @@ public class FreezeManager {
                 this.playerManager.addFrozenPlayer(freezeeUUID, tempFrozenPlayer);
 
                 if (this.guiManager.isGUIEnabled()) {
-                    onlineFreezee.openInventory(this.guiManager.createPersonalGUI(freezeeUUID));
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            onlineFreezee.openInventory(guiManager.createPersonalGUI(freezeeUUID));
+                        }
+                    }.runTaskLater(this.plugin, 5L);
                 }
             } else {
                 this.frozenPages.refreshString(freezeeUUID);
