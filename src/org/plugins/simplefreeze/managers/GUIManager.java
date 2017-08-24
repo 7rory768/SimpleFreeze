@@ -121,7 +121,7 @@ public class GUIManager {
 
     public Inventory refreshPersonalGUI(UUID uuid) {
         Inventory personalGUI = this.players.get(uuid);
-        if (this.playerManager.isFrozen(uuid)) {
+        if (this.playerManager.isFrozen(uuid) && personalGUI != null) {
             FrozenPlayer frozenPlayer = this.playerManager.getFrozenPlayer(uuid);
             String time = "Permanent";
             if (frozenPlayer instanceof TempFrozenPlayer) {

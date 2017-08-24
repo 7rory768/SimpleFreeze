@@ -1,8 +1,10 @@
 package org.plugins.simplefreeze.listeners;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.GUIManager;
@@ -24,18 +26,24 @@ public class InventoryCloseListener implements Listener {
 
     @EventHandler
     public void inventoryClose(InventoryCloseEvent e) {
-        UUID uuid = e.getPlayer().getUniqueId();
-        if (this.guiManager.isGUIEnabled() && this.guiManager.containsPlayer(uuid)) {
-            if (!this.guiManager.isAllowedToClose()) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        e.getPlayer().openInventory(guiManager.refreshPersonalGUI(uuid));
-                    }
-                }.runTaskLater(this.plugin, 0L);
+        Player p = (Player) e.getPlayer();
+        UUID uuid = p.getUniqueId();
+        if (p != null && p.isOnline()) {
+            if (this.guiManager.isGUIEnabled() && this.guiManager.containsPlayer(uuid)) {
+                if (!this.guiManager.isAllowedToClose()) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            Inventory inv = guiManager.refreshPersonalGUI(uuid);
+                            if (inv != null) {
+                                p.openInventory(inv);
+                            }
+                        }
+                    }.runTaskLater(this.plugin, 0L);
 
-            } else {
-                this.guiManager.removePlayer(uuid);
+                } else {
+                    this.guiManager.removePlayer(uuid);
+                }
             }
         }
     }
