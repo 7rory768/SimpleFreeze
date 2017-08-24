@@ -11,6 +11,7 @@ import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.objects.FreezeAllPlayer;
 import org.plugins.simplefreeze.objects.FrozenPlayer;
 import org.plugins.simplefreeze.objects.TempFrozenPlayer;
+import org.plugins.simplefreeze.util.FrozenType;
 import org.plugins.simplefreeze.util.TimeUtil;
 
 import java.util.ArrayList;
@@ -470,7 +471,7 @@ public class HelmetManager {
             @Override
             public void run() {
                 for (FrozenPlayer frozenPlayer : playerManager.getFrozenPlayers().values()) {
-                    if (frozenPlayer instanceof TempFrozenPlayer) {
+                    if (frozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
                         Bukkit.getPlayer(frozenPlayer.getFreezeeUUID()).getInventory().setHelmet(getPersonalHelmetItem(frozenPlayer));
                     }
                 }
