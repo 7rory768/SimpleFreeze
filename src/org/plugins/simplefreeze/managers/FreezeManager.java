@@ -248,7 +248,7 @@ public class FreezeManager {
                     public void run() {
                         p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
                     }
-                }.runTaskLater(this.plugin, 5L);
+                }.runTaskLater(this.plugin, 20L);
             }
         }
 
@@ -334,7 +334,7 @@ public class FreezeManager {
                         public void run() {
                             onlineFreezee.openInventory(guiManager.createPersonalGUI(freezeeUUID));
                         }
-                    }.runTaskLater(this.plugin, 5L);
+                    }.runTaskLater(this.plugin, 20);
                 }
             } else {
                 this.frozenPages.refreshString(freezeeUUID);
@@ -436,7 +436,7 @@ public class FreezeManager {
                         public void run() {
                             onlineFreezee.openInventory(guiManager.createPersonalGUI(freezeeUUID));
                         }
-                    }.runTaskLater(this.plugin, 5L);
+                    }.runTaskLater(this.plugin, 20L);
                 }
             } else {
                 this.frozenPages.refreshString(freezeeUUID);
