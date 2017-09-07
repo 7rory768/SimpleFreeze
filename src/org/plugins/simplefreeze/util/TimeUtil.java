@@ -1,6 +1,5 @@
 package org.plugins.simplefreeze.util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 
@@ -221,7 +220,6 @@ public class TimeUtil {
         } else {
             timeText = "0 " + secondsStr;
         }
-        Bukkit.broadcastMessage("\"" + timeText + "\"");
         return timeText;
     }
 
