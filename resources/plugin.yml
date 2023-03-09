@@ -1,0 +1,117 @@
+main: org.plugins.simplefreeze.SimpleFreezeMain
+name: SimpleFreeze
+version: 3.1.2
+author: 7rory768
+description: Allows you to freeze players or everyone at once
+softdepend: [Vault, EssentialsX, Essentials, LiteBans, BanManager]
+
+commands:
+  simplefreeze:
+    description: Lists commands of Simple Freeze
+    aliases: [sf, sfreeze, simplef]
+  freezeall:
+    description: Freezes all players on the server and freezes player on join while active
+  freeze:
+    description: Freezes a player
+  tempfreeze:
+    description: Temporarily freezes a player
+  unfreeze:
+    description: Unfreezes a player
+  frozen:
+    description: Lists frozen players
+    aliases: [frozenlist, freezelist, flist, fl]
+
+permissions:
+  sf.*:
+    description: Gives all SimpleFreeze permissions
+    children:
+      sf.help: true
+      sf.reload: true
+      sf.freeze: true
+      sf.tempfreeze: true
+      sf.unfreeze: true
+      sf.frozen: true
+      sf.freezeall: true
+      sf.offline: true
+      sf.sql: true
+      sf.notify.leave: true
+      sf.notify.frozen: true
+      sf.notify.unfrozen: true
+      sf.notify.update: true
+      sf.exempt.freeze: true
+      sf.exempt.tempfreeze: true
+      sf.exempt.freezeall: true
+      sf.exempt.distance: true
+      sf.locations.set: true
+      sf.locations.remove: true
+  sf.exempt.*:
+    description: Gives all exempt permissions
+    children:
+      sf.exempt.freeze: true
+      sf.exempt.tempfreeze: true
+      sf.exempt.freezeall: true
+      sf.exempt.distance: true
+  sf.exempt.freeze:
+    description: Exempt from being frozen
+    default: op
+  sf.exempt.tempfreeze:
+    description: Excempt from being temporarily frozen
+    default: op
+  sf.exempt.freezeall:
+    description: Excempt from freezeall
+    default: op
+  sf.exempt.distance:
+    description: Can freeze players from anywhere
+    default: op
+  sf.notify.*:
+    description: Gives all notify permissions
+    children:
+      sf.notify.frozen: true
+      sf.notify.unfrozen: true
+      sf.notify.leave: true
+      sf.notify.update: true
+  sf.notify.frozen:
+    description: Notifies player when someone is frozen
+    default: op
+  sf.notify.unfrozen:
+    description: Notifies player when someone is unfrozen
+    default: op
+  sf.notify.leave:
+    description: Notifies player when a frozen player leaves
+    default: op
+  sf.notify.update:
+    description: Notifies player when SimpleFreeze becomes outdated
+    default: op
+  sf.help:
+    description: Permission to use /sf (Lists all commands and usage)
+    default: true
+  sf.reload:
+    description: Reloads the configuration file
+    default: op
+  sf.offline:
+    description: Allows freezing of offline players
+    default: op
+  sf.freeze:
+    description: Freezes a player
+    default: op
+  sf.tempfreeze:
+    description: Freezes a player temporarily
+    default: op
+  sf.unfreeze:
+    description: Unfreezes a player
+    default: op
+  sf.freezeall:
+    description: Permission to use /freeze (Freezes all players on the server)
+    default: op
+  sf.frozen:
+    description: List frozen players
+    default: op
+  sf.sql:
+    description: Freeze people on other/multiple servers
+    default: op
+  sf.locations.set:
+    description: Permission to use /sf locations set (Set locations)
+    default: op
+  sf.locations.remove:
+    description: Permission to use /sf locations remove (Remove locations)
+    default: op
