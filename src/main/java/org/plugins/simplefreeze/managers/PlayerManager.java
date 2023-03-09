@@ -18,7 +18,7 @@ public class PlayerManager {
     private final SimpleFreezeMain plugin;
     private final FrozenPages frozenPages;
 
-    private HashMap<UUID, FrozenPlayer> frozenPlayers = new HashMap<UUID, FrozenPlayer>();
+    private HashMap<UUID, FrozenPlayer> frozenPlayers = new HashMap<>();
     private HashSet<UUID> fallingPlayers = new HashSet<>();
 
     public PlayerManager(SimpleFreezeMain plugin, FrozenPages frozenPages) {

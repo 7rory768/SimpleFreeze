@@ -50,7 +50,7 @@ public class UnfreezeCommand implements CommandExecutor {
             String playerName;
             UUID uuid;
             Player onlineP = Bukkit.getPlayer(args[0]);
-            OfflinePlayer offlineP = Bukkit.getOfflinePlayer(args[0]);
+            OfflinePlayer offlineP = onlineP == null ? Bukkit.getOfflinePlayer(args[0]) : null;
 
             if (onlineP != null) {
                 playerName = onlineP.getName();
@@ -72,8 +72,10 @@ public class UnfreezeCommand implements CommandExecutor {
                 return true;
             }
 
+            sender.sendMessage(playerName + " is frozen ? " + this.playerManager.isFrozen(uuid));
+
             if (!this.playerManager.isFrozen(uuid)) {
-                if (this.plugin.usingMySQL() && !this.sqlManager.checkIfFrozen(uuid)) {
+                if (!this.plugin.usingMySQL() || !this.sqlManager.checkIfFrozen(uuid)) {
                     for (String msg : this.plugin.getConfig().getStringList("not-frozen")) {
                         if (!msg.equals("")) {
                             sender.sendMessage(this.plugin.placeholders(msg.replace("{PLAYER}", playerName)));
