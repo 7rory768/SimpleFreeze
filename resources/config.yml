@@ -1,6 +1,6 @@
 # ||=======================================||
 # ||              Simple Freeze            ||
-# ||              Version 3.1.2            ||
+# ||              Version 3.2.2            ||
 # ||=======================================||
 
 # ||=======================================||
@@ -86,6 +86,17 @@ freeze-gui:
         - '&7IP: ts.teamspeak.com'
       x-cord: 4
       y-cord: 2
+      # Actions that run on click
+      gui-actions:
+        # Number of seconds before the action can be run again
+        cooldown: 3
+        # Messages freezer when player clicks item
+        message-freezer:
+          message: '&b{PLAYER} &7has clicked the teamspeak button'
+        # Run commands when player clicks item
+        run-commands:
+          commands:
+            - 'broadcast &b{PLAYER} &7who was frozen by &b{FREEZER} &7clicked teamspeak button'
     freeze-info-item:
       material: WOOL
       data: 14

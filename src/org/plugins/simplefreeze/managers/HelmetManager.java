@@ -8,9 +8,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
-import org.plugins.simplefreeze.objects.FreezeAllPlayer;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
-import org.plugins.simplefreeze.objects.TempFrozenPlayer;
+import org.plugins.simplefreeze.objects.players.FreezeAllPlayer;
+import org.plugins.simplefreeze.objects.players.FrozenPlayer;
+import org.plugins.simplefreeze.objects.players.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.FrozenType;
 import org.plugins.simplefreeze.util.TimeUtil;
 
@@ -50,84 +50,12 @@ public class HelmetManager {
     }
 
     private void setupHelmetItems() {
-        this.setupFrozenHelmet();
-        this.setupFrozenLocationHelmet();
-        this.setupTempFrozenHelmet();
-        this.setupTempFrozenLocationHelmet();
-        this.setupFreezeAllHelmet();
-        this.setupFreezeAllLocationHelmet();
-    }
-
-    public void setupFrozenHelmet() {
-        ItemStack helmetItem = null;
-        if (this.plugin.getConfig().isSet("head-item.frozen.material")) {
-            short data = this.plugin.getConfig().isSet("head-item.frozen.data") ? (short) this.plugin.getConfig().getInt("head-item.frozen.data") : 0;
-            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.frozen.material")), 1, data);
-            ItemMeta helmetMeta = helmetItem.getItemMeta();
-            if (this.plugin.getConfig().isSet("head-item.frozen.name")) {
-                // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.frozen.name")));
-            }
-            if (this.plugin.getConfig().isSet("head-item.frozen.lore")) {
-                List<String> lore = new ArrayList<String>();
-                for (String loreLine : this.plugin.getConfig().getStringList("head-item.frozen.lore")) {
-                    lore.add(this.plugin.placeholders(loreLine));
-                }
-                helmetMeta.setLore(lore);
-            }
-            helmetItem.setItemMeta(helmetMeta);
-        }
-        this.frozenHelmet = helmetItem;
-    }
-
-    public void setupFrozenLocationHelmet() {
-        ItemStack helmetItem = null;
-        if (this.plugin.getConfig().isSet("head-item.frozen-location.material")) {
-            short data = this.plugin.getConfig().isSet("head-item.frozen-location.data") ? (short) this.plugin.getConfig().getInt("head-item.frozen-location.data") : 0;
-            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.frozen-location.material")), 1, data);
-            ItemMeta helmetMeta = helmetItem.getItemMeta();
-            if (this.plugin.getConfig().isSet("head-item.frozen-location.name")) {
-                // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.frozen-location.name")));
-            }
-            if (this.plugin.getConfig().isSet("head-item.frozen-location.lore")) {
-                List<String> lore = new ArrayList<String>();
-                for (String loreLine : this.plugin.getConfig().getStringList("head-item.frozen-location.lore")) {
-                    lore.add(this.plugin.placeholders(loreLine));
-                }
-                helmetMeta.setLore(lore);
-            }
-            helmetItem.setItemMeta(helmetMeta);
-        }
-        this.frozenLocationHelmet = helmetItem;
-        if (helmetItem == null) {
-            this.frozenLocationHelmet = this.frozenHelmet;
-        }
-    }
-
-    public void setupTempFrozenHelmet() {
-        ItemStack helmetItem = null;
-        if (this.plugin.getConfig().isSet("head-item.temp-frozen.material")) {
-            short data = this.plugin.getConfig().isSet("head-item.temp-frozen.data") ? (short) this.plugin.getConfig().getInt("head-item.temp-frozen.data") : 0;
-            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.temp-frozen.material")), 1, data);
-            ItemMeta helmetMeta = helmetItem.getItemMeta();
-            if (this.plugin.getConfig().isSet("head-item.temp-frozen.name")) {
-                // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.temp-frozen.name")));
-            }
-            if (this.plugin.getConfig().isSet("head-item.temp-frozen.lore")) {
-                List<String> lore = new ArrayList<String>();
-                for (String loreLine : this.plugin.getConfig().getStringList("head-item.temp-frozen.lore")) {
-                    lore.add(this.plugin.placeholders(loreLine));
-                }
-                helmetMeta.setLore(lore);
-            }
-            helmetItem.setItemMeta(helmetMeta);
-        }
-        this.tempFrozenHelmet = helmetItem;
-        if (helmetItem == null) {
-            this.tempFrozenHelmet = this.frozenHelmet;
-        }
+        this.frozenHelmet = this.setupHelmet("head-item.frozen.");
+        this.frozenLocationHelmet = this.setupHelmet("head-item.frozen-location.");
+        this.tempFrozenHelmet = this.setupHelmet("head-item.temp-frozen.");
+        this.tempFrozenLocationHelmet = this.setupHelmet("head-item.temp-frozen-location.");
+        this.freezeAllHelmet = this.setupHelmet("head-item.freeze-all.");
+        this.freezeAllLocationHelmet = this.setupHelmet("head-item.freeze-all-location.");
 
         if (this.tempFrozenHelmet != null && !this.helmetTaskIsRunning()) {
             if (this.tempFrozenHelmet.getItemMeta().hasDisplayName()) {
@@ -141,31 +69,7 @@ public class HelmetManager {
                 }
             }
         }
-    }
 
-    public void setupTempFrozenLocationHelmet() {
-        ItemStack helmetItem = null;
-        if (this.plugin.getConfig().isSet("head-item.temp-frozen-location.material")) {
-            short data = this.plugin.getConfig().isSet("head-item.temp-frozen-location.data") ? (short) this.plugin.getConfig().getInt("head-item.temp-frozen-location.data") : 0;
-            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.temp-frozen-location.material")), 1, data);
-            ItemMeta helmetMeta = helmetItem.getItemMeta();
-            if (this.plugin.getConfig().isSet("head-item.temp-frozen-location.name")) {
-                // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.temp-frozen-location.name")));
-            }
-            if (this.plugin.getConfig().isSet("head-item.temp-frozen-location.lore")) {
-                List<String> lore = new ArrayList<String>();
-                for (String loreLine : this.plugin.getConfig().getStringList("head-item.temp-frozen-location.lore")) {
-                    lore.add(this.plugin.placeholders(loreLine));
-                }
-                helmetMeta.setLore(lore);
-            }
-            helmetItem.setItemMeta(helmetMeta);
-        }
-        this.tempFrozenLocationHelmet = helmetItem;
-        if (helmetItem == null) {
-            this.tempFrozenLocationHelmet = this.frozenHelmet;
-        }
         if (this.tempFrozenLocationHelmet != null && !this.helmetTaskIsRunning()) {
             if (this.tempFrozenLocationHelmet.getItemMeta().hasDisplayName()) {
                 if (this.tempFrozenLocationHelmet.getItemMeta().getDisplayName().contains("{TIME}")) {
@@ -180,54 +84,29 @@ public class HelmetManager {
         }
     }
 
-    public void setupFreezeAllHelmet() {
+    public ItemStack setupHelmet(String path) {
         ItemStack helmetItem = null;
-        if (this.plugin.getConfig().isSet("head-item.freeze-all.material")) {
-            short data = this.plugin.getConfig().isSet("head-item.data") ? (short) this.plugin.getConfig().getInt("head-item.freeze-all.data") : 0;
-            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.freeze-all.material")), 1, data);
+        if (this.plugin.getConfig().isSet(path + "material")) {
+            short data = this.plugin.getConfig().isSet(path + "data") ? (short) this.plugin.getConfig().getInt(path + "data") : 0;
+            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString(path + "material")), 1, data);
             ItemMeta helmetMeta = helmetItem.getItemMeta();
-            if (this.plugin.getConfig().isSet("head-item.freeze-all.name")) {
+            if (this.plugin.getConfig().isSet(path + "name")) {
                 // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.freeze-all.name")));
+                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.frozen.name")));
             }
-            if (this.plugin.getConfig().isSet("head-item.freeze-all.lore")) {
+            if (this.plugin.getConfig().isSet(path + "lore")) {
                 List<String> lore = new ArrayList<String>();
-                for (String loreLine : this.plugin.getConfig().getStringList("head-item.freeze-all.lore")) {
+                for (String loreLine : this.plugin.getConfig().getStringList(path + "lore")) {
                     lore.add(this.plugin.placeholders(loreLine));
                 }
                 helmetMeta.setLore(lore);
             }
             helmetItem.setItemMeta(helmetMeta);
         }
-        this.freezeAllHelmet = helmetItem;
         if (helmetItem == null) {
-            this.freezeAllHelmet = this.frozenHelmet;
+            return this.frozenHelmet;
         }
-    }
-
-    public void setupFreezeAllLocationHelmet() {
-        ItemStack helmetItem = null;
-        if (this.plugin.getConfig().isSet("head-item.freeze-all-location.material")) {
-            short data = this.plugin.getConfig().isSet("head-item.freeze-all-location.data") ? (short) this.plugin.getConfig().getInt("head-item.freeze-all-location.data") : 0;
-            helmetItem = new ItemStack(Material.getMaterial(this.plugin.getConfig().getString("head-item.freeze-all-location.material")), 1, data);
-            ItemMeta helmetMeta = helmetItem.getItemMeta();
-            if (this.plugin.getConfig().isSet("head-item.freeze-all-location.name")) {
-                // Also allow enchants and itemflags
-                helmetMeta.setDisplayName(this.plugin.placeholders(this.plugin.getConfig().getString("head-item.freeze-all-location.name")));
-            }
-            if (this.plugin.getConfig().isSet("head-item.freeze-all-location.lore")) {
-                List<String> lore = new ArrayList<String>();
-                for (String loreLine : this.plugin.getConfig().getStringList("head-item.freeze-all-location.lore")) {
-                    lore.add(this.plugin.placeholders(loreLine));
-                }
-                helmetMeta.setLore(lore);
-            }
-            helmetItem.setItemMeta(helmetMeta);
-        }
-        this.freezeAllLocationHelmet = helmetItem;
-        if (helmetItem == null) {
-            this.freezeAllLocationHelmet = this.frozenHelmet;
-        }
+        return helmetItem;
     }
 
     public void updateFrozenHelmet(ItemStack newFrozenHelmet) {

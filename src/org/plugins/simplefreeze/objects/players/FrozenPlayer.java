@@ -1,4 +1,4 @@
-package org.plugins.simplefreeze.objects;
+package org.plugins.simplefreeze.objects.players;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.util.FrozenType;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 public class FrozenPlayer {
@@ -19,6 +20,7 @@ public class FrozenPlayer {
     private ItemStack helmet = null;
     private Location originalLoc = null;
     private Location freezeLoc = null;
+    private HashMap<Integer, Long> guiCooldowns = new HashMap<>();
 
     public FrozenPlayer(Long freezeDate, UUID freezeeUUID, UUID freezerUUID, Location originalLoc, Location freezeLoc, String reason, boolean sqlFrozen, ItemStack helmet) {
         this.freezeDate = freezeDate;
@@ -91,6 +93,17 @@ public class FrozenPlayer {
 
     public FrozenType getType() {
         return FrozenType.FROZEN;
+    }
+
+    public void refreshGUICooldown(int slot) {
+        if (this.guiCooldowns.containsKey(slot)) {
+            this.guiCooldowns.remove(slot);
+        }
+        this.guiCooldowns.put(slot, System.currentTimeMillis());
+    }
+
+    public Long getGUICooldown(int slot) {
+        return this.guiCooldowns.containsKey(slot) ? this.guiCooldowns.get(slot) : -1L;
     }
 
 }

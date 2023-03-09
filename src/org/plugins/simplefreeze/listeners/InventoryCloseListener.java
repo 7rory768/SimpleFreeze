@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.plugins.simplefreeze.SimpleFreezeMain;
@@ -27,6 +28,7 @@ public class InventoryCloseListener implements Listener {
     @EventHandler
     public void inventoryClose(InventoryCloseEvent e) {
         Player p = (Player) e.getPlayer();
+        Inventory inventory = e.getInventory();
         UUID uuid = p.getUniqueId();
         if (p != null && p.isOnline()) {
             if (this.guiManager.isGUIEnabled() && this.guiManager.containsPlayer(uuid)) {
@@ -34,12 +36,11 @@ public class InventoryCloseListener implements Listener {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            Inventory inv = guiManager.refreshPersonalGUI(uuid);
-                            if (inv != null) {
-                                p.openInventory(inv);
+                            if (inventory != null && inventory.getType() != InventoryType.CRAFTING) {
+                                p.openInventory(inventory);
                             }
                         }
-                    }.runTaskLater(this.plugin, 0L);
+                    }.runTaskLater(this.plugin, 1L);
 
                 } else {
                     this.guiManager.removePlayer(uuid);

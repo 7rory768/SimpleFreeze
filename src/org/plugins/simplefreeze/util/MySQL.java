@@ -12,9 +12,11 @@ public class MySQL {
 
     private HikariDataSource hikari;
 
-    public MySQL(SimpleFreezeMain plugin) {
+    public MySQL(SimpleFreezeMain plugin, boolean enabled) {
         this.plugin = plugin;
-        this.connectToDatabase();
+        if (enabled) {
+            this.connectToDatabase();
+        }
     }
 
     public void connectToDatabase() {
@@ -47,6 +49,8 @@ public class MySQL {
     }
 
     public void closeHikari() {
-        this.hikari.close();
+        if (this.hikari != null) {
+            this.hikari.close();
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.plugins.simplefreeze.objects;
+package org.plugins.simplefreeze.objects.players;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
+import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.util.FrozenType;
 
 import java.util.List;

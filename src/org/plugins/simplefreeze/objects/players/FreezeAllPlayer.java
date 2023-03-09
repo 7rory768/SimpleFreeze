@@ -1,4 +1,4 @@
-package org.plugins.simplefreeze.objects;
+package org.plugins.simplefreeze.objects.players;
 
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;

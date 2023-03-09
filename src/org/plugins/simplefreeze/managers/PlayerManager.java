@@ -4,7 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.plugins.simplefreeze.SimpleFreezeMain;
 import org.plugins.simplefreeze.cache.FrozenPages;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
+import org.plugins.simplefreeze.objects.players.FrozenPlayer;
 import org.plugins.simplefreeze.objects.SFLocation;
 import org.plugins.simplefreeze.util.FrozenType;
 

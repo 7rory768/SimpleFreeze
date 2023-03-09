@@ -4,7 +4,6 @@ import net.milkbowl.vault.permission.Permission;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -18,10 +17,8 @@ import org.plugins.simplefreeze.hooks.EssentialsHook;
 import org.plugins.simplefreeze.hooks.LiteBansHook;
 import org.plugins.simplefreeze.listeners.*;
 import org.plugins.simplefreeze.managers.*;
-import org.plugins.simplefreeze.objects.FreezeAllPlayer;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
-import org.plugins.simplefreeze.objects.SFLocation;
-import org.plugins.simplefreeze.objects.TempFrozenPlayer;
+import org.plugins.simplefreeze.objects.players.FrozenPlayer;
+import org.plugins.simplefreeze.objects.players.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.*;
 
 import java.util.*;
@@ -77,6 +74,8 @@ public class SimpleFreezeMain extends JavaPlugin {
     private MessageManager messageManager;
     private MovementManager movementManager;
     private GUIManager guiManager;
+    private GUIActionManager guiActionManager;
+    private UpdateNotifier updateNotifier;
 
     private static SimpleFreezeMain plugin;
     private static String consoleName;
@@ -93,6 +92,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     public void onEnable() {
         SimpleFreezeMain.plugin = this;
         this.initializeVariables();
+        this.updateNotifier.checkForUpdate();
         this.loadConfigs();
         this.soundManager.reset();
         this.updateConsoleName();
@@ -131,7 +131,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         for (String uuidStr : this.getConfig().getStringList("falling-players")) {
             this.playerManager.addFallingPlayer(UUID.fromString(uuidStr));
         }
-        this.refreezePlayers();
+        this.freezeManager.refreezePlayers();
 
         new BukkitRunnable() {
 
@@ -209,7 +209,8 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     private void initializeVariables() {
         this.serverID = this.getConfig().getString("server-id");
-        this.mySQL = new MySQL(this);
+        this.mySQL = new MySQL(this, this.getConfig().getBoolean("mysql.enabled"));
+        this.updateNotifier = new UpdateNotifier(this);
         this.playersConfig = new PlayersConfig(this);
         this.statsConfig = new StatsConfig(this);
         this.locationsConfig = new LocationsConfig(this);
@@ -223,8 +224,9 @@ public class SimpleFreezeMain extends JavaPlugin {
         this.movementManager = new MovementManager(this, this.playerManager);
         this.helmetManager = new HelmetManager(this, this.playerManager, this.locationManager);
         this.guiManager = new GUIManager(this, this.playerManager, this.locationManager);
-        this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.frozenPages, this.soundManager, this.messageManager, this.guiManager);
+        this.freezeManager = new FreezeManager(this, this.playerManager, this.helmetManager, this.locationManager, this.frozenPages, this.soundManager, this.messageManager, this.guiManager, this.updateNotifier);
         this.sqlManager = new SQLManager(this, this.mySQL, this.freezeManager, this.playerManager);
+        this.guiActionManager = new GUIActionManager(this);
         this.setupHookBooleans();
     }
 
@@ -247,7 +249,7 @@ public class SimpleFreezeMain extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager, this.freezeManager, this.guiManager));
+        this.getCommand("simplefreeze").setExecutor(new SimpleFreezeCommand(this, this.helmetManager, this.frozenPages, this.particleManager, this.soundManager, this.messageManager, this.movementManager, this.freezeManager, this.guiManager, this.guiActionManager));
         this.getCommand("freeze").setExecutor(new FreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.sqlManager, this.permission));
         this.getCommand("tempfreeze").setExecutor(new TempFreezeCommand(this, this.playerManager, this.freezeManager, this.locationManager, this.sqlManager, this.permission));
         this.getCommand("unfreeze").setExecutor(new UnfreezeCommand(this, this.playerManager, this.freezeManager, this.sqlManager));
@@ -262,7 +264,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new EntityCombustListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageEntityListener(this, this.playerManager), this);
         plManager.registerEvents(new EntityDamageListener(this, this.playerManager), this);
-        plManager.registerEvents(new InventoryClickListener(this, this.playerManager, this.guiManager), this);
+        plManager.registerEvents(new InventoryClickListener(this, this.playerManager, this.guiManager, this.guiActionManager), this);
         plManager.registerEvents(new InventoryCloseListener(this, this.guiManager), this);
         plManager.registerEvents(new InventoryDragListener(this.guiManager), this);
         plManager.registerEvents(new PlayerChatListener(this, this.playerManager), this);
@@ -271,7 +273,7 @@ public class SimpleFreezeMain extends JavaPlugin {
         plManager.registerEvents(new PlayerEditBookListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerTeleportListener(this, this.playerManager), this);
         plManager.registerEvents(new PlayerInteractListener(this, this.playerManager), this);
-        plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager, this.messageManager, this.guiManager), this);
+        plManager.registerEvents(new PlayerJoinListener(this, this.freezeManager, this.playerManager, this.locationManager, this.helmetManager, this.dataConverter, this.soundManager, this.messageManager, this.guiManager, this.updateNotifier), this);
         plManager.registerEvents(new PlayerQuitListener(this, this.playerManager, this.messageManager, this.locationManager, this.guiManager), this);
         plManager.registerEvents(new PlayerToggleFlightListener(this, this.playerManager), this);
         plManager.registerEvents(new ProjectileLaunchListener(this, this.playerManager), this);
@@ -337,6 +339,10 @@ public class SimpleFreezeMain extends JavaPlugin {
 
     public SQLManager getSQLManager() {
         return this.sqlManager;
+    }
+
+    public DataConverter getDataConverter() {
+        return this.dataConverter;
     }
 
     public String getServerID() {
@@ -418,292 +424,6 @@ public class SimpleFreezeMain extends JavaPlugin {
         }
         this.finalPrefixFormatting = color + format;
         return color + format;
-    }
-
-    public void refreezePlayers() {
-        for (final Player p : Bukkit.getServer().getOnlinePlayers()) {
-            if (p.hasPermission("sf.notify.update") && !UpdateNotifier.getLatestVersion().equals(UpdateNotifier.getCurrentVersion())) {
-                new BukkitRunnable() {
-
-                    @Override
-                    public void run() {
-                        p.sendMessage(placeholders("{PREFIX}You are still running version &b" + UpdateNotifier.getCurrentVersion() + "\n{PREFIX}Latest version: &b" + UpdateNotifier.getLatestVersion()));
-
-                    }
-
-                }.runTaskLater(this, 25L);
-            }
-
-            final String uuidStr = p.getUniqueId().toString();
-            FrozenPlayer frozenPlayer = null;
-
-            if (DataConverter.hasDataToConvert(p)) {
-                frozenPlayer = this.dataConverter.convertData(p);
-                if (frozenPlayer != null) {
-                    this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
-                }
-            } else if (this.getPlayerConfig().getConfig().isSet("players." + uuidStr)) {
-                Long freezeDate = this.getPlayerConfig().getConfig().getLong("players." + uuidStr + ".freeze-date");
-                UUID freezerUUID = this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freezer-uuid").equals("null") ? null : UUID.fromString(this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freezer-uuid"));
-                Location freezeLocation = SFLocation.fromString(this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".freeze-location"));
-                if (freezeLocation == null && this.getConfig().getBoolean("teleport-to-ground")) {
-                    freezeLocation = new SFLocation(this.locationManager.getGroundLocation(p.getLocation()));
-                } else if (freezeLocation == null) {
-                    freezeLocation = new SFLocation(p.getLocation().clone());
-                }
-                Location originalLocation = SFLocation.fromString(this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".original-location"));
-                if (freezeLocation.equals(originalLocation)) {
-                    freezeLocation = p.getLocation();
-                    originalLocation = p.getLocation();
-                } else {
-                    originalLocation = p.getLocation();
-                }
-                String reason = this.getPlayerConfig().getConfig().getString("players." + uuidStr + ".reason");
-                if (this.getPlayerConfig().getConfig().isSet("players." + uuidStr + ".unfreeze-date")) {
-                    Long unfreezeDate = this.getPlayerConfig().getConfig().getLong("players." + uuidStr + ".unfreeze-date");
-                    if (System.currentTimeMillis() < unfreezeDate) {
-                        frozenPlayer = new TempFrozenPlayer(freezeDate, unfreezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, reason, this.playerManager.isSQLFrozen(p));
-                        ((TempFrozenPlayer) frozenPlayer).startTask(this);
-                        this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
-                    } else {
-                        getPlayerConfig().getConfig().set("players." + uuidStr, null);
-                        this.getPlayerConfig().saveConfig();
-                        this.getPlayerConfig().reloadConfig();
-                    }
-                } else {
-                    frozenPlayer = new FrozenPlayer(freezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, reason, this.playerManager.isSQLFrozen(p));
-                    this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
-                }
-            }
-
-            if (frozenPlayer == null && this.freezeManager.freezeAllActive() && !(p.hasPermission("sf.exempt.*") || p.hasPermission("sf.exempt.freezeall"))) {
-                UUID freezerUUID = this.getPlayerConfig().getConfig().getString("freezeall-info.freezer").equals("null") ? null : UUID.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.freezer"));
-
-                SFLocation freezeLocation = this.getPlayerConfig().getConfig().getString("freezeall-info.location").equals("null") ? null : SFLocation.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.location"));
-                if (freezeLocation == null && this.getPlayerConfig().getConfig().isSet("freezeall-info.players." + uuidStr + ".freeze-location")) {
-                    freezeLocation = this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null") ? null : SFLocation.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location"));
-                } else if (freezeLocation == null) {
-                    if (this.getConfig().getBoolean("teleport-to-ground")) {
-                        freezeLocation = new SFLocation(this.locationManager.getGroundLocation(p.getLocation()));
-                    } else {
-                        freezeLocation = new SFLocation(new SFLocation(p.getLocation().clone()));
-                        if (this.getConfig().getBoolean("enable-fly")) {
-                            p.setAllowFlight(true);
-                            p.setFlying(true);
-                        }
-                    }
-                }
-                Location originalLocation = SFLocation.fromString(this.getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".original-location"));
-                if (freezeLocation.equals(originalLocation)) {
-                    freezeLocation = new SFLocation(p.getLocation());
-                    originalLocation = p.getLocation();
-                } else {
-                    originalLocation = p.getLocation();
-                }
-
-                Long freezeDate = this.getPlayerConfig().getConfig().getLong("freezeall-info.date");
-                String reason = this.getPlayerConfig().getConfig().getString("freezeall-info.reason");
-
-                frozenPlayer = new FreezeAllPlayer(freezeDate, p.getUniqueId(), freezerUUID, originalLocation, freezeLocation, reason);
-                this.playerManager.addFrozenPlayer(p.getUniqueId(), frozenPlayer);
-
-                this.getPlayerConfig().getConfig().set("freezeall-info.players." + uuidStr + ".original-location", new SFLocation(frozenPlayer.getOriginalLoc()).toString());
-                this.getPlayerConfig().getConfig().set("freezeall-info.players." + uuidStr + ".freeze-location", freezeLocation == null ? "null" : freezeLocation.toString());
-                this.getPlayerConfig().saveConfig();
-                this.getPlayerConfig().reloadConfig();
-
-                final FrozenPlayer finalFreezeAllPlayer = frozenPlayer;
-
-                new BukkitRunnable() {
-
-                    @Override
-                    public void run() {
-                        finalFreezeAllPlayer.setHelmet(p.getInventory().getHelmet());
-                        p.getInventory().setHelmet(helmetManager.getPersonalHelmetItem(finalFreezeAllPlayer));
-
-                        if (finalFreezeAllPlayer.getFreezeLoc() == null) {
-                            SFLocation originalLoc = new SFLocation(finalFreezeAllPlayer.getOriginalLoc());
-                            Location freezeLoc;
-                            if (getConfig().getBoolean("teleport-to-ground")) {
-                                freezeLoc = locationManager.getGroundLocation(originalLoc);
-                            } else {
-                                freezeLoc = new SFLocation(originalLoc.clone());
-                            }
-                            finalFreezeAllPlayer.setFreezeLoc(freezeLoc);
-
-                            if (getPlayerConfig().getConfig().getString("freezeall-info.players." + uuidStr + ".freeze-location").equals("null")) {
-                                getPlayerConfig().getConfig().set("freezeall-info.players." + uuidStr + ".freeze-location", new SFLocation(freezeLoc).toString());
-                            }
-                        }
-
-                        if (getConfig().getBoolean("enable-fly")) {
-                            p.setAllowFlight(true);
-                            p.setFlying(true);
-                        }
-                        p.teleport(finalFreezeAllPlayer.getFreezeLoc());
-
-                        soundManager.playFreezeSound(p);
-
-                        for (String line : getConfig().getStringList("plugin-re-enabled")) {
-                            p.sendMessage(placeholders(line));
-                        }
-
-                        String totalMsg = "";
-                        String location = locationManager.getLocationName(finalFreezeAllPlayer.getFreezeLoc());
-                        String locPlaceholder = locationManager.getLocationPlaceholder(location);
-                        if (location != null) {
-                            for (String msg : getConfig().getStringList("freezeall-location-message")) {
-                                if (msg.equals("")) {
-                                    msg = " ";
-                                }
-                                totalMsg += msg + "\n";
-                            }
-                            if (totalMsg.length() > 0) {
-                                totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
-                            }
-                            totalMsg = placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
-                            p.sendMessage(totalMsg);
-                            if (messageManager.getFreezeAllLocInterval() > 0) {
-                                messageManager.addFreezeAllLocPlayer(p, totalMsg);
-                            }
-                        } else {
-                            for (String msg : getConfig().getStringList("freezeall-message")) {
-                                if (msg.equals("")) {
-                                    msg = " ";
-                                }
-                                totalMsg += msg + "\n";
-                            }
-                            if (totalMsg.length() > 0) {
-                                totalMsg = totalMsg.substring(0, totalMsg.length() - 2);
-                            }
-                            totalMsg = placeholders(totalMsg.replace("{LOCATION}", locPlaceholder).replace("{FREEZER}", finalFreezeAllPlayer.getFreezerName()).replace("{REASON}", reason));
-                            p.sendMessage(totalMsg);
-
-                            if (messageManager.getFreezeAllInterval() > 0) {
-                                messageManager.addFreezeAllPlayer(p, totalMsg);
-                            }
-                        }
-
-                        if (guiManager.isGUIEnabled() && guiManager.isFreezeAllGUIEnabled()) {
-                            p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
-                        }
-                    }
-                }.runTaskLater(this, 10L);
-
-            } else if (frozenPlayer != null) {
-                final FrozenPlayer finalFrozenPlayer = frozenPlayer;
-                new BukkitRunnable() {
-
-                    @Override
-                    public void run() {
-                        finalFrozenPlayer.setHelmet(p.getInventory().getHelmet());
-                        p.getInventory().setHelmet(helmetManager.getPersonalHelmetItem(finalFrozenPlayer));
-
-                        if (getPlayerConfig().getConfig().getString("players." + uuidStr + ".original-location").equals("null")) {
-                            finalFrozenPlayer.setOriginalLoc(p.getLocation());
-                            getPlayerConfig().getConfig().set("players." + uuidStr + ".original-location", new SFLocation(p.getLocation()).toString());
-                        }
-
-                        if (finalFrozenPlayer.getFreezeLoc() == null) {
-                            SFLocation originalLoc = new SFLocation(finalFrozenPlayer.getOriginalLoc());
-                            Location freezeLoc;
-                            if (getConfig().getBoolean("teleport-to-ground")) {
-                                freezeLoc = locationManager.getGroundLocation(originalLoc);
-                            } else {
-                                freezeLoc = new SFLocation(originalLoc.clone());
-                            }
-                            finalFrozenPlayer.setFreezeLoc(freezeLoc);
-
-                            if (getPlayerConfig().getConfig().getString("players." + uuidStr + ".freeze-location").equals("null")) {
-                                getPlayerConfig().getConfig().set("players." + uuidStr + ".freeze-location", new SFLocation(freezeLoc).toString());
-                            }
-                        }
-
-                        if (getConfig().getBoolean("enable-fly")) {
-                            p.setAllowFlight(true);
-                            p.setFlying(true);
-                        }
-                        p.teleport(finalFrozenPlayer.getFreezeLoc());
-
-                        soundManager.playFreezeSound(p);
-
-                        String freezerName = finalFrozenPlayer.getFreezerName();
-                        String timePlaceholder = "Permanent";
-                        String serversPlaceholder = "";
-                        String location = locationManager.getLocationName(finalFrozenPlayer.getFreezeLoc());
-                        String locationPlaceholder = locationManager.getLocationPlaceholder(location);
-                        String reason = finalFrozenPlayer.getReason() == null ? finalFrozenPlayer.getReason() : getConfig().getString("default-reason");
-                        if (getPlayerConfig().getConfig().getBoolean("players. " + uuidStr + ".message", false)) {
-                            String path;
-                            if (finalFrozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
-                                timePlaceholder = TimeUtil.formatTime((((TempFrozenPlayer) finalFrozenPlayer).getUnfreezeDate() - System.currentTimeMillis()) / 1000L);
-                                path = "first-join.temp-frozen";
-                            } else {
-                                path = "first-join.frozen";
-                            }
-
-                            if (location != null) {
-                                path += "-location";
-                            }
-                            p.sendMessage(placeholders(getConfig().getString(path).replace("{PLAYER}", p.getName()).replace("{FREEZER}", freezerName).replace("{TIME}", timePlaceholder).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{REASON}", reason)));
-                            getPlayerConfig().getConfig().set("players." + uuidStr + ".message", null);
-                        } else {
-                            for (String line : getConfig().getStringList("plugin-re-enabled")) {
-                                p.sendMessage(placeholders(line));
-                            }
-                        }
-
-                        String path = "";
-                        if (finalFrozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
-                            path = "temp-freeze-message";
-                            if (location != null) {
-                                path = "temp-freeze-location-message";
-                            }
-                        } else {
-                            path = "freeze-message";
-                            if (location != null) {
-                                path = "freeze-location-message";
-                            }
-                        }
-
-                        if (!serversPlaceholder.equals("")) {
-                            path = "sql-" + path;
-                        }
-
-                        String msg = "";
-                        for (String line : getConfig().getStringList(path)) {
-                            if (line.equals("")) {
-                                line = " ";
-                            }
-                            msg += line + "\n";
-                        }
-                        msg = msg.length() > 2 ? msg.substring(0, msg.length() - 1) : "";
-                        msg = msg.replace("{PLAYER}", p.getName()).replace("{FREEZER}", finalFrozenPlayer.getFreezerName()).replace("{LOCATION}", locationPlaceholder).replace("{SERVERS}", serversPlaceholder).replace("{TIME}", timePlaceholder).replace("{REASON}", reason);
-
-                        if (finalFrozenPlayer.getType() == FrozenType.TEMP_FROZEN) {
-                            if (location == null && messageManager.getTempFreezeInterval() > 0) {
-                                messageManager.addTempFreezePlayer(p, msg);
-                            } else if (messageManager.getTempFreezeLocInterval() > 0) {
-                                messageManager.addTempFreezeLocPlayer(p, msg);
-                            }
-                        } else {
-                            if (location == null && messageManager.getFreezeInterval() > 0) {
-                                messageManager.addFreezePlayer(p, msg);
-                            } else if (messageManager.getFreezeLocInterval() > 0) {
-                                messageManager.addFreezeLocPlayer(p, msg);
-                            }
-                        }
-
-                        if (guiManager.isGUIEnabled()) {
-                            p.openInventory(guiManager.createPersonalGUI(p.getUniqueId()));
-                        }
-
-                        getPlayerConfig().saveConfig();
-                        getPlayerConfig().reloadConfig();
-                    }
-                }.runTaskLater(this, 10L);
-            }
-        }
     }
 
 }

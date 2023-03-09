@@ -8,8 +8,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
-import org.plugins.simplefreeze.objects.TempFrozenPlayer;
+import org.plugins.simplefreeze.objects.players.FrozenPlayer;
+import org.plugins.simplefreeze.objects.players.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.FrozenType;
 import org.plugins.simplefreeze.util.TimeUtil;
 

@@ -4,6 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.plugins.simplefreeze.SimpleFreezeMain;
+import org.plugins.simplefreeze.managers.GUIActionManager;
 import org.plugins.simplefreeze.managers.GUIManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
 
@@ -14,11 +15,13 @@ public class InventoryClickListener implements Listener {
     private final SimpleFreezeMain plugin;
     private final PlayerManager playerManager;
     private final GUIManager guiManager;
+    private final GUIActionManager guiActionManager;
 
-    public InventoryClickListener(SimpleFreezeMain plugin, PlayerManager playerManager, GUIManager guiManager) {
+    public InventoryClickListener(SimpleFreezeMain plugin, PlayerManager playerManager, GUIManager guiManager, GUIActionManager guiActionManager) {
         this.plugin = plugin;
         this.playerManager = playerManager;
         this.guiManager = guiManager;
+        this.guiActionManager = guiActionManager;
     }
 
     @EventHandler
@@ -41,6 +44,7 @@ public class InventoryClickListener implements Listener {
                 }
             } else if (this.guiManager.containsPlayer(uuid)) {
                 e.setCancelled(true);
+                this.guiActionManager.performGUIActions(e.getSlot(), this.playerManager.getFrozenPlayer(uuid));
             }
         }
     }

@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.plugins.simplefreeze.SimpleFreezeMain;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
+import org.plugins.simplefreeze.objects.players.FrozenPlayer;
 
 import java.util.Map;
 import java.util.UUID;

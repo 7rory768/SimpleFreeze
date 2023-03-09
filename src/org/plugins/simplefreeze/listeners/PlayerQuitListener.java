@@ -11,8 +11,8 @@ import org.plugins.simplefreeze.managers.GUIManager;
 import org.plugins.simplefreeze.managers.LocationManager;
 import org.plugins.simplefreeze.managers.MessageManager;
 import org.plugins.simplefreeze.managers.PlayerManager;
-import org.plugins.simplefreeze.objects.FrozenPlayer;
-import org.plugins.simplefreeze.objects.TempFrozenPlayer;
+import org.plugins.simplefreeze.objects.players.FrozenPlayer;
+import org.plugins.simplefreeze.objects.players.TempFrozenPlayer;
 import org.plugins.simplefreeze.util.FrozenType;
 import org.plugins.simplefreeze.util.TimeUtil;
 

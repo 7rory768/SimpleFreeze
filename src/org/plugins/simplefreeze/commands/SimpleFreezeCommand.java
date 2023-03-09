@@ -26,8 +26,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
     private final MovementManager movementManager;
     private final FreezeManager freezeManager;
     private final GUIManager guiManager;
+    private final GUIActionManager guiActionManager;
 
-    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager, FreezeManager freezeManager, GUIManager guiManager) {
+    public SimpleFreezeCommand(SimpleFreezeMain plugin, HelmetManager helmetManager, FrozenPages frozenPages, ParticleManager particleManager, SoundManager soundManager, MessageManager messageManager, MovementManager movementManager, FreezeManager freezeManager, GUIManager guiManager, GUIActionManager guiActionManager) {
         this.plugin = plugin;
         this.helmetManager = helmetManager;
         this.frozenPages = frozenPages;
@@ -37,6 +38,7 @@ public class SimpleFreezeCommand implements CommandExecutor {
         this.movementManager = movementManager;
         this.freezeManager = freezeManager;
         this.guiManager = guiManager;
+        this.guiActionManager = guiActionManager;
     }
 
     @Override
@@ -78,6 +80,9 @@ public class SimpleFreezeCommand implements CommandExecutor {
                     this.guiManager.setFreezeAllGUIEnabled(this.plugin.getConfig().getBoolean("freeze-gui.enabled-on-freezeall"));
                     this.guiManager.setAllowedToClose(this.plugin.getConfig().getBoolean("freeze-gui.allow-close"));
                     // check if item(s) changed if so update everyones guis?
+
+                    // UPDATE GUI ACTIONS
+                    this.guiActionManager.refreshGUIActions();
 
                     // UPDATE CONSOLE NAME
                     this.plugin.updateConsoleName();
